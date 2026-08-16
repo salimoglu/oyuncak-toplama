@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.26";
+  const GAME_VERSION = window.__OT_VERSION || "0.27";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -1509,23 +1509,38 @@
   async function restoreSession() {
     initFirebase();
     if (firebaseOn()) {
+      $("login-tagline").textContent = "Giriş kontrol ediliyor…";
       try {
         firebase.auth().languageCode = "tr";
-        const cred = await firebase.auth().getRedirectResult();
-        if (cred?.user) {
-          playTapSound();
-          enterApp(userFromFirebase(cred.user, "google"));
+        try {
+          await firebase.auth().getRedirectResult();
+        } catch (err) {
+          setLoginError(friendlyAuthError(err));
+        }
+        const fbUser = await new Promise((resolve) => {
+          const unsub = firebase.auth().onAuthStateChanged((user) => {
+            unsub();
+            resolve(user || null);
+          });
+        });
+        firebase.auth().onAuthStateChanged((user) => {
+          if (!user) return;
+          if (state.screen === "login" || state.user?.id !== user.uid) {
+            enterApp(userFromFirebase(user));
+          }
+        });
+        if (fbUser) {
+          enterApp(userFromFirebase(fbUser));
           return true;
         }
-        if (firebase.auth().currentUser) {
-          enterApp(userFromFirebase(firebase.auth().currentUser));
-          return true;
-        }
+        setTimeout(() => {
+          const later = firebase.auth().currentUser;
+          if (later && (state.screen === "login" || !state.user)) {
+            enterApp(userFromFirebase(later));
+          }
+        }, 1200);
       } catch (err) {
-        setAuthMode("login");
-        show("login");
         setLoginError(friendlyAuthError(err));
-        return false;
       }
     }
     try {
