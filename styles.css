@@ -84,6 +84,11 @@ body {
   display: flex;
 }
 
+#screen-character {
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
 h1,
 h2 {
   margin: 0;
@@ -216,6 +221,15 @@ h2 {
   margin-top: 8px;
 }
 
+.card-grid.picks {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: min(820px, 100%);
+  gap: 10px;
+  overflow: auto;
+  max-height: min(62vh, 520px);
+  padding: 4px 2px 8px;
+}
+
 .pick-card {
   border: none;
   border-radius: var(--radius);
@@ -259,6 +273,187 @@ h2 {
 .pick-card span.sub {
   font-size: 0.9rem;
   color: var(--soft);
+}
+
+.pick-card.cute {
+  background: linear-gradient(180deg, #fff 0%, var(--card, #fff6ea) 100%);
+  border-radius: 24px;
+  min-height: 148px;
+  padding: 12px 8px 10px;
+  box-shadow: 0 8px 0 rgba(90, 50, 40, 0.08), var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.pick-card.cute::before {
+  content: "✦";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 0.8rem;
+  color: rgba(214, 64, 106, 0.35);
+}
+
+.pick-card.cute strong {
+  font-size: 1.05rem;
+}
+
+.pick-card.cute .sub {
+  font-size: 0.78rem;
+}
+
+.mini-char {
+  position: relative;
+  width: 72px;
+  height: 78px;
+  margin: 0 auto 2px;
+}
+
+.mini-hair {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 48px;
+  height: 22px;
+  margin-left: -24px;
+  background: var(--hair);
+  border-radius: 18px 18px 8px 8px;
+}
+
+.mini-head {
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  width: 40px;
+  height: 38px;
+  margin-left: -20px;
+  background: var(--skin);
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.mini-eye {
+  position: absolute;
+  top: 13px;
+  width: 7px;
+  height: 9px;
+  background: #3d2b1f;
+  border-radius: 50%;
+}
+
+.mini-eye.left {
+  left: 8px;
+}
+
+.mini-eye.right {
+  right: 8px;
+}
+
+.mini-smile {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 10px;
+  height: 6px;
+  margin-left: -5px;
+  border: 2px solid #c0392b;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+}
+
+.mini-body {
+  position: absolute;
+  left: 50%;
+  top: 48px;
+  width: 28px;
+  height: 22px;
+  margin-left: -14px;
+  background: var(--clothes);
+  border-radius: 12px;
+}
+
+.mini-ear {
+  display: none;
+}
+
+.mini-char[data-id="elif"] .mini-hair::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background: #ff5d8f;
+  border-radius: 50%;
+  box-shadow: -10px 2px 0 #ff5d8f;
+}
+
+.mini-char[data-id="ece"] .mini-hair::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  background: #ffd43b;
+  border-radius: 50%;
+}
+
+.mini-char[data-id="lila"] .mini-hair {
+  height: 36px;
+  border-radius: 20px;
+}
+
+.mini-char[data-id="karamel"] .mini-head,
+.mini-char[data-id="karamel"] .mini-body {
+  background: #e09f3e;
+}
+
+.mini-char[data-id="karamel"] .mini-ear,
+.mini-char[data-id="pamuk"] .mini-ear {
+  display: block;
+  position: absolute;
+  top: 6px;
+  width: 12px;
+  height: 14px;
+  background: var(--hair);
+  border-radius: 6px 6px 2px 2px;
+  z-index: 1;
+}
+
+.mini-char[data-id="karamel"] .mini-ear.left,
+.mini-char[data-id="pamuk"] .mini-ear.left {
+  left: 10px;
+  transform: rotate(-20deg);
+}
+
+.mini-char[data-id="karamel"] .mini-ear.right,
+.mini-char[data-id="pamuk"] .mini-ear.right {
+  right: 10px;
+  transform: rotate(20deg);
+}
+
+.mini-char[data-id="pamuk"] .mini-ear {
+  height: 20px;
+  width: 9px;
+  border-radius: 8px;
+  top: 0;
+}
+
+.mini-char[data-id="pamuk"] .mini-head {
+  background: #fff8f0;
+}
+
+.basket-preview .bow {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--basket-rim);
+  border-radius: 50%;
+  box-shadow: -8px 2px 0 var(--basket-rim), 8px 2px 0 var(--basket-rim);
 }
 
 .picked-row {
@@ -889,20 +1084,22 @@ h2 {
 .collected-well {
   flex: 1;
   min-height: 72px;
-  background: #fff6ea;
+  background: var(--basket, #fff6ea);
+  border: 3px solid var(--basket-rim, #d4a574);
   border-radius: 16px;
   padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   overflow: auto;
+  box-shadow: inset 0 8px 0 rgba(255, 255, 255, 0.28);
 }
 
 .collected-label {
   margin: 0;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--soft);
+  color: var(--basket-rim, #7a6a5c);
 }
 
 .collected-toys {
@@ -1356,6 +1553,132 @@ h2 {
   border-radius: 8px 8px 10px 10px;
 }
 
+.character[data-id="ece"] .char-hair-back {
+  top: 4px;
+  width: 46px;
+  height: 28px;
+  margin-left: -23px;
+  border-radius: 22px 22px 10px 10px;
+  z-index: 1;
+}
+
+.character[data-id="ece"] .char-hair-back::before,
+.character[data-id="ece"] .char-hair-back::after {
+  content: "";
+  position: absolute;
+  top: 20px;
+  width: 12px;
+  height: 24px;
+  background: var(--hair);
+  border-radius: 10px;
+}
+
+.character[data-id="ece"] .char-hair-back::before {
+  left: -2px;
+}
+
+.character[data-id="ece"] .char-hair-back::after {
+  right: -2px;
+}
+
+.character[data-id="ece"] .char-bow {
+  display: block;
+  position: absolute;
+  top: -6px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: #ffd43b;
+  border-radius: 50%;
+  z-index: 4;
+}
+
+.character[data-id="deniz"] .char-hair-back {
+  top: 6px;
+  width: 42px;
+  height: 20px;
+  margin-left: -21px;
+  border-radius: 16px 18px 8px 10px;
+}
+
+.character[data-id="deniz"] .char-hair-front {
+  top: 10px;
+  width: 20px;
+  height: 10px;
+  margin-left: -22px;
+  border-radius: 0 12px 12px 0;
+  z-index: 3;
+}
+
+.character[data-id="pamuk"] .char-head,
+.character[data-id="pamuk"] .char-body,
+.character[data-id="pamuk"] .char-arm,
+.character[data-id="pamuk"] .char-leg {
+  background: #fff8f0;
+}
+
+.character[data-id="pamuk"] .char-ear {
+  position: absolute;
+  top: -4px;
+  width: 11px;
+  height: 22px;
+  background: #fff8f0;
+  border-radius: 10px;
+  z-index: 1;
+}
+
+.character[data-id="pamuk"] .char-ear.left {
+  left: 6px;
+  transform: rotate(-12deg);
+}
+
+.character[data-id="pamuk"] .char-ear.right {
+  right: 6px;
+  transform: rotate(12deg);
+}
+
+.character[data-id="pamuk"] .char-ear::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 5px;
+  width: 5px;
+  height: 12px;
+  background: #ffc9de;
+  border-radius: 6px;
+}
+
+.character[data-id="nane"] .char-hair-back {
+  top: 4px;
+  width: 48px;
+  height: 32px;
+  margin-left: -24px;
+  border-radius: 24px;
+  z-index: 1;
+}
+
+.character[data-id="nane"] .char-hair-front {
+  top: 8px;
+  width: 44px;
+  height: 12px;
+  margin-left: -22px;
+  border-radius: 16px 16px 0 0;
+  z-index: 3;
+}
+
+.character[data-id="nane"] .char-bow {
+  display: block;
+  position: absolute;
+  top: -6px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  background: #69db7c;
+  border-radius: 50%;
+  z-index: 4;
+  box-shadow: 10px 2px 0 #69db7c;
+}
+
 .char-label {
   text-align: center;
   font-weight: 700;
@@ -1510,6 +1833,17 @@ h2 {
   to {
     transform: translateY(110vh) rotate(240deg);
     opacity: 0.2;
+  }
+}
+
+@media (max-width: 720px) {
+  .card-grid.picks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 58vh;
+  }
+
+  .pick-card.cute {
+    min-height: 132px;
   }
 }
 

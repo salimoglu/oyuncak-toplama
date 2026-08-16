@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.7";
+  const GAME_VERSION = "0.8";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -60,6 +60,50 @@
       clothes: "#f4a261",
       legs: "#e09f3e",
     },
+    {
+      id: "ece",
+      name: "Ece",
+      sub: "Kızıl örgülü",
+      emoji: "🧡",
+      color: "#ffe0c2",
+      skin: "#f8d4b8",
+      hair: "#d9480f",
+      clothes: "#ffd43b",
+      legs: "#f59f00",
+    },
+    {
+      id: "deniz",
+      name: "Deniz",
+      sub: "Dalgalı saçlı",
+      emoji: "🌊",
+      color: "#c5f6fa",
+      skin: "#efc9a0",
+      hair: "#0b7285",
+      clothes: "#22b8cf",
+      legs: "#0c8599",
+    },
+    {
+      id: "pamuk",
+      name: "Pamuk",
+      sub: "Beyaz tavşan",
+      emoji: "🐰",
+      color: "#fff0f6",
+      skin: "#fff8f0",
+      hair: "#fff8f0",
+      clothes: "#ffdeeb",
+      legs: "#fcc2d7",
+    },
+    {
+      id: "nane",
+      name: "Nane",
+      sub: "Nane yeşilli",
+      emoji: "🌿",
+      color: "#d3f9d8",
+      skin: "#f6d7b0",
+      hair: "#2b8a3e",
+      clothes: "#69db7c",
+      legs: "#37b24d",
+    },
   ];
 
   const ROOMS = [
@@ -98,10 +142,14 @@
   ];
 
   const BASKETS = [
-    { id: "pembe", name: "Pembe sepet", color: "#ff8fab", rim: "#c73462" },
-    { id: "mavi", name: "Mavi sepet", color: "#74c0fc", rim: "#1c7ed6" },
-    { id: "sari", name: "Sarı sepet", color: "#ffe066", rim: "#f59f00" },
-    { id: "yesil", name: "Yeşil sepet", color: "#8ce99a", rim: "#2f9e44" },
+    { id: "pembe", name: "Çilek sepet", color: "#ff8fab", rim: "#c73462" },
+    { id: "mavi", name: "Gök sepet", color: "#74c0fc", rim: "#1c7ed6" },
+    { id: "sari", name: "Limon sepet", color: "#ffe066", rim: "#f59f00" },
+    { id: "yesil", name: "Elma sepet", color: "#8ce99a", rim: "#2f9e44" },
+    { id: "mor", name: "Üzüm sepet", color: "#d0bfff", rim: "#7048e8" },
+    { id: "turuncu", name: "Şeftali sepet", color: "#ffc078", rim: "#f76707" },
+    { id: "kirmizi", name: "Kiraz sepet", color: "#ffa8a8", rim: "#e03131" },
+    { id: "mint", name: "Nane sepet", color: "#96f2d7", rim: "#0ca678" },
   ];
 
   const MOVES = [
@@ -257,13 +305,28 @@
     $("picked-row").innerHTML = chips.join("");
   }
 
+  function miniChar(c) {
+    return `<div class="mini-char" data-id="${c.id}" style="--skin:${c.skin};--hair:${c.hair};--clothes:${c.clothes}">
+      <div class="mini-ear left"></div>
+      <div class="mini-ear right"></div>
+      <div class="mini-hair"></div>
+      <div class="mini-head">
+        <span class="mini-eye left"></span>
+        <span class="mini-eye right"></span>
+        <span class="mini-smile"></span>
+      </div>
+      <div class="mini-body"></div>
+    </div>`;
+  }
+
   function renderCharacters() {
     const taken = state.pickStep === 2 && state.players.p1?.char ? state.players.p1.char.id : null;
+    $("character-grid").classList.add("picks");
     $("character-grid").innerHTML = CHARACTERS.map((c) => {
       const disabled = taken === c.id ? "disabled" : "";
       return `
-        <button class="pick-card" type="button" data-character="${c.id}" ${disabled}>
-          <div class="avatar" style="background:${c.color}">${c.emoji}</div>
+        <button class="pick-card cute" type="button" data-character="${c.id}" ${disabled} style="--card:${c.color}">
+          ${miniChar(c)}
           <strong>${c.name}</strong>
           <span class="sub">${c.sub}</span>
         </button>`;
@@ -278,14 +341,16 @@
   function renderBaskets() {
     const player = state.pickStep === 1 ? state.players.p1 : state.players.p2;
     const taken = state.pickStep === 2 ? state.players.p1?.basket?.id : null;
+    $("character-grid").classList.add("picks");
     $("character-grid").innerHTML = BASKETS.map(
       (b) => `
-        <button class="pick-card" type="button" data-basket="${b.id}" ${
+        <button class="pick-card cute" type="button" data-basket="${b.id}" ${
           taken === b.id ? "disabled" : ""
-        }>
+        } style="--card:${b.color}">
           <div class="basket-preview" style="--basket:${b.color}; --basket-rim:${b.rim}">
             <i class="handle"></i>
             <i class="body"></i>
+            <i class="bow"></i>
           </div>
           <strong>${b.name}</strong>
           <span class="sub">Elde taşınır</span>
@@ -484,7 +549,7 @@
         }>⌫</button>
       </div>
       <p class="dock-keys">${keys}</p>
-      <div class="collected-well">
+      <div class="collected-well" style="--basket:${player.basket?.color || "#fff6ea"}; --basket-rim:${player.basket?.rim || "#d4a574"}">
         <p class="collected-label">Toplananlar</p>
         ${
           player.collected.length
