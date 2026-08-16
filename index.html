@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Oyuncak Toplama" />
     <meta
       name="description"
-      content="Dağınık odalardaki oyuncakları karakterinle topla. Tablet ve bilgisayarda birlikte oynanır."
+      content="İki oyuncu, kodlama bloklarıyla karakterini hareket ettirip oyuncak toplar. En çok toplayan kazanır."
     />
     <title>Oyuncak Toplama</title>
     <link rel="manifest" href="manifest.json" />
@@ -38,6 +38,7 @@
       >
         🔊
       </button>
+      <div id="version-badge" class="version-badge">v0.1</div>
 
       <section id="screen-home" class="screen active">
         <div class="cloud c1"></div>
@@ -46,21 +47,22 @@
         <div class="home-hero">
           <div class="logo-toys" aria-hidden="true">🧸 🚗 🎈 🎨</div>
           <h1>Oyuncak Toplama</h1>
-          <p class="tagline">Dağınık odaları birlikte toplayalım!</p>
+          <p class="tagline">İki kişi, kodlarla yarışarak toplar!</p>
           <button id="btn-play" class="big-btn" type="button">Oyna</button>
         </div>
       </section>
 
       <section id="screen-character" class="screen">
-        <h2>Kim toplayacak?</h2>
-        <p class="hint">Bir karakter seç, sonra odaya geçelim.</p>
+        <h2 id="char-title">1. oyuncu kim?</h2>
+        <p id="char-hint" class="hint">Solda oynayacak karakteri seç.</p>
+        <div id="picked-row" class="picked-row"></div>
         <div id="character-grid" class="card-grid"></div>
         <button id="btn-back-home" class="text-btn" type="button">← Geri</button>
       </section>
 
       <section id="screen-room" class="screen">
         <h2>Hangi oda dağınık?</h2>
-        <p class="hint">Toplanacak odayı seç.</p>
+        <p class="hint">Toplanacak odayı seç. En çok toplayan kazanır.</p>
         <div id="room-grid" class="card-grid rooms"></div>
         <button id="btn-back-character" class="text-btn" type="button">← Geri</button>
       </section>
@@ -74,57 +76,29 @@
             <span id="play-room-emoji"></span>
             <span id="play-room-name"></span>
           </div>
-          <div id="score" class="score" aria-live="polite">0 / 0</div>
+          <div id="scoreboard" class="scoreboard" aria-live="polite"></div>
         </header>
-        <div id="room-stage" class="room-stage">
-          <div class="furniture" id="furniture"></div>
-          <div id="toys" class="toys"></div>
-          <div id="toy-box" class="toy-box">
-            <div class="box-lid"></div>
-            <div class="box-body">
-              <div id="box-pile" class="box-pile"></div>
-            </div>
-            <span class="box-label">Kutu</span>
+        <div class="play-layout">
+          <aside id="dock-p1" class="code-dock p1"></aside>
+          <div id="room-stage" class="room-stage">
+            <div class="furniture" id="furniture"></div>
+            <div id="board" class="board"></div>
+            <div id="actors" class="actors"></div>
+            <div id="cheer" class="cheer" hidden></div>
           </div>
-          <div id="character" class="character">
-            <div class="char-shadow"></div>
-            <div class="char-figure">
-              <div class="char-hair-back"></div>
-              <div class="char-head">
-                <div class="char-blush left"></div>
-                <div class="char-blush right"></div>
-                <div class="char-eye left"></div>
-                <div class="char-eye right"></div>
-                <div class="char-smile"></div>
-              </div>
-              <div class="char-hair-front"></div>
-              <div class="char-body">
-                <div class="char-arm left"></div>
-                <div class="char-arm right"></div>
-              </div>
-              <div class="char-legs">
-                <div class="char-leg left"></div>
-                <div class="char-leg right"></div>
-              </div>
-            </div>
-            <div id="char-label" class="char-label"></div>
-          </div>
-          <div id="cheer" class="cheer" hidden></div>
-          <div id="finger-hint" class="finger-hint" hidden>
-            <span>👆</span>
-            <p>Oyuncağa dokun!</p>
-          </div>
+          <aside id="dock-p2" class="code-dock p2"></aside>
         </div>
       </section>
 
       <section id="screen-win" class="screen win">
         <div class="win-card">
-          <div class="stars" aria-hidden="true">⭐ ⭐ ⭐</div>
+          <div id="win-stars" class="stars" aria-hidden="true">⭐ ⭐ ⭐</div>
           <h2 id="win-title">Oda tertemiz!</h2>
-          <p id="win-text">Hepsi kutuya kondu. Aferin size!</p>
+          <p id="win-text">En çok toplayan kazandı.</p>
+          <div id="win-scores" class="win-scores"></div>
           <div class="win-actions">
             <button id="btn-next-room" class="big-btn" type="button">Başka oda</button>
-            <button id="btn-replay" class="ghost-btn" type="button">Yeniden topla</button>
+            <button id="btn-replay" class="ghost-btn" type="button">Yeniden oyna</button>
             <button id="btn-home" class="text-btn" type="button">Ana menü</button>
           </div>
         </div>

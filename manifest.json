@@ -7,7 +7,7 @@
   "orientation": "any",
   "background_color": "#fff3e0",
   "theme_color": "#ff8fab",
-  "description": "Dağınık odalardaki oyuncakları karakterinle topla.",
+  "description": "İki oyuncu kodlama bloklarıyla karakterini hareket ettirip oyuncak toplar.",
   "icons": [
     {
       "src": "icon.svg",

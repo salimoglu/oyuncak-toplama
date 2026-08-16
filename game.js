@@ -1,4 +1,12 @@
 (() => {
+  // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
+  const GAME_VERSION = "0.1";
+
+  const COLS = 6;
+  const ROWS = 5;
+  const MAX_CODE = 6;
+  const STEP_MS = 420;
+
   const CHARACTERS = [
     {
       id: "elif",
@@ -61,7 +69,7 @@
       emoji: "🎲",
       theme: "playroom",
       furniture: '<div class="shelf"></div><div class="window"></div>',
-      toys: ["🚗", "🧩", "🎨", "🤖", "🦄", "🚂", "🧱", "🪀", "🎯", "🎪", "🪁", "🎲"],
+      toys: ["🚗", "🧩", "🎨", "🤖", "🦄", "🚂", "🧱", "🪀", "🎯", "🎪"],
     },
     {
       id: "salon",
@@ -69,7 +77,7 @@
       emoji: "🛋️",
       theme: "living",
       furniture: '<div class="sofa"></div><div class="window"></div>',
-      toys: ["📚", "🖍️", "🧸", "⚽", "🎧", "🧩", "🎀", "🪀", "📱", "🌵"],
+      toys: ["📚", "🖍️", "🧸", "⚽", "🎧", "🧩", "🎀", "🪀"],
     },
     {
       id: "bahce",
@@ -77,23 +85,68 @@
       emoji: "🌳",
       theme: "garden",
       furniture: '<div class="sun"></div><div class="tree"></div>',
-      toys: ["⚽", "🪁", "🚲", "🪣", "🦋", "🏐", "🫧", "🌸", "🧸", "🪀"],
+      toys: ["⚽", "🪁", "🚲", "🪣", "🦋", "🏐", "🌸", "🧸"],
     },
+  ];
+
+  const MOVES = [
+    { id: "up", label: "↑", dx: 0, dy: -1 },
+    { id: "down", label: "↓", dx: 0, dy: 1 },
+    { id: "left", label: "←", dx: -1, dy: 0 },
+    { id: "right", label: "→", dx: 1, dy: 0 },
   ];
 
   const CHEERS = ["Aferin!", "Süper!", "Harika!", "Bravo!", "Yaşasın!", "Çok güzel!"];
 
+  const ACTOR_HTML = `
+    <div class="char-shadow"></div>
+    <div class="char-figure">
+      <div class="char-hair-back"></div>
+      <div class="char-head">
+        <div class="char-blush left"></div>
+        <div class="char-blush right"></div>
+        <div class="char-eye left"></div>
+        <div class="char-eye right"></div>
+        <div class="char-smile"></div>
+      </div>
+      <div class="char-hair-front"></div>
+      <div class="char-body">
+        <div class="char-arm left"></div>
+        <div class="char-arm right"></div>
+      </div>
+      <div class="char-legs">
+        <div class="char-leg left"></div>
+        <div class="char-leg right"></div>
+      </div>
+    </div>
+    <div class="char-label"></div>
+  `;
+
   const state = {
     screen: "home",
-    character: CHARACTERS[0],
+    pickStep: 1,
+    players: { p1: null, p2: null },
     room: ROOMS[0],
-    remaining: [],
-    collected: [],
-    walking: false,
+    toys: [],
+    ended: false,
     sound: localStorage.getItem("ot-sound") !== "off",
     completed: JSON.parse(localStorage.getItem("ot-done") || "[]"),
     audio: null,
+    run: { p1: null, p2: null },
   };
+
+  function emptyPlayer(id, startCol, startRow) {
+    return {
+      id,
+      char: null,
+      col: startCol,
+      row: startRow,
+      queue: [],
+      running: false,
+      collected: [],
+      stepIndex: -1,
+    };
+  }
 
   const $ = (id) => document.getElementById(id);
   const screens = {
@@ -109,6 +162,7 @@
     Object.entries(screens).forEach(([key, el]) => {
       el.classList.toggle("active", key === name);
     });
+    $("version-badge").hidden = name === "play";
   }
 
   function audioCtx() {
@@ -152,6 +206,10 @@
     tone(440, 0.08, "square", 0.05);
   }
 
+  function playBumpSound() {
+    tone(180, 0.12, "square", 0.06);
+  }
+
   function saveDone() {
     if (!state.completed.includes(state.room.id)) {
       state.completed.push(state.room.id);
@@ -160,14 +218,25 @@
   }
 
   function renderCharacters() {
-    $("character-grid").innerHTML = CHARACTERS.map(
-      (c) => `
-      <button class="pick-card" type="button" data-character="${c.id}">
-        <div class="avatar" style="background:${c.color}">${c.emoji}</div>
-        <strong>${c.name}</strong>
-        <span class="sub">${c.sub}</span>
-      </button>`
-    ).join("");
+    const taken = state.pickStep === 2 && state.players.p1 ? state.players.p1.char.id : null;
+    $("character-grid").innerHTML = CHARACTERS.map((c) => {
+      const disabled = taken === c.id ? "disabled" : "";
+      return `
+        <button class="pick-card" type="button" data-character="${c.id}" ${disabled}>
+          <div class="avatar" style="background:${c.color}">${c.emoji}</div>
+          <strong>${c.name}</strong>
+          <span class="sub">${c.sub}</span>
+        </button>`;
+    }).join("");
+
+    $("char-title").textContent = state.pickStep === 1 ? "1. oyuncu kim?" : "2. oyuncu kim?";
+    $("char-hint").textContent =
+      state.pickStep === 1 ? "Solda oynayacak karakteri seç." : "Sağda oynayacak karakteri seç.";
+
+    const p1 = state.players.p1?.char;
+    $("picked-row").innerHTML = p1
+      ? `<div class="picked-chip" style="background:${p1.color}">1. ${p1.emoji} ${p1.name}</div>`
+      : "";
   }
 
   function renderRooms() {
@@ -182,78 +251,269 @@
     }).join("");
   }
 
-  function applyCharacter(char) {
-    state.character = char;
-    const el = $("character");
+  function styleActor(el, player) {
+    const char = player.char;
     el.dataset.id = char.id;
     el.style.setProperty("--skin", char.skin);
     el.style.setProperty("--hair", char.hair);
     el.style.setProperty("--clothes", char.clothes);
     el.style.setProperty("--legs", char.legs);
-    $("char-label").textContent = char.name;
+    el.querySelector(".char-label").textContent = char.name;
+    placeActor(el, player);
   }
 
-  function randomPositions(count) {
-    const spots = [];
-    const tries = count * 20;
-    let i = 0;
-    while (spots.length < count && i < tries) {
-      i += 1;
-      const x = 12 + Math.random() * 62;
-      const y = 28 + Math.random() * 42;
-      const ok = spots.every((s) => Math.hypot(s.x - x, s.y - y) > 12);
-      if (ok) spots.push({ x, y });
+  function placeActor(el, player) {
+    el.style.left = `${((player.col + 0.5) / COLS) * 100}%`;
+    el.style.top = `${((player.row + 0.5) / ROWS) * 100}%`;
+  }
+
+  function randomToyCells(count) {
+    const blocked = new Set(["0,2", "5,2"]);
+    const free = [];
+    for (let row = 0; row < ROWS; row += 1) {
+      for (let col = 0; col < COLS; col += 1) {
+        const key = `${col},${row}`;
+        if (!blocked.has(key)) free.push({ col, row });
+      }
     }
-    while (spots.length < count) {
-      spots.push({
-        x: 16 + (spots.length % 5) * 14,
-        y: 32 + Math.floor(spots.length / 5) * 18,
-      });
+    for (let i = free.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [free[i], free[j]] = [free[j], free[i]];
     }
-    return spots;
+    return free.slice(0, count);
   }
 
   function startRoom(room) {
+    stopRuns();
     state.room = room;
-    state.collected = [];
-    const spots = randomPositions(room.toys.length);
-    state.remaining = room.toys.map((emoji, index) => ({
+    state.ended = false;
+    state.players.p1 = {
+      ...emptyPlayer("p1", 0, 2),
+      char: state.players.p1.char,
+    };
+    state.players.p2 = {
+      ...emptyPlayer("p2", COLS - 1, 2),
+      char: state.players.p2.char,
+    };
+
+    const spots = randomToyCells(room.toys.length);
+    state.toys = room.toys.map((emoji, index) => ({
       id: `${room.id}-${index}`,
       emoji,
-      x: spots[index].x,
-      y: spots[index].y,
+      col: spots[index].col,
+      row: spots[index].row,
     }));
 
     $("play-room-emoji").textContent = room.emoji;
     $("play-room-name").textContent = room.name;
     $("furniture").innerHTML = room.furniture;
     $("room-stage").className = `room-stage ${room.theme}`;
-    $("box-pile").innerHTML = "";
-    $("character").style.left = "18%";
-    $("character").classList.remove("walking", "happy");
-    $("finger-hint").hidden = false;
-    updateScore();
-    renderToys();
+
+    renderBoard();
+    renderDocks();
+    updateScoreboard();
     show("play");
   }
 
-  function renderToys() {
-    $("toys").innerHTML = state.remaining
+  function renderBoard() {
+    const board = $("board");
+    board.style.setProperty("--cols", COLS);
+    board.style.setProperty("--rows", ROWS);
+    const cells = [];
+    for (let row = 0; row < ROWS; row += 1) {
+      for (let col = 0; col < COLS; col += 1) {
+        const toy = state.toys.find((t) => t.col === col && t.row === row);
+        cells.push(
+          `<div class="cell" data-col="${col}" data-row="${row}">${
+            toy ? `<span class="cell-toy">${toy.emoji}</span>` : ""
+          }</div>`
+        );
+      }
+    }
+    board.innerHTML = cells.join("");
+    $("actors").innerHTML = `
+      <div id="actor-p1" class="character actor">${ACTOR_HTML}</div>
+      <div id="actor-p2" class="character actor">${ACTOR_HTML}</div>`;
+    styleActor($("actor-p1"), state.players.p1);
+    styleActor($("actor-p2"), state.players.p2);
+  }
+
+  function refreshToys() {
+    document.querySelectorAll(".cell").forEach((cell) => {
+      const col = Number(cell.dataset.col);
+      const row = Number(cell.dataset.row);
+      const toy = state.toys.find((t) => t.col === col && t.row === row);
+      cell.innerHTML = toy ? `<span class="cell-toy">${toy.emoji}</span>` : "";
+    });
+  }
+
+  function renderDock(playerId) {
+    const player = state.players[playerId];
+    const char = player.char;
+    const side = playerId === "p1" ? "1. oyuncu" : "2. oyuncu";
+    const keys = playerId === "p1" ? "W A S D · E" : "Yön tuşları · Enter";
+    const queue = player.queue
       .map(
-        (t) =>
-          `<button class="toy" type="button" data-id="${t.id}" style="left:${t.x}%; top:${t.y}%">${t.emoji}</button>`
+        (cmd, i) =>
+          `<span class="code-chip ${player.stepIndex === i ? "current" : ""}">${cmd.label}</span>`
       )
       .join("");
+
+    $(`dock-${playerId}`).innerHTML = `
+      <div class="dock-head">
+        <span class="dock-avatar" style="background:${char.color}">${char.emoji}</span>
+        <div>
+          <strong>${char.name}</strong>
+          <small>${side}</small>
+        </div>
+        <span class="dock-score">${player.collected.length}</span>
+      </div>
+      <div class="code-queue" data-player="${playerId}">${
+        queue || '<span class="code-empty">Komut ekle</span>'
+      }</div>
+      <div class="code-pad" data-player="${playerId}">
+        ${MOVES.map(
+          (m) =>
+            `<button type="button" class="code-btn" data-move="${m.id}" ${
+              player.running || player.queue.length >= MAX_CODE ? "disabled" : ""
+            }>${m.label}</button>`
+        ).join("")}
+      </div>
+      <div class="dock-actions">
+        <button type="button" class="run-btn" data-run="${playerId}" ${
+          player.running || player.queue.length === 0 ? "disabled" : ""
+        }>▶ Çalıştır</button>
+        <button type="button" class="erase-btn" data-erase="${playerId}" ${
+          player.running || player.queue.length === 0 ? "disabled" : ""
+        }>⌫</button>
+      </div>
+      <p class="dock-keys">${keys}</p>
+    `;
   }
 
-  function updateScore() {
-    const total = state.room.toys.length;
-    $("score").textContent = `${state.collected.length} / ${total}`;
+  function renderDocks() {
+    renderDock("p1");
+    renderDock("p2");
   }
 
-  function cheer() {
+  function updateScoreboard() {
+    const a = state.players.p1;
+    const b = state.players.p2;
+    const left = state.toys.length;
+    $("scoreboard").innerHTML = `
+      <span class="score p1">${a.char.emoji} ${a.collected.length}</span>
+      <span class="score leftover">🧸 ${left}</span>
+      <span class="score p2">${b.collected.length} ${b.char.emoji}</span>
+    `;
+  }
+
+  function addCommand(playerId, moveId) {
+    const player = state.players[playerId];
+    if (!player || player.running || state.ended) return;
+    if (player.queue.length >= MAX_CODE) return;
+    const move = MOVES.find((m) => m.id === moveId);
+    if (!move) return;
+    player.queue.push({ ...move });
+    playTapSound();
+    renderDock(playerId);
+  }
+
+  function eraseCommand(playerId) {
+    const player = state.players[playerId];
+    if (!player || player.running || state.ended) return;
+    player.queue.pop();
+    playTapSound();
+    renderDock(playerId);
+  }
+
+  function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function stopRuns() {
+    ["p1", "p2"].forEach((id) => {
+      if (state.run[id]) {
+        state.run[id].cancelled = true;
+        state.run[id] = null;
+      }
+      if (state.players[id]) state.players[id].running = false;
+    });
+  }
+
+  async function runProgram(playerId) {
+    const player = state.players[playerId];
+    if (!player || player.running || player.queue.length === 0 || state.ended) return;
+
+    const token = { cancelled: false };
+    state.run[playerId] = token;
+    player.running = true;
+    const program = [...player.queue];
+    renderDock(playerId);
+
+    const actor = $(`actor-${playerId}`);
+    actor.classList.add("walking");
+
+    for (let i = 0; i < program.length; i += 1) {
+      if (token.cancelled || state.ended) break;
+      player.stepIndex = i;
+      renderDock(playerId);
+      await stepMove(player, program[i]);
+      if (token.cancelled || state.ended) break;
+      maybeCollect(player);
+      if (state.ended) break;
+      await wait(STEP_MS);
+    }
+
+    actor.classList.remove("walking", "bump");
+    player.queue = [];
+    player.stepIndex = -1;
+    player.running = false;
+    if (state.run[playerId] === token) state.run[playerId] = null;
+    if (!state.ended) renderDock(playerId);
+  }
+
+  async function stepMove(player, move) {
+    const nextCol = player.col + move.dx;
+    const nextRow = player.row + move.dy;
+    const actor = $(`actor-${player.id}`);
+    if (nextCol < 0 || nextCol >= COLS || nextRow < 0 || nextRow >= ROWS) {
+      playBumpSound();
+      actor.classList.add("bump");
+      await wait(180);
+      actor.classList.remove("bump");
+      return;
+    }
+    player.col = nextCol;
+    player.row = nextRow;
+    placeActor(actor, player);
+  }
+
+  function maybeCollect(player) {
+    const toyIndex = state.toys.findIndex(
+      (t) => t.col === player.col && t.row === player.row
+    );
+    if (toyIndex < 0) return;
+
+    const toy = state.toys[toyIndex];
+    state.toys.splice(toyIndex, 1);
+    player.collected.push(toy);
+
+    const actor = $(`actor-${player.id}`);
+    actor.classList.add("happy");
+    setTimeout(() => actor.classList.remove("happy"), 400);
+    playCollectSound();
+    cheer(`${player.char.name}: ${toy.emoji}`);
+    if (navigator.vibrate) navigator.vibrate(30);
+    refreshToys();
+    updateScoreboard();
+    renderDock(player.id);
+
+    if (state.toys.length === 0) finishMatch();
+  }
+
+  function cheer(text) {
     const el = $("cheer");
-    el.textContent = CHEERS[Math.floor(Math.random() * CHEERS.length)];
+    el.textContent = text || CHEERS[Math.floor(Math.random() * CHEERS.length)];
     el.hidden = false;
     clearTimeout(cheer._t);
     cheer._t = setTimeout(() => {
@@ -261,50 +521,52 @@
     }, 700);
   }
 
-  function collectToy(id) {
-    if (state.walking) return;
-    const toy = state.remaining.find((t) => t.id === id);
-    if (!toy) return;
-
-    $("finger-hint").hidden = true;
-    playTapSound();
-
-    const character = $("character");
-    character.classList.add("walking");
-    character.style.left = `${toy.x}%`;
-    state.walking = true;
-
-    const toyBtn = document.querySelector(`.toy[data-id="${id}"]`);
-
-    setTimeout(() => {
-      if (toyBtn) toyBtn.classList.add("gone");
-      character.classList.remove("walking");
-      character.classList.add("happy");
-      playCollectSound();
-      cheer();
-      if (navigator.vibrate) navigator.vibrate(30);
-
-      state.remaining = state.remaining.filter((t) => t.id !== id);
-      state.collected.push(toy);
-      $("box-pile").insertAdjacentHTML("beforeend", `<span>${toy.emoji}</span>`);
-      updateScore();
-      state.walking = false;
-
-      setTimeout(() => character.classList.remove("happy"), 400);
-
-      if (state.remaining.length === 0) {
-        setTimeout(winRoom, 500);
-      }
-    }, 720);
-  }
-
-  function winRoom() {
+  function finishMatch() {
+    if (state.ended) return;
+    state.ended = true;
+    stopRuns();
     saveDone();
     playWinSound();
-    $("win-title").textContent = "Oda tertemiz!";
-    $("win-text").textContent = `${state.character.name} bütün oyuncakları topladı. Aferin!`;
+
+    const a = state.players.p1;
+    const b = state.players.p2;
+    const scoreA = a.collected.length;
+    const scoreB = b.collected.length;
+
+    let title;
+    let text;
+    let stars;
+    if (scoreA > scoreB) {
+      title = `${a.char.name} kazandı!`;
+      text = `${a.char.emoji} ${scoreA} oyuncak topladı.`;
+      stars = "⭐ ⭐ ⭐";
+    } else if (scoreB > scoreA) {
+      title = `${b.char.name} kazandı!`;
+      text = `${b.char.emoji} ${scoreB} oyuncak topladı.`;
+      stars = "⭐ ⭐ ⭐";
+    } else {
+      title = "Berabere!";
+      text = "İkiniz de aynı sayıda oyuncak topladınız.";
+      stars = "⭐ ⭐";
+    }
+
+    $("win-title").textContent = title;
+    $("win-text").textContent = text;
+    $("win-stars").textContent = stars;
+    $("win-scores").innerHTML = `
+      <div class="win-score ${scoreA >= scoreB ? "winner" : ""}">
+        <span>${a.char.emoji}</span>
+        <strong>${a.char.name}</strong>
+        <b>${scoreA}</b>
+      </div>
+      <div class="win-score ${scoreB >= scoreA ? "winner" : ""}">
+        <span>${b.char.emoji}</span>
+        <strong>${b.char.name}</strong>
+        <b>${scoreB}</b>
+      </div>
+    `;
     burstConfetti();
-    show("win");
+    setTimeout(() => show("win"), 450);
   }
 
   function burstConfetti() {
@@ -323,8 +585,7 @@
 
   function nextRoom() {
     const index = ROOMS.findIndex((r) => r.id === state.room.id);
-    const next = ROOMS[(index + 1) % ROOMS.length];
-    startRoom(next);
+    startRoom(ROOMS[(index + 1) % ROOMS.length]);
   }
 
   function updateSoundButton() {
@@ -333,44 +594,72 @@
     btn.classList.toggle("muted", !state.sound);
   }
 
+  function resetPicks() {
+    state.pickStep = 1;
+    state.players = { p1: null, p2: null };
+  }
+
   function bind() {
     $("btn-play").addEventListener("click", () => {
       playTapSound();
+      resetPicks();
       renderCharacters();
       show("character");
     });
 
-    $("btn-back-home").addEventListener("click", () => show("home"));
+    $("btn-back-home").addEventListener("click", () => {
+      resetPicks();
+      show("home");
+    });
+
     $("btn-back-character").addEventListener("click", () => {
+      state.pickStep = 2;
       renderCharacters();
       show("character");
     });
 
     $("character-grid").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-character]");
-      if (!btn) return;
+      if (!btn || btn.disabled) return;
       const char = CHARACTERS.find((c) => c.id === btn.dataset.character);
-      applyCharacter(char);
       playTapSound();
-      renderRooms();
-      show("room");
+      if (state.pickStep === 1) {
+        state.players.p1 = emptyPlayer("p1", 0, 2);
+        state.players.p1.char = char;
+        state.pickStep = 2;
+        renderCharacters();
+      } else {
+        state.players.p2 = emptyPlayer("p2", COLS - 1, 2);
+        state.players.p2.char = char;
+        renderRooms();
+        show("room");
+      }
     });
 
     $("room-grid").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-room]");
       if (!btn) return;
-      const room = ROOMS.find((r) => r.id === btn.dataset.room);
       playTapSound();
-      startRoom(room);
+      startRoom(ROOMS.find((r) => r.id === btn.dataset.room));
     });
 
-    $("toys").addEventListener("pointerup", (e) => {
-      const btn = e.target.closest(".toy");
-      if (!btn) return;
-      collectToy(btn.dataset.id);
+    document.addEventListener("click", (e) => {
+      const moveBtn = e.target.closest("[data-move]");
+      if (moveBtn) {
+        addCommand(moveBtn.closest("[data-player]").dataset.player, moveBtn.dataset.move);
+        return;
+      }
+      const runBtn = e.target.closest("[data-run]");
+      if (runBtn) {
+        runProgram(runBtn.dataset.run);
+        return;
+      }
+      const eraseBtn = e.target.closest("[data-erase]");
+      if (eraseBtn) eraseCommand(eraseBtn.dataset.erase);
     });
 
     $("btn-exit-play").addEventListener("click", () => {
+      stopRuns();
       renderRooms();
       show("room");
     });
@@ -385,13 +674,46 @@
       startRoom(state.room);
     });
 
-    $("btn-home").addEventListener("click", () => show("home"));
+    $("btn-home").addEventListener("click", () => {
+      resetPicks();
+      show("home");
+    });
 
     $("sound-btn").addEventListener("click", () => {
       state.sound = !state.sound;
       localStorage.setItem("ot-sound", state.sound ? "on" : "off");
       updateSoundButton();
       if (state.sound) playTapSound();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (state.screen !== "play" || state.ended) return;
+      const p1Moves = { KeyW: "up", KeyA: "left", KeyS: "down", KeyD: "right" };
+      const p2Moves = {
+        ArrowUp: "up",
+        ArrowLeft: "left",
+        ArrowDown: "down",
+        ArrowRight: "right",
+      };
+      if (p1Moves[e.code]) {
+        e.preventDefault();
+        addCommand("p1", p1Moves[e.code]);
+      } else if (p2Moves[e.code]) {
+        e.preventDefault();
+        addCommand("p2", p2Moves[e.code]);
+      } else if (e.code === "KeyE") {
+        e.preventDefault();
+        runProgram("p1");
+      } else if (e.code === "Enter") {
+        e.preventDefault();
+        runProgram("p2");
+      } else if (e.code === "Backspace") {
+        e.preventDefault();
+        eraseCommand("p1");
+      } else if (e.code === "Delete") {
+        e.preventDefault();
+        eraseCommand("p2");
+      }
     });
 
     document.addEventListener(
@@ -403,9 +725,9 @@
     );
   }
 
+  $("version-badge").textContent = `v${GAME_VERSION}`;
   renderCharacters();
   renderRooms();
-  applyCharacter(state.character);
   updateSoundButton();
   bind();
 })();
