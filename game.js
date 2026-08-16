@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.13";
+  const GAME_VERSION = window.__OT_VERSION || "0.14";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -727,7 +727,7 @@
         }>▶ Çalıştır (${countLabel})</button>
         <button type="button" class="erase-btn" data-erase="${playerId}" ${
           !myTurn || player.queue.length === 0 ? "disabled" : ""
-        }>⌫</button>
+        }><span aria-hidden="true">🧽</span> Sil</button>
       </div>
       <p class="dock-keys">${keys}</p>
       <div class="collected-well" style="--basket:${player.basket?.color || "#fff6ea"}; --basket-rim:${player.basket?.rim || "#d4a574"}">

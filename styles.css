@@ -1526,30 +1526,54 @@ h2 {
 .run-btn:disabled,
 .erase-btn:disabled {
   opacity: 0.4;
+  animation: none;
 }
 
 .dock-actions {
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 8px;
 }
 
 .run-btn {
-  flex: 1;
-  min-height: 48px;
-  border-radius: 14px;
+  min-height: 56px;
+  border-radius: 16px;
   background: linear-gradient(180deg, #63e6be, #12b886);
   color: #fff;
   font-weight: 700;
-  font-size: 1rem;
-  box-shadow: 0 4px 0 #0b8a64;
+  font-size: 0.95rem;
+  box-shadow: 0 5px 0 #0b8a64;
 }
 
 .erase-btn {
-  width: 48px;
-  min-height: 48px;
-  border-radius: 14px;
-  background: #fff;
-  font-size: 1.1rem;
+  min-height: 56px;
+  min-width: 0;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffb3d0, #ff6b9d);
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: 0 5px 0 #c73462;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.erase-btn span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.erase-btn:not(:disabled) {
+  animation: erase-wiggle 2.4s ease-in-out infinite;
+}
+
+.erase-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #c73462;
+  animation: none;
 }
 
 .dock-keys {
@@ -2295,6 +2319,20 @@ h2 {
   }
 }
 
+@keyframes erase-wiggle {
+  0%,
+  82%,
+  100% {
+    transform: rotate(0deg);
+  }
+  88% {
+    transform: rotate(-7deg);
+  }
+  94% {
+    transform: rotate(7deg);
+  }
+}
+
 @keyframes pop {
   0% {
     transform: translateX(-50%) scale(0.6);
@@ -2407,6 +2445,6 @@ h2 {
   .code-btn,
   .run-btn,
   .erase-btn {
-    min-height: 42px;
+    min-height: 48px;
   }
 }
