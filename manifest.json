@@ -1,0 +1,19 @@
+{
+  "name": "Oyuncak Toplama",
+  "short_name": "Oyuncaklar",
+  "lang": "tr",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fff3e0",
+  "theme_color": "#ff8fab",
+  "description": "Dağınık odalardaki oyuncakları karakterinle topla.",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

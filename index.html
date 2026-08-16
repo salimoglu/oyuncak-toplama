@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#ff8fab" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Oyuncak Toplama" />
+    <meta
+      name="description"
+      content="Dağınık odalardaki oyuncakları karakterinle topla. Tablet ve bilgisayarda birlikte oynanır."
+    />
+    <title>Oyuncak Toplama</title>
+    <link rel="manifest" href="manifest.json" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🧸%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <button
+        id="sound-btn"
+        class="icon-btn"
+        type="button"
+        aria-label="Sesi aç veya kapat"
+      >
+        🔊
+      </button>
+
+      <section id="screen-home" class="screen active">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+        <div class="home-hero">
+          <div class="logo-toys" aria-hidden="true">🧸 🚗 🎈 🎨</div>
+          <h1>Oyuncak Toplama</h1>
+          <p class="tagline">Dağınık odaları birlikte toplayalım!</p>
+          <button id="btn-play" class="big-btn" type="button">Oyna</button>
+        </div>
+      </section>
+
+      <section id="screen-character" class="screen">
+        <h2>Kim toplayacak?</h2>
+        <p class="hint">Bir karakter seç, sonra odaya geçelim.</p>
+        <div id="character-grid" class="card-grid"></div>
+        <button id="btn-back-home" class="text-btn" type="button">← Geri</button>
+      </section>
+
+      <section id="screen-room" class="screen">
+        <h2>Hangi oda dağınık?</h2>
+        <p class="hint">Toplanacak odayı seç.</p>
+        <div id="room-grid" class="card-grid rooms"></div>
+        <button id="btn-back-character" class="text-btn" type="button">← Geri</button>
+      </section>
+
+      <section id="screen-play" class="screen play">
+        <header class="play-bar">
+          <button id="btn-exit-play" class="icon-btn small" type="button" aria-label="Çık">
+            ←
+          </button>
+          <div class="play-title">
+            <span id="play-room-emoji"></span>
+            <span id="play-room-name"></span>
+          </div>
+          <div id="score" class="score" aria-live="polite">0 / 0</div>
+        </header>
+        <div id="room-stage" class="room-stage">
+          <div class="furniture" id="furniture"></div>
+          <div id="toys" class="toys"></div>
+          <div id="toy-box" class="toy-box">
+            <div class="box-lid"></div>
+            <div class="box-body">
+              <div id="box-pile" class="box-pile"></div>
+            </div>
+            <span class="box-label">Kutu</span>
+          </div>
+          <div id="character" class="character">
+            <div class="char-shadow"></div>
+            <div class="char-figure">
+              <div class="char-hair-back"></div>
+              <div class="char-head">
+                <div class="char-blush left"></div>
+                <div class="char-blush right"></div>
+                <div class="char-eye left"></div>
+                <div class="char-eye right"></div>
+                <div class="char-smile"></div>
+              </div>
+              <div class="char-hair-front"></div>
+              <div class="char-body">
+                <div class="char-arm left"></div>
+                <div class="char-arm right"></div>
+              </div>
+              <div class="char-legs">
+                <div class="char-leg left"></div>
+                <div class="char-leg right"></div>
+              </div>
+            </div>
+            <div id="char-label" class="char-label"></div>
+          </div>
+          <div id="cheer" class="cheer" hidden></div>
+          <div id="finger-hint" class="finger-hint" hidden>
+            <span>👆</span>
+            <p>Oyuncağa dokun!</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-win" class="screen win">
+        <div class="win-card">
+          <div class="stars" aria-hidden="true">⭐ ⭐ ⭐</div>
+          <h2 id="win-title">Oda tertemiz!</h2>
+          <p id="win-text">Hepsi kutuya kondu. Aferin size!</p>
+          <div class="win-actions">
+            <button id="btn-next-room" class="big-btn" type="button">Başka oda</button>
+            <button id="btn-replay" class="ghost-btn" type="button">Yeniden topla</button>
+            <button id="btn-home" class="text-btn" type="button">Ana menü</button>
+          </div>
+        </div>
+        <div id="confetti" class="confetti" aria-hidden="true"></div>
+      </section>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>
