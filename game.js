@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.2";
+  const GAME_VERSION = "0.3";
 
   const COLS = 6;
   const ROWS = 5;
@@ -377,6 +377,7 @@
 
   function renderDock(playerId) {
     const player = state.players[playerId];
+    const side = playerId === "p1" ? "1. oyuncu" : "2. oyuncu";
     const keys = playerId === "p1" ? "W A S D · E" : "Yön tuşları · Enter";
     const queue = player.queue
       .map(
@@ -386,7 +387,7 @@
       .join("");
 
     $(`dock-${playerId}`).innerHTML = `
-      ${playerSummary(player)}
+      <p class="dock-side">${side}</p>
       <div class="code-queue" data-player="${playerId}">${
         queue || '<span class="code-empty">Komut ekle</span>'
       }</div>
@@ -423,13 +424,7 @@
     const p1w = total ? (a.collected.length / total) * 100 : 50;
     const p2w = total ? (b.collected.length / total) * 100 : 50;
     $("scoreboard").innerHTML = `
-      <div class="hud-player p1">
-        <span class="player-face" style="background:${a.char.color}">${a.char.emoji}</span>
-        <div class="hud-copy">
-          <strong>${a.char.name}</strong>
-          <span>${a.collected.length} oyuncak</span>
-        </div>
-      </div>
+      ${playerSummary(a)}
       <div class="hud-mid">
         <div class="remain-chip">
           <span>🧸</span>
@@ -442,13 +437,7 @@
           <i class="p2" style="width:${p2w}%"></i>
         </div>
       </div>
-      <div class="hud-player p2">
-        <div class="hud-copy">
-          <strong>${b.char.name}</strong>
-          <span>${b.collected.length} oyuncak</span>
-        </div>
-        <span class="player-face" style="background:${b.char.color}">${b.char.emoji}</span>
-      </div>
+      ${playerSummary(b)}
     `;
   }
 
