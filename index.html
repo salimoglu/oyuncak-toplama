@@ -31,7 +31,7 @@
   <body>
     <div id="app">
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.4</div>
+        <div id="version-badge" class="version-badge">v0.5</div>
         <button
           id="sound-btn"
           class="icon-btn"
@@ -78,8 +78,16 @@
             <span id="play-room-emoji"></span>
             <span id="play-room-name"></span>
           </div>
+          <div id="scoreboard" class="scoreboard" aria-live="polite"></div>
+          <button
+            id="sound-btn-play"
+            class="icon-btn small"
+            type="button"
+            aria-label="Sesi aç veya kapat"
+          >
+            🔊
+          </button>
         </header>
-        <div id="scoreboard" class="scoreboard" aria-live="polite"></div>
         <div class="play-layout">
           <aside id="dock-p1" class="code-dock p1"></aside>
           <div id="room-stage" class="room-stage">

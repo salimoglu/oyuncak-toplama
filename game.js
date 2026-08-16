@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.4";
+  const GAME_VERSION = "0.5";
 
   const COLS = 6;
   const ROWS = 5;
@@ -162,6 +162,7 @@
     Object.entries(screens).forEach(([key, el]) => {
       el.classList.toggle("active", key === name);
     });
+    document.getElementById("app").classList.toggle("playing", name === "play");
   }
 
   function audioCtx() {
@@ -630,9 +631,19 @@
   }
 
   function updateSoundButton() {
-    const btn = $("sound-btn");
-    btn.textContent = state.sound ? "🔊" : "🔇";
-    btn.classList.toggle("muted", !state.sound);
+    ["sound-btn", "sound-btn-play"].forEach((id) => {
+      const btn = $(id);
+      if (!btn) return;
+      btn.textContent = state.sound ? "🔊" : "🔇";
+      btn.classList.toggle("muted", !state.sound);
+    });
+  }
+
+  function toggleSound() {
+    state.sound = !state.sound;
+    localStorage.setItem("ot-sound", state.sound ? "on" : "off");
+    updateSoundButton();
+    if (state.sound) playTapSound();
   }
 
   function resetPicks() {
@@ -720,12 +731,8 @@
       show("home");
     });
 
-    $("sound-btn").addEventListener("click", () => {
-      state.sound = !state.sound;
-      localStorage.setItem("ot-sound", state.sound ? "on" : "off");
-      updateSoundButton();
-      if (state.sound) playTapSound();
-    });
+    $("sound-btn").addEventListener("click", toggleSound);
+    $("sound-btn-play").addEventListener("click", toggleSound);
 
     document.addEventListener("keydown", (e) => {
       if (state.screen !== "play" || state.ended) return;
