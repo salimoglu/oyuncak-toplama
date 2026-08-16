@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.18";
+  const GAME_VERSION = window.__OT_VERSION || "0.19";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -198,6 +198,8 @@
     { id: "left", label: "←", name: "Sola", dx: -1, dy: 0 },
     { id: "right", label: "→", name: "Sağa", dx: 1, dy: 0 },
   ];
+
+  const DIR_MARK = `<svg class="dir-arrow" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" d="M12 2.8 20.6 13.4c.5.6.1 1.6-.7 1.6h-4.1v6.2c0 .9-.7 1.6-1.6 1.6h-3.4c-.9 0-1.6-.7-1.6-1.6v-6.2H4.1c-.8 0-1.2-1-.7-1.6L12 2.8z"/></svg>`;
 
   const BOT = {
     kolay: { delay: 1400, mistake: 0.4, stepMs: 560, label: "Kolay" },
@@ -718,7 +720,7 @@
     const queue = player.queue
       .map(
         (cmd, i) =>
-          `<span class="code-chip dir-${cmd.id} ${player.stepIndex === i ? "current" : ""}"><i class="dir-arrow" aria-hidden="true"></i></span>`
+          `<span class="code-chip dir-${cmd.id} ${player.stepIndex === i ? "current" : ""}">${DIR_MARK}</span>`
       )
       .join("");
     const countLabel = `${player.queue.length}/${MAX_CODE}`;
@@ -753,7 +755,7 @@
           (m) =>
             `<button type="button" class="code-btn dir-${m.id}" data-move="${m.id}" aria-label="${m.name}" ${
               !myTurn || player.queue.length >= MAX_CODE ? "disabled" : ""
-            }><i class="dir-arrow" aria-hidden="true"></i></button>`
+            }>${DIR_MARK}</button>`
         ).join("")}
       </div>
       <div class="dock-actions">

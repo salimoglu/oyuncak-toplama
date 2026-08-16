@@ -1604,38 +1604,28 @@ h2 {
 .code-btn:active:not(:disabled).dir-right { box-shadow: 0 2px 0 #7048e8; }
 
 .dir-arrow {
-  width: 12px;
-  height: 12px;
-  border-left: 4px solid #fff;
-  border-bottom: 4px solid #fff;
-  border-radius: 2px;
+  width: 28px;
+  height: 28px;
   display: block;
-}
-
-.dir-up .dir-arrow {
-  transform: rotate(135deg);
-  margin-top: 4px;
+  color: #fff;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.12));
 }
 
 .dir-down .dir-arrow {
-  transform: rotate(-45deg);
-  margin-bottom: 4px;
+  transform: rotate(180deg);
 }
 
 .dir-left .dir-arrow {
-  transform: rotate(45deg);
-  margin-right: 3px;
+  transform: rotate(-90deg);
 }
 
 .dir-right .dir-arrow {
-  transform: rotate(-135deg);
-  margin-left: 3px;
+  transform: rotate(90deg);
 }
 
 .code-chip .dir-arrow {
-  width: 8px;
-  height: 8px;
-  border-width: 3px;
+  width: 20px;
+  height: 20px;
 }
 
 .code-btn:disabled,
