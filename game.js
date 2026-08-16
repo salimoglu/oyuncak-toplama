@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.32";
+  const GAME_VERSION = window.__OT_VERSION || "0.33";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;

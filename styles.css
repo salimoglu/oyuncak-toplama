@@ -1072,7 +1072,6 @@ h2 {
   line-height: 1;
   transform: translate(-50%, -50%);
   animation: sky-float var(--dur, 10s) ease-in-out infinite;
-  filter: drop-shadow(0 8px 0 rgba(90, 50, 40, 0.08));
   will-change: transform;
 }
 
