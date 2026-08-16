@@ -1473,6 +1473,42 @@ h2 {
   z-index: 3;
 }
 
+.path-preview {
+  position: absolute;
+  inset: 4px 4px 6px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.preview-dot {
+  position: absolute;
+  width: min(36px, calc(100% / var(--cols, 8) * 0.58));
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: clamp(0.75rem, 2vw, 1.05rem);
+  color: #fff;
+  opacity: 0.48;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+.preview-dot.p1 {
+  background: var(--p1);
+}
+
+.preview-dot.p2 {
+  background: var(--p2);
+}
+
+.preview-dot.bump {
+  opacity: 0.32;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7);
+}
+
 .cell {
   background: rgba(255, 255, 255, 0.42);
   border-radius: 8px;
@@ -1485,7 +1521,13 @@ h2 {
   overflow: hidden;
 }
 
-.cell-toy {
+.cell.preview-on.preview-p1 {
+  background: rgba(255, 143, 171, 0.42);
+}
+
+.cell.preview-on.preview-p2 {
+  background: rgba(77, 171, 247, 0.42);
+}
   font-size: 1.15rem;
   font-size: min(1.65rem, 58cqmin);
   line-height: 1;

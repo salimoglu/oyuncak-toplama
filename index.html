@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.20" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.21" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.20</div>
+        <div id="version-badge" class="version-badge">v0.21</div>
         <button
           id="sound-btn"
           class="icon-btn"
@@ -121,6 +121,7 @@
           <div id="room-stage" class="room-stage">
             <div class="furniture" id="furniture"></div>
             <div id="board" class="board"></div>
+            <div id="path-preview" class="path-preview" aria-hidden="true"></div>
             <div id="actors" class="actors"></div>
             <div id="cheer" class="cheer" hidden></div>
           </div>
@@ -146,7 +147,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.20";
+        var CURRENT = "0.21";
         var started = false;
 
         function loadGame(version) {
