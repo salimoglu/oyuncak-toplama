@@ -825,6 +825,50 @@ h2 {
   text-align: center;
 }
 
+.collected-well {
+  flex: 1;
+  min-height: 72px;
+  background: #fff6ea;
+  border-radius: 16px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: auto;
+}
+
+.collected-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--soft);
+}
+
+.collected-toys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
+}
+
+.collected-toys span {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 1.35rem;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08);
+}
+
+.collected-empty {
+  margin: auto 0;
+  text-align: center;
+  color: var(--soft);
+  font-size: 0.85rem;
+}
+
 .character.actor {
   position: absolute;
   width: 64px;

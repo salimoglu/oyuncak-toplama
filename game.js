@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.3";
+  const GAME_VERSION = "0.4";
 
   const COLS = 6;
   const ROWS = 5;
@@ -355,7 +355,7 @@
       .join("")}</div>`;
   }
 
-  function playerSummary(player, extraClass = "") {
+  function playerSummary(player, extraClass = "", showToys = true) {
     const side = player.id === "p1" ? "1. oyuncu" : "2. oyuncu";
     const count = player.collected.length;
     return `
@@ -371,7 +371,7 @@
             <small>oyuncak</small>
           </div>
         </div>
-        ${toyPile(player.collected)}
+        ${showToys ? toyPile(player.collected) : ""}
       </article>`;
   }
 
@@ -408,6 +408,16 @@
         }>⌫</button>
       </div>
       <p class="dock-keys">${keys}</p>
+      <div class="collected-well">
+        <p class="collected-label">Toplananlar</p>
+        ${
+          player.collected.length
+            ? `<div class="collected-toys">${player.collected
+                .map((t) => `<span>${t.emoji}</span>`)
+                .join("")}</div>`
+            : `<p class="collected-empty">Toplanan oyuncaklar burada</p>`
+        }
+      </div>
     `;
   }
 
@@ -424,7 +434,7 @@
     const p1w = total ? (a.collected.length / total) * 100 : 50;
     const p2w = total ? (b.collected.length / total) * 100 : 50;
     $("scoreboard").innerHTML = `
-      ${playerSummary(a)}
+      ${playerSummary(a, "", false)}
       <div class="hud-mid">
         <div class="remain-chip">
           <span>🧸</span>
@@ -437,7 +447,7 @@
           <i class="p2" style="width:${p2w}%"></i>
         </div>
       </div>
-      ${playerSummary(b)}
+      ${playerSummary(b, "", false)}
     `;
   }
 
