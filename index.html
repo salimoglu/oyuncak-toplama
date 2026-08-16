@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.30" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.31" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.30</div>
+        <div id="version-badge" class="version-badge">v0.31</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -79,6 +79,7 @@
         </div>
       </header>
       <div id="stage">
+      <div id="sky-toys" class="sky-toys" aria-hidden="true" hidden></div>
       <section id="screen-login" class="screen active">
         <div class="cloud c1"></div>
         <div class="cloud c2"></div>
@@ -267,7 +268,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.30";
+        var CURRENT = "0.31";
         var started = false;
 
         function addScript(src) {

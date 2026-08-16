@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.30";
+  const GAME_VERSION = window.__OT_VERSION || "0.31";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -192,6 +192,11 @@
     { id: "mint", name: "Nane sepet", color: "#96f2d7", rim: "#0ca678" },
   ];
 
+  const SKY_TOY_EMOJIS = [...new Set(ROOMS.flatMap((room) => room.toys))];
+  const SKY_TOY_MAX = 14;
+  let skyToyCount = 0;
+  let skyToyTimer = 0;
+
   const MOVES = [
     { id: "up", label: "↑", name: "Yukarı", dx: 0, dy: -1 },
     { id: "down", label: "↓", name: "Aşağı", dx: 0, dy: 1 },
@@ -312,6 +317,78 @@
     app.classList.toggle("has-back", showBack);
     renderAccount();
     if (name === "login") closeAccountMenu();
+    if (name === "home" || name === "login") startSkyToys();
+    else stopSkyToys();
+  }
+
+  function skyToysOn() {
+    return state.screen === "home" || state.screen === "login";
+  }
+
+  function stopSkyToys() {
+    if (skyToyTimer) {
+      clearInterval(skyToyTimer);
+      skyToyTimer = 0;
+    }
+    const box = $("sky-toys");
+    if (box) {
+      box.hidden = true;
+      box.replaceChildren();
+    }
+    skyToyCount = 0;
+  }
+
+  function startSkyToys() {
+    const box = $("sky-toys");
+    if (!box) return;
+    box.hidden = false;
+    while (skyToyCount < SKY_TOY_MAX) spawnSkyToy();
+    if (!skyToyTimer) {
+      skyToyTimer = window.setInterval(() => {
+        if (skyToysOn() && skyToyCount < SKY_TOY_MAX) spawnSkyToy();
+      }, 650);
+    }
+  }
+
+  function spawnSkyToy() {
+    const box = $("sky-toys");
+    if (!box || !skyToysOn() || skyToyCount >= SKY_TOY_MAX) return;
+    const el = document.createElement("span");
+    el.className = "sky-toy";
+    el.textContent = SKY_TOY_EMOJIS[Math.floor(Math.random() * SKY_TOY_EMOJIS.length)];
+    const x = 6 + Math.random() * 88;
+    const y = 8 + Math.random() * 78;
+    el.style.setProperty("--x", `${x}%`);
+    el.style.setProperty("--y", `${y}%`);
+    el.style.setProperty("--size", `${1.5 + Math.random() * 1.7}rem`);
+    el.style.setProperty("--dur", `${7 + Math.random() * 9}s`);
+    el.style.setProperty("--dx", `${Math.random() * 28 - 14}vw`);
+    el.style.setProperty("--dy", `${-(16 + Math.random() * 26)}vh`);
+    el.style.setProperty("--spin", `${Math.random() * 28 - 14}deg`);
+    box.appendChild(el);
+    skyToyCount += 1;
+    window.setTimeout(() => popSkyToy(el), 3200 + Math.random() * 7000);
+  }
+
+  function popSkyToy(el) {
+    const box = $("sky-toys");
+    if (!el?.isConnected || el.classList.contains("pop")) return;
+    if (box && skyToysOn()) {
+      const toy = el.getBoundingClientRect();
+      const area = box.getBoundingClientRect();
+      const burst = document.createElement("span");
+      burst.className = "sky-pop";
+      burst.style.left = `${((toy.left + toy.width / 2 - area.left) / area.width) * 100}%`;
+      burst.style.top = `${((toy.top + toy.height / 2 - area.top) / area.height) * 100}%`;
+      box.appendChild(burst);
+      window.setTimeout(() => burst.remove(), 450);
+    }
+    el.classList.add("pop");
+    window.setTimeout(() => {
+      el.remove();
+      skyToyCount = Math.max(0, skyToyCount - 1);
+      if (skyToysOn() && skyToyCount < SKY_TOY_MAX) spawnSkyToy();
+    }, 420);
   }
 
   function goBack() {
