@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.6";
+  const GAME_VERSION = "0.7";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -19,7 +19,7 @@
     {
       id: "elif",
       name: "Elif",
-      sub: "Pembe elbiseli",
+      sub: "Pembe fiyonklu",
       emoji: "👧",
       color: "#ffd6e0",
       skin: "#f6d7b0",
@@ -30,7 +30,7 @@
     {
       id: "can",
       name: "Can",
-      sub: "Mavi tişörtlü",
+      sub: "Neşeli kahraman",
       emoji: "👦",
       color: "#d0ebff",
       skin: "#efc9a0",
@@ -41,7 +41,7 @@
     {
       id: "lila",
       name: "Lila",
-      sub: "Mor elbiseli",
+      sub: "Çiçekli saçlı",
       emoji: "👩",
       color: "#e5dbff",
       skin: "#f3c9a3",
@@ -52,7 +52,7 @@
     {
       id: "karamel",
       name: "Karamel",
-      sub: "Sevimli kedi",
+      sub: "Minik patili",
       emoji: "🐱",
       color: "#ffe8cc",
       skin: "#e09f3e",
@@ -97,6 +97,13 @@
     },
   ];
 
+  const BASKETS = [
+    { id: "pembe", name: "Pembe sepet", color: "#ff8fab", rim: "#c73462" },
+    { id: "mavi", name: "Mavi sepet", color: "#74c0fc", rim: "#1c7ed6" },
+    { id: "sari", name: "Sarı sepet", color: "#ffe066", rim: "#f59f00" },
+    { id: "yesil", name: "Yeşil sepet", color: "#8ce99a", rim: "#2f9e44" },
+  ];
+
   const MOVES = [
     { id: "up", label: "↑", dx: 0, dy: -1 },
     { id: "down", label: "↓", dx: 0, dy: 1 },
@@ -110,17 +117,25 @@
     <div class="char-shadow"></div>
     <div class="char-figure">
       <div class="char-hair-back"></div>
+      <div class="char-ear left"></div>
+      <div class="char-ear right"></div>
       <div class="char-head">
         <div class="char-blush left"></div>
         <div class="char-blush right"></div>
-        <div class="char-eye left"></div>
-        <div class="char-eye right"></div>
+        <div class="char-eye left"><i></i></div>
+        <div class="char-eye right"><i></i></div>
+        <div class="char-nose"></div>
         <div class="char-smile"></div>
+        <div class="char-bow"></div>
       </div>
       <div class="char-hair-front"></div>
       <div class="char-body">
         <div class="char-arm left"></div>
         <div class="char-arm right"></div>
+        <div class="char-basket">
+          <div class="basket-handle"></div>
+          <div class="basket-body"><span class="basket-peek"></span></div>
+        </div>
       </div>
       <div class="char-legs">
         <div class="char-leg left"></div>
@@ -133,6 +148,7 @@
   const state = {
     screen: "home",
     pickStep: 1,
+    pickKind: "character",
     players: { p1: null, p2: null },
     room: ROOMS[0],
     toys: [],
@@ -154,6 +170,7 @@
       queue: [],
       running: false,
       collected: [],
+      basket: null,
       stepIndex: -1,
     };
   }
@@ -227,8 +244,21 @@
     }
   }
 
+  function pickedChips() {
+    const chips = [];
+    ["p1", "p2"].forEach((id, index) => {
+      const p = state.players[id];
+      if (!p?.char) return;
+      const basket = p.basket ? ` ${p.basket.name}` : "";
+      chips.push(
+        `<div class="picked-chip" style="background:${p.char.color}">${index + 1}. ${p.char.emoji} ${p.char.name}${basket}</div>`
+      );
+    });
+    $("picked-row").innerHTML = chips.join("");
+  }
+
   function renderCharacters() {
-    const taken = state.pickStep === 2 && state.players.p1 ? state.players.p1.char.id : null;
+    const taken = state.pickStep === 2 && state.players.p1?.char ? state.players.p1.char.id : null;
     $("character-grid").innerHTML = CHARACTERS.map((c) => {
       const disabled = taken === c.id ? "disabled" : "";
       return `
@@ -242,11 +272,33 @@
     $("char-title").textContent = state.pickStep === 1 ? "1. oyuncu kim?" : "2. oyuncu kim?";
     $("char-hint").textContent =
       state.pickStep === 1 ? "Solda oynayacak karakteri seç." : "Sağda oynayacak karakteri seç.";
+    pickedChips();
+  }
 
-    const p1 = state.players.p1?.char;
-    $("picked-row").innerHTML = p1
-      ? `<div class="picked-chip" style="background:${p1.color}">1. ${p1.emoji} ${p1.name}</div>`
-      : "";
+  function renderBaskets() {
+    const player = state.pickStep === 1 ? state.players.p1 : state.players.p2;
+    const taken = state.pickStep === 2 ? state.players.p1?.basket?.id : null;
+    $("character-grid").innerHTML = BASKETS.map(
+      (b) => `
+        <button class="pick-card" type="button" data-basket="${b.id}" ${
+          taken === b.id ? "disabled" : ""
+        }>
+          <div class="basket-preview" style="--basket:${b.color}; --basket-rim:${b.rim}">
+            <i class="handle"></i>
+            <i class="body"></i>
+          </div>
+          <strong>${b.name}</strong>
+          <span class="sub">Elde taşınır</span>
+        </button>`
+    ).join("");
+    $("char-title").textContent = `${player.char.name} hangi sepeti alsın?`;
+    $("char-hint").textContent = "Seçtiğin sepet sahnede karakterin elinde durur.";
+    pickedChips();
+  }
+
+  function renderPicks() {
+    if (state.pickKind === "basket") renderBaskets();
+    else renderCharacters();
   }
 
   function renderRooms() {
@@ -268,6 +320,11 @@
     el.style.setProperty("--hair", char.hair);
     el.style.setProperty("--clothes", char.clothes);
     el.style.setProperty("--legs", char.legs);
+    if (player.basket) {
+      el.dataset.basket = player.basket.id;
+      el.style.setProperty("--basket", player.basket.color);
+      el.style.setProperty("--basket-rim", player.basket.rim);
+    }
     el.querySelector(".char-label").textContent = char.name;
     placeActor(el, player);
   }
@@ -306,10 +363,12 @@
     state.players.p1 = {
       ...emptyPlayer("p1", 0, midRow()),
       char: state.players.p1.char,
+      basket: state.players.p1.basket,
     };
     state.players.p2 = {
       ...emptyPlayer("p2", state.cols - 1, midRow()),
       char: state.players.p2.char,
+      basket: state.players.p2.basket,
     };
 
     const spots = randomToyCells(room.toys.length);
@@ -348,8 +407,8 @@
     }
     board.innerHTML = cells.join("");
     $("actors").innerHTML = `
-      <div id="actor-p1" class="character actor">${ACTOR_HTML}</div>
-      <div id="actor-p2" class="character actor">${ACTOR_HTML}</div>`;
+      <div id="actor-p1" class="character actor" data-side="left">${ACTOR_HTML}</div>
+      <div id="actor-p2" class="character actor" data-side="right">${ACTOR_HTML}</div>`;
     styleActor($("actor-p1"), state.players.p1);
     styleActor($("actor-p2"), state.players.p2);
   }
@@ -561,6 +620,13 @@
 
     const actor = $(`actor-${player.id}`);
     actor.classList.add("happy");
+    const basket = actor.querySelector(".char-basket");
+    const peek = actor.querySelector(".basket-peek");
+    if (peek) peek.textContent = toy.emoji;
+    if (basket) {
+      basket.classList.add("catch");
+      setTimeout(() => basket.classList.remove("catch"), 380);
+    }
     setTimeout(() => actor.classList.remove("happy"), 400);
     playCollectSound();
     cheer(`${player.char.name}: ${toy.emoji}`);
@@ -664,6 +730,7 @@
 
   function resetPicks() {
     state.pickStep = 1;
+    state.pickKind = "character";
     state.players = { p1: null, p2: null };
   }
 
@@ -671,22 +738,51 @@
     $("btn-play").addEventListener("click", () => {
       playTapSound();
       resetPicks();
-      renderCharacters();
+      renderPicks();
       show("character");
     });
 
     $("btn-back-home").addEventListener("click", () => {
+      if (state.pickKind === "basket") {
+        state.pickKind = "character";
+        renderPicks();
+        return;
+      }
+      if (state.pickStep === 2) {
+        state.pickStep = 1;
+        state.pickKind = "basket";
+        renderPicks();
+        return;
+      }
       resetPicks();
       show("home");
     });
 
     $("btn-back-character").addEventListener("click", () => {
       state.pickStep = 2;
-      renderCharacters();
+      state.pickKind = "basket";
+      renderPicks();
       show("character");
     });
 
     $("character-grid").addEventListener("click", (e) => {
+      const basketBtn = e.target.closest("[data-basket]");
+      if (basketBtn && !basketBtn.disabled) {
+        const basket = BASKETS.find((b) => b.id === basketBtn.dataset.basket);
+        playTapSound();
+        if (state.pickStep === 1) {
+          state.players.p1.basket = basket;
+          state.pickStep = 2;
+          state.pickKind = "character";
+          renderPicks();
+        } else {
+          state.players.p2.basket = basket;
+          renderRooms();
+          show("room");
+        }
+        return;
+      }
+
       const btn = e.target.closest("[data-character]");
       if (!btn || btn.disabled) return;
       const char = CHARACTERS.find((c) => c.id === btn.dataset.character);
@@ -694,14 +790,12 @@
       if (state.pickStep === 1) {
         state.players.p1 = emptyPlayer("p1", 0, midRow());
         state.players.p1.char = char;
-        state.pickStep = 2;
-        renderCharacters();
       } else {
         state.players.p2 = emptyPlayer("p2", boardSize().cols - 1, midRow());
         state.players.p2.char = char;
-        renderRooms();
-        show("room");
       }
+      state.pickKind = "basket";
+      renderPicks();
     });
 
     $("room-grid").addEventListener("click", (e) => {
@@ -790,7 +884,7 @@
   }
 
   $("version-badge").textContent = `v${GAME_VERSION}`;
-  renderCharacters();
+  renderPicks();
   renderRooms();
   updateSoundButton();
   bind();

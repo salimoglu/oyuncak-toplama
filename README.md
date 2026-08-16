@@ -1,14 +1,14 @@
 # Oyuncak Toplama
 
-Sürüm **0.6** — 5 yaşındaki çocuklarla birlikte oynanan iki oyunculu web oyunu. Karakterler kodlama bloklarıyla hareket eder; dağınık odadaki oyuncakları kim daha çok toplarsa o kazanır. Tablet ve bilgisayar tarayıcısında çalışır.
+Sürüm **0.7** — 5 yaşındaki çocuklarla birlikte oynanan iki oyunculu web oyunu. Karakterler kodlama bloklarıyla hareket eder; dağınık odadaki oyuncakları kim daha çok toplarsa o kazanır. Tablet ve bilgisayar tarayıcısında çalışır.
 
 ## Nasıl oynanır?
 
 1. **Oyna** düğmesine bas.
-2. **1. oyuncu** ve **2. oyuncu** için birer karakter seç (Elif, Can, Lila veya kedi Karamel).
+2. **1. oyuncu** ve **2. oyuncu** için birer karakter ve **sepet** seç.
 3. Dağınık bir **oda** seç.
 4. Kendi tarafındaki oklarla bir **komut sırası** yaz (en fazla 6 adım).
-5. **Çalıştır** ile karakterin o adımları yapsın. Oyuncağın üstüne gelince otomatik toplanır.
+5. **Çalıştır** ile karakterin o adımları yapsın. Oyuncağın üstüne gelince sepete konur.
 6. Bütün oyuncaklar bitince **en çok toplayan kazanır**. Eşitse berabere.
 
 İki oyuncu aynı anda kendi kodunu yazıp çalıştırabilir.
@@ -18,7 +18,7 @@ Sürüm **0.6** — 5 yaşındaki çocuklarla birlikte oynanan iki oyunculu web 
 
 ## Sürüm
 
-Şu an: **0.6**
+Şu an: **0.7**
 
 Sürümler `0.1`, `0.2`, … `0.99` gider; sonra `1.0`, ardından `1.1` diye devam eder.
 
