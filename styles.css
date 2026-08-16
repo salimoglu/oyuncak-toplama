@@ -535,10 +535,10 @@ h2 {
   background: linear-gradient(180deg, #fff 0%, var(--card, #fff6ea) 100%);
   border-radius: 24px;
   min-height: 168px;
-  padding: 8px 8px 10px;
+  padding: 18px 8px 10px;
   box-shadow: 0 8px 0 rgba(90, 50, 40, 0.08), var(--shadow);
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .pick-card.cute::before {
@@ -2362,6 +2362,22 @@ h2 {
 
 .character.portrait .char-figure {
   animation: bob 2.4s ease-in-out infinite;
+}
+
+.pick-card.cute .character.portrait {
+  height: 86px;
+  width: 64px;
+  margin: 0 auto 0;
+}
+
+.pick-card.cute .character.portrait .char-fit {
+  transform: scale(0.78);
+  transform-origin: top center;
+  height: 86px;
+}
+
+.pick-card.cute .character.portrait .char-figure {
+  animation: none;
 }
 
 .char-fit {
