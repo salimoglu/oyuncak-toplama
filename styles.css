@@ -487,6 +487,94 @@ h2 {
   margin: 0;
 }
 
+.parent-entry {
+  margin-top: 8px;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  color: var(--soft);
+  font-size: 0.95rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.parent-limits {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.parent-limits[hidden],
+#parent-pin[hidden] {
+  display: none;
+}
+
+.limit-btn {
+  font-family: inherit;
+  border: none;
+  background: #fff;
+  color: var(--ink);
+  padding: 12px 10px;
+  border-radius: 16px;
+  min-height: 52px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.limit-btn[data-limit="0"] {
+  grid-column: 1 / -1;
+}
+
+.limit-btn.on {
+  background: linear-gradient(180deg, #63e6be, #12b886);
+  color: #fff;
+  box-shadow: 0 4px 0 #0b8a64;
+}
+
+.time-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(40, 24, 50, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.time-lock[hidden] {
+  display: none;
+}
+
+.time-lock-card {
+  width: min(420px, 100%);
+  background: #fffaf3;
+  border-radius: 32px;
+  padding: 28px 20px 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.time-lock-emoji {
+  margin: 0;
+  font-size: 3rem;
+}
+
+.time-lock-card h2,
+.time-lock-card p {
+  margin: 0;
+}
+
+.time-lock-card p {
+  color: var(--soft);
+  font-weight: 600;
+}
+
 .mini-char {
   position: relative;
   width: 72px;

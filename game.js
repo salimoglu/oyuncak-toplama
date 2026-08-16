@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.22";
+  const GAME_VERSION = window.__OT_VERSION || "0.23";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -264,6 +264,14 @@
     renameId: null,
     padSwipe: null,
     padSwiped: false,
+    parent: {
+      pin: localStorage.getItem("ot-pin") || "",
+      limit: Number(localStorage.getItem("ot-limit") || 0),
+      usedMs: 0,
+      day: "",
+      step: "enter",
+      lastTick: Date.now(),
+    },
   };
 
   function emptyPlayer(id, startCol, startRow) {
@@ -599,6 +607,10 @@
   }
 
   function startRoom(room) {
+    if (timeIsUp()) {
+      lockPlayTime();
+      return;
+    }
     stopRuns();
     const size = boardSize();
     state.cols = size.cols;
@@ -1134,6 +1146,142 @@
     if (state.sound) playTapSound();
   }
 
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  }
+
+  function saveParent() {
+    localStorage.setItem("ot-pin", state.parent.pin);
+    localStorage.setItem("ot-limit", String(state.parent.limit));
+    localStorage.setItem("ot-used", String(Math.floor(state.parent.usedMs)));
+    localStorage.setItem("ot-day", state.parent.day);
+  }
+
+  function rollParentDay() {
+    const day = todayKey();
+    if (state.parent.day !== day) {
+      state.parent.day = day;
+      state.parent.usedMs = 0;
+      saveParent();
+    }
+  }
+
+  function parentLimitMs() {
+    return state.parent.limit * 60 * 1000;
+  }
+
+  function timeIsUp() {
+    if (!state.parent.limit) return false;
+    rollParentDay();
+    return state.parent.usedMs >= parentLimitMs();
+  }
+
+  function sessionCounts() {
+    return ["character", "room", "play", "win"].includes(state.screen);
+  }
+
+  function lockPlayTime() {
+    stopRuns();
+    $("time-lock").hidden = false;
+  }
+
+  function unlockPlayTime() {
+    $("time-lock").hidden = true;
+  }
+
+  function tickParent() {
+    rollParentDay();
+    const now = Date.now();
+    const last = state.parent.lastTick || now;
+    const delta = now - last;
+    state.parent.lastTick = now;
+    if (document.hidden || !state.parent.limit || !$("time-lock").hidden) return;
+    if (!sessionCounts()) return;
+    state.parent.usedMs += delta;
+    if (state.parent.usedMs >= parentLimitMs()) {
+      state.parent.usedMs = parentLimitMs();
+      saveParent();
+      lockPlayTime();
+    } else {
+      saveParent();
+    }
+  }
+
+  function openParentModal() {
+    playTapSound();
+    const pinInput = $("parent-pin");
+    pinInput.value = "";
+    if (!state.parent.pin) {
+      state.parent.step = "setup";
+      $("parent-title").textContent = "Şifre belirle";
+      $("parent-hint").textContent = "4 rakam yaz. Bunu çocuk görmesin.";
+      pinInput.hidden = false;
+      $("parent-limits").hidden = true;
+    } else {
+      state.parent.step = "enter";
+      $("parent-title").textContent = "Ebeveyn";
+      $("parent-hint").textContent = "4 rakamlı şifreyi yaz.";
+      pinInput.hidden = false;
+      $("parent-limits").hidden = true;
+    }
+    $("parent-modal").hidden = false;
+    requestAnimationFrame(() => pinInput.focus());
+  }
+
+  function showParentLimits() {
+    state.parent.step = "limits";
+    $("parent-title").textContent = "Oyun süresi";
+    $("parent-hint").textContent = "Bugün ne kadar oynasın?";
+    $("parent-pin").hidden = true;
+    $("parent-limits").hidden = false;
+    document.querySelectorAll(".limit-btn").forEach((btn) => {
+      btn.classList.toggle("on", Number(btn.dataset.limit) === state.parent.limit);
+    });
+  }
+
+  function confirmParentModal() {
+    const pin = $("parent-pin").value.replace(/\D/g, "");
+    if (state.parent.step === "setup") {
+      if (pin.length !== 4) {
+        $("parent-hint").textContent = "4 rakam olmalı.";
+        return;
+      }
+      state.parent.pin = pin;
+      saveParent();
+      showParentLimits();
+      playTapSound();
+      return;
+    }
+    if (state.parent.step === "enter") {
+      if (pin !== state.parent.pin) {
+        $("parent-hint").textContent = "Şifre uyuşmadı. Tekrar dene.";
+        $("parent-pin").value = "";
+        return;
+      }
+      showParentLimits();
+      playTapSound();
+      return;
+    }
+    closeParentModal();
+  }
+
+  function setParentLimit(minutes) {
+    state.parent.limit = minutes;
+    saveParent();
+    document.querySelectorAll(".limit-btn").forEach((btn) => {
+      btn.classList.toggle("on", Number(btn.dataset.limit) === minutes);
+    });
+    playTapSound();
+    if (!timeIsUp()) unlockPlayTime();
+    else lockPlayTime();
+  }
+
+  function closeParentModal() {
+    $("parent-modal").hidden = true;
+    $("parent-pin").value = "";
+  }
+
   function resetPicks() {
     state.pickStep = 1;
     state.pickKind = "character";
@@ -1151,6 +1299,10 @@
   }
 
   function beginPlay(vsBot) {
+    if (timeIsUp()) {
+      lockPlayTime();
+      return;
+    }
     playTapSound();
     resetPicks();
     state.vsBot = vsBot;
@@ -1167,6 +1319,28 @@
   function bind() {
     $("btn-play").addEventListener("click", () => beginPlay(false));
     $("btn-play-bot").addEventListener("click", () => beginPlay(true));
+    $("btn-parent").addEventListener("click", openParentModal);
+    $("btn-parent-play").addEventListener("click", openParentModal);
+    $("btn-parent-lock").addEventListener("click", openParentModal);
+    $("parent-ok").addEventListener("click", confirmParentModal);
+    $("parent-cancel").addEventListener("click", closeParentModal);
+    $("parent-modal").addEventListener("click", (e) => {
+      if (e.target.id === "parent-modal") closeParentModal();
+    });
+    $("parent-pin").addEventListener("input", (e) => {
+      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
+    });
+    $("parent-pin").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        confirmParentModal();
+      }
+    });
+    $("parent-limits").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-limit]");
+      if (!btn) return;
+      setParentLimit(Number(btn.dataset.limit));
+    });
 
     document.getElementById("diff-row").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-diff]");
@@ -1343,6 +1517,21 @@
       new ResizeObserver(() => syncCellFit()).observe(stage);
     }
     window.addEventListener("resize", syncCellFit);
+    document.addEventListener("visibilitychange", () => {
+      tickParent();
+      saveParent();
+    });
+    setInterval(tickParent, 1000);
+  }
+
+  function initParent() {
+    const day = todayKey();
+    const savedDay = localStorage.getItem("ot-day") || "";
+    state.parent.day = day;
+    state.parent.usedMs = savedDay === day ? Number(localStorage.getItem("ot-used") || 0) : 0;
+    state.parent.lastTick = Date.now();
+    if (savedDay !== day) saveParent();
+    if (timeIsUp()) lockPlayTime();
   }
 
   $("version-badge").textContent = `v${GAME_VERSION}`;
@@ -1350,5 +1539,6 @@
   renderPicks();
   renderRooms();
   updateSoundButton();
+  initParent();
   bind();
 })();

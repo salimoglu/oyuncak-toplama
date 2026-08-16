@@ -1,6 +1,6 @@
 # Oyuncak Toplama
 
-Sürüm **0.22** — 5 yaşındaki çocuklarla birlikte oynanan iki oyunculu web oyunu. Karakterler kodlama bloklarıyla hareket eder; dağınık odadaki oyuncakları kim daha çok toplarsa o kazanır. Tablet ve bilgisayar tarayıcısında çalışır.
+Sürüm **0.23** — 5 yaşındaki çocuklarla birlikte oynanan iki oyunculu web oyunu. Karakterler kodlama bloklarıyla hareket eder; dağınık odadaki oyuncakları kim daha çok toplarsa o kazanır. Tablet ve bilgisayar tarayıcısında çalışır.
 
 ## Nasıl oynanır?
 
@@ -18,7 +18,7 @@ Sıra sıra oynanır: önce 1. oyuncu 6 yön yazıp çalıştırır, sonra 2. oy
 
 ## Sürüm
 
-Şu an: **0.22**
+Şu an: **0.23**
 
 Sürümler `0.1`, `0.2`, … `0.99` gider; sonra `1.0`, ardından `1.1` diye devam eder.
 
@@ -28,6 +28,7 @@ Hemen oyna: [https://salimoglu.github.io/oyuncak-toplama/](https://salimoglu.git
 
 - Bilgisayarda `index.html` dosyasını tarayıcıda açın.
 - Tablette aynı adresi tarayıcıdan açın; ana ekrana eklerseniz uygulama gibi açılır. Sayfayı yenileyince oyun yeni sürüme geçer.
+- Ana menüdeki **Ebeveyn** ile 15 / 30 / 45 / 60 dakikalık günlük süre konur (4 rakamlı şifre). Süre bitince oyun kilitlenir, ertesi gün sıfırlanır.
 
 ## Geliştirme
 
