@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.33";
+  const GAME_VERSION = window.__OT_VERSION || "0.34";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -549,17 +549,35 @@
     renderPicks();
   }
 
+  function pickSlotHtml(id, who, side) {
+    const p = state.players[id];
+    const choosing =
+      (state.pickStep === 1 && id === "p1") || (state.pickStep === 2 && id === "p2");
+    if (!p?.char) {
+      return `<div class="pick-slot ${id} empty ${choosing ? "on" : ""}">
+        <span class="pick-slot-side">${side}</span>
+        <span class="pick-ghost" aria-hidden="true"></span>
+        <strong>${who}</strong>
+        <small>Seç</small>
+      </div>`;
+    }
+    const basket = p.basket ? `<small>${escapeHtml(p.basket.name)}</small>` : "<small> </small>";
+    return `<div class="pick-slot ${id} filled ${choosing ? "on" : ""}">
+      <span class="pick-slot-side">${side}</span>
+      ${miniChar(p.char)}
+      <strong>${escapeHtml(p.char.name)}</strong>
+      ${basket}
+    </div>`;
+  }
+
   function pickedChips() {
-    const chips = [];
-    ["p1", "p2"].forEach((id, index) => {
-      const p = state.players[id];
-      if (!p?.char) return;
-      const basket = p.basket ? ` ${p.basket.name}` : "";
-      chips.push(
-        `<div class="picked-chip" style="background:${p.char.color}">${index + 1}. ${p.char.emoji} ${p.char.name}${basket}</div>`
-      );
-    });
-    $("picked-row").innerHTML = chips.join("");
+    const leftWho = state.vsBot ? "Sen" : "1. oyuncu";
+    const rightWho = state.vsBot ? "Bot" : "2. oyuncu";
+    $("picked-row").innerHTML = `
+      ${pickSlotHtml("p1", leftWho, "Sol")}
+      <div class="pick-vs" aria-hidden="true">↔</div>
+      ${pickSlotHtml("p2", rightWho, "Sağ")}
+    `;
   }
 
   function miniChar(c) {

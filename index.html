@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.33" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.34" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.33</div>
+        <div id="version-badge" class="version-badge">v0.34</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -157,7 +157,7 @@
       <section id="screen-character" class="screen">
         <h2 id="char-title">1. oyuncu kim?</h2>
         <p id="char-hint" class="hint">Solda oynayacak karakteri seç.</p>
-        <div id="picked-row" class="picked-row"></div>
+        <div id="picked-row" class="picked-row pick-stage"></div>
         <div id="character-grid" class="card-grid picks"></div>
         <div id="name-modal" class="name-modal" hidden>
           <div class="name-modal-card" role="dialog" aria-labelledby="name-modal-title">
@@ -269,7 +269,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.33";
+        var CURRENT = "0.34";
         var started = false;
 
         function addScript(src) {
