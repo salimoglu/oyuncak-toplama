@@ -1017,6 +1017,11 @@ h2 {
   gap: 2px;
   outline: 3px dashed #ffd0de;
   min-height: 136px;
+  cursor: pointer;
+}
+
+.pick-slot.locked {
+  cursor: default;
 }
 
 .pick-slot.p1 {

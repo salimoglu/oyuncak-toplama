@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.37";
+  const GAME_VERSION = window.__OT_VERSION || "0.38";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -266,7 +266,7 @@
     turn: "p1",
     audio: null,
     run: { p1: null, p2: null },
-    renameId: null,
+    pickFrom: null,
     padSwipe: null,
     padSwiped: false,
     user: null,
@@ -412,6 +412,12 @@
       renderPicks();
       return;
     }
+    if (state.pickFrom === "room") {
+      state.pickFrom = null;
+      renderRooms();
+      show("room");
+      return;
+    }
     if (state.pickStep === 2) {
       state.pickStep = 1;
       state.pickKind = "basket";
@@ -549,21 +555,41 @@
     renderPicks();
   }
 
+  function picksComplete() {
+    const p1 = state.players.p1?.char && state.players.p1?.basket;
+    if (!p1) return false;
+    if (state.vsBot) return true;
+    return Boolean(state.players.p2?.char && state.players.p2?.basket);
+  }
+
+  function editPick(playerId) {
+    if (playerId === "p2" && state.vsBot) return;
+    if (playerId === "p2" && !state.players.p1?.char) return;
+    if (state.screen === "room") state.pickFrom = "room";
+    state.pickStep = playerId === "p1" ? 1 : 2;
+    state.pickKind = "character";
+    playTapSound();
+    renderPicks();
+    show("character");
+  }
+
   function pickSlotHtml(id, who, side, choosing) {
     const p = state.players[id];
+    const locked = state.vsBot && id === "p2";
     const isOn =
       choosing &&
       ((state.pickStep === 1 && id === "p1") || (state.pickStep === 2 && id === "p2"));
+    const editAttr = locked ? "" : `data-edit="${id}" role="button"`;
     if (!p?.char) {
-      return `<div class="pick-slot ${id} empty ${isOn ? "on" : ""}">
+      return `<div class="pick-slot ${id} empty ${isOn ? "on" : ""} ${locked ? "locked" : ""}" ${editAttr}>
         <span class="pick-slot-side">${side}</span>
         <span class="pick-ghost" aria-hidden="true"></span>
         <strong>${who}</strong>
         <small>Seç</small>
       </div>`;
     }
-    const basketNote = p.basket ? `<small>${escapeHtml(p.basket.name)}</small>` : "<small> </small>";
-    return `<div class="pick-slot ${id} filled ${isOn ? "on" : ""}">
+    const basketNote = p.basket ? `<small>${escapeHtml(p.basket.name)}</small>` : "<small>Değiştir</small>";
+    return `<div class="pick-slot ${id} filled ${isOn ? "on" : ""} ${locked ? "locked" : ""}" ${editAttr}>
       <span class="pick-slot-side">${side}</span>
       ${miniChar(p.char, p.basket, id === "p2" ? "right" : "left")}
       <strong>${escapeHtml(p.char.name)}</strong>
@@ -594,7 +620,8 @@
   }
 
   function renderCharacters() {
-    const taken = state.pickStep === 2 && state.players.p1?.char ? state.players.p1.char.id : null;
+    const other = state.pickStep === 1 ? state.players.p2 : state.players.p1;
+    const taken = other?.char?.id || null;
     $("character-grid").classList.add("picks");
     $("character-grid").innerHTML = CHARACTERS.map((c) => {
       const takenClass = taken === c.id ? "taken" : "";
@@ -616,16 +643,15 @@
         ? "1. oyuncu kim?"
         : "2. oyuncu kim?";
     $("char-hint").textContent = state.vsBot
-      ? "Karakterini seç. İsme dokunursan adı değişir."
-      : state.pickStep === 1
-        ? "Solda oynayacak karakteri seç. İsme dokunursan adı değişir."
-        : "Sağda oynayacak karakteri seç. İsme dokunursan adı değişir.";
+      ? "Karakterini seç. Soldaki karaktere dokunursan sonra da değiştirebilirsin."
+      : "Karaktere dokunarak seç. Soldaki veya sağdaki oluşuma dokunursan karakteri ve sepeti değişir.";
     pickedChips();
   }
 
   function renderBaskets() {
     const player = state.pickStep === 1 ? state.players.p1 : state.players.p2;
-    const taken = state.pickStep === 2 ? state.players.p1?.basket?.id : null;
+    const other = state.pickStep === 1 ? state.players.p2 : state.players.p1;
+    const taken = other?.basket?.id || null;
     $("character-grid").classList.add("picks");
     $("character-grid").innerHTML = BASKETS.map(
       (b) => `
@@ -642,7 +668,7 @@
         </button>`
     ).join("");
     $("char-title").textContent = `${player.char.name} hangi sepeti alsın?`;
-    $("char-hint").textContent = "Seçtiğin sepet sahnede karakterin elinde durur.";
+    $("char-hint").textContent = "Seçtiğin sepet karakterin elinde durur. Oluşuma dokunursan tekrar değiştirebilirsin.";
     pickedChips();
   }
 
@@ -1890,6 +1916,7 @@
   function resetPicks() {
     state.pickStep = 1;
     state.pickKind = "character";
+    state.pickFrom = null;
     state.players = { p1: null, p2: null };
   }
 
@@ -1980,6 +2007,15 @@
 
     $("btn-back").addEventListener("click", goBack);
 
+    const onSlot = (e) => {
+      const slot = e.target.closest("[data-edit]");
+      if (!slot) return;
+      e.preventDefault();
+      editPick(slot.dataset.edit);
+    };
+    $("picked-row").addEventListener("click", onSlot);
+    $("room-picked").addEventListener("click", onSlot);
+
     $("character-grid").addEventListener("click", (e) => {
       const rename = e.target.closest("[data-rename]");
       if (rename) {
@@ -1998,6 +2034,11 @@
           state.players.p1.basket = basket;
           if (state.vsBot) {
             assignBot();
+            state.pickFrom = null;
+            renderRooms();
+            show("room");
+          } else if (picksComplete()) {
+            state.pickFrom = null;
             renderRooms();
             show("room");
           } else {
@@ -2007,6 +2048,7 @@
           }
         } else {
           state.players.p2.basket = basket;
+          state.pickFrom = null;
           renderRooms();
           show("room");
         }
@@ -2018,11 +2060,15 @@
       const char = CHARACTERS.find((c) => c.id === btn.dataset.character);
       playTapSound();
       if (state.pickStep === 1) {
+        const keepP2 = state.players.p2;
         state.players.p1 = emptyPlayer("p1", 0, midRow());
         state.players.p1.char = cloneChar(char);
+        if (keepP2) state.players.p2 = keepP2;
       } else {
+        const keepBot = Boolean(state.players.p2?.isBot);
         state.players.p2 = emptyPlayer("p2", boardSize().cols - 1, midRow());
         state.players.p2.char = cloneChar(char);
+        state.players.p2.isBot = keepBot;
       }
       state.pickKind = "basket";
       renderPicks();
