@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.28";
+  const GAME_VERSION = window.__OT_VERSION || "0.29";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -310,6 +310,8 @@
     const showBack = name !== "home" && name !== "win" && name !== "login";
     $("btn-back").hidden = !showBack;
     app.classList.toggle("has-back", showBack);
+    renderAccount();
+    if (name === "login") closeAccountMenu();
   }
 
   function goBack() {
@@ -1246,9 +1248,10 @@
       return;
     }
     playTapSound();
-    $("parent-title").textContent = "Ebeveyn";
+    closeAccountMenu();
+    $("parent-title").textContent = "Ayarlar";
     $("parent-hint").textContent = "Bugün ne kadar oynasın?";
-    $("parent-user").textContent = state.user.name ? `Hesap: ${state.user.name}` : "";
+    $("parent-user").textContent = state.user.email || state.user.name || "";
     $("parent-limits").hidden = false;
     document.querySelectorAll(".limit-btn").forEach((btn) => {
       btn.classList.toggle("on", Number(btn.dataset.limit) === state.parent.limit);
@@ -1346,12 +1349,60 @@
     setLoginError("");
   }
 
+  function firstName(name) {
+    return String(name || "Aile").trim().split(/\s+/)[0];
+  }
+
+  function closeAccountMenu() {
+    const menu = $("account-menu");
+    const btn = $("btn-account");
+    if (!menu || !btn) return;
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleAccountMenu() {
+    const menu = $("account-menu");
+    const btn = $("btn-account");
+    const open = menu.hidden;
+    menu.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) playTapSound();
+  }
+
+  function renderAccount() {
+    const wrap = $("account-wrap");
+    const user = state.user;
+    if (!wrap) return;
+    if (!user || state.screen === "login") {
+      wrap.hidden = true;
+      closeAccountMenu();
+      return;
+    }
+    wrap.hidden = false;
+    $("account-name").textContent = firstName(user.name);
+    const photo = $("account-photo");
+    const initial = $("account-initial");
+    if (user.photo) {
+      photo.src = user.photo;
+      photo.hidden = false;
+      initial.hidden = true;
+    } else {
+      photo.removeAttribute("src");
+      photo.hidden = true;
+      initial.hidden = false;
+      initial.textContent = firstName(user.name).charAt(0).toUpperCase();
+    }
+    $("account-menu-who").textContent = user.email || user.name || "";
+  }
+
   function enterApp(user) {
     state.user = user;
     localStorage.setItem("ot-session-user", JSON.stringify(user));
     loadParentSettings();
     if (timeIsUp()) lockPlayTime();
     else unlockPlayTime();
+    renderAccount();
     show("home");
   }
 
@@ -1455,10 +1506,13 @@
   }
 
   function userFromFirebase(fbUser, via) {
+    const google = fbUser.providerData?.find((p) => p.providerId === "google.com");
     return {
       id: fbUser.uid,
-      name: fbUser.displayName || fbUser.email || "Aile",
-      via: via || (fbUser.providerData?.[0]?.providerId === "google.com" ? "google" : "password"),
+      name: fbUser.displayName || google?.displayName || fbUser.email || "Aile",
+      email: fbUser.email || google?.email || "",
+      photo: fbUser.photoURL || google?.photoURL || "",
+      via: via || (google ? "google" : "password"),
     };
   }
 
@@ -1597,9 +1651,14 @@
         firebase.auth().onAuthStateChanged((user) => {
           if (!user) return;
           sessionStorage.removeItem("ot-google-pending");
-          if (state.screen === "login" || !state.user || state.user.id !== user.uid) {
-            enterApp(userFromFirebase(user));
+          const next = userFromFirebase(user);
+          if (state.screen === "login" || !state.user || state.user.id !== next.id) {
+            enterApp(next);
+            return;
           }
+          state.user = { ...state.user, ...next };
+          localStorage.setItem("ot-session-user", JSON.stringify(state.user));
+          renderAccount();
         });
         const fbUser = await waitForFirebaseUser(pending ? 5000 : 1800);
         if (fbUser) {
@@ -1667,11 +1726,26 @@
   function bind() {
     $("btn-play").addEventListener("click", () => beginPlay(false));
     $("btn-play-bot").addEventListener("click", () => beginPlay(true));
-    $("btn-parent").addEventListener("click", openParentModal);
     $("btn-parent-play").addEventListener("click", openParentModal);
     $("btn-parent-lock").addEventListener("click", openParentModal);
     $("parent-ok").addEventListener("click", confirmParentModal);
-    $("btn-logout").addEventListener("click", logoutUser);
+    $("btn-account").addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleAccountMenu();
+    });
+    $("btn-account-settings").addEventListener("click", openParentModal);
+    $("btn-account-logout").addEventListener("click", logoutUser);
+    $("account-photo").addEventListener("error", () => {
+      $("account-photo").hidden = true;
+      $("account-initial").hidden = false;
+      $("account-initial").textContent = firstName(state.user?.name).charAt(0).toUpperCase();
+    });
+    document.addEventListener("click", (e) => {
+      if (!$("account-wrap")?.contains(e.target)) closeAccountMenu();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeAccountMenu();
+    });
     $("parent-modal").addEventListener("click", (e) => {
       if (e.target.id === "parent-modal") closeParentModal();
     });

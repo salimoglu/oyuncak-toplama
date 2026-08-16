@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.28" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.29" />
   </head>
   <body>
     <div id="app">
@@ -37,15 +37,36 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.28</div>
-        <button
-          id="sound-btn"
-          class="icon-btn"
-          type="button"
-          aria-label="Sesi aç veya kapat"
-        >
-          🔊
-        </button>
+        <div id="version-badge" class="version-badge">v0.29</div>
+        <div class="chrome-right">
+          <div id="account-wrap" class="account-wrap" hidden>
+            <button
+              id="btn-account"
+              class="account-btn"
+              type="button"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-controls="account-menu"
+            >
+              <img id="account-photo" class="account-photo" alt="" hidden referrerpolicy="no-referrer" />
+              <span id="account-initial" class="account-initial">A</span>
+              <span id="account-name" class="account-name"></span>
+            </button>
+            <div id="account-menu" class="account-menu" hidden role="menu">
+              <p id="account-menu-who" class="account-menu-who"></p>
+              <button type="button" id="btn-account-settings" role="menuitem">⚙️ Ayarlar</button>
+              <button type="button" id="btn-account-logout" role="menuitem">Çıkış</button>
+            </div>
+          </div>
+          <button
+            id="sound-btn"
+            class="icon-btn"
+            type="button"
+            aria-label="Sesi aç veya kapat"
+          >
+            🔊
+          </button>
+        </div>
       </header>
       <div id="stage">
       <section id="screen-login" class="screen active">
@@ -118,7 +139,6 @@
               <button type="button" class="diff-btn on" data-diff="orta">Orta</button>
               <button type="button" class="diff-btn" data-diff="zor">Zor</button>
             </div>
-            <button id="btn-parent" class="parent-entry" type="button">🔒 Ebeveyn</button>
           </div>
         </div>
       </section>
@@ -208,7 +228,7 @@
     </div>
     <div id="parent-modal" class="name-modal parent-modal" hidden>
       <div class="name-modal-card" role="dialog" aria-labelledby="parent-title">
-        <p id="parent-title">Ebeveyn</p>
+        <p id="parent-title">Ayarlar</p>
         <p id="parent-hint" class="hint">Bugün ne kadar oynasın?</p>
         <p id="parent-user" class="parent-user"></p>
         <div id="parent-limits" class="parent-limits">
@@ -219,7 +239,6 @@
           <button type="button" class="limit-btn" data-limit="0">Süre yok</button>
         </div>
         <div class="name-modal-actions">
-          <button type="button" id="btn-logout" class="ghost-btn">Çıkış</button>
           <button type="button" id="parent-ok" class="big-btn">Tamam</button>
         </div>
       </div>
@@ -234,7 +253,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.28";
+        var CURRENT = "0.29";
         var started = false;
 
         function addScript(src) {
