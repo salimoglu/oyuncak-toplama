@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.34";
+  const GAME_VERSION = window.__OT_VERSION || "0.35";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -549,39 +549,49 @@
     renderPicks();
   }
 
-  function pickSlotHtml(id, who, side) {
+  function pickSlotHtml(id, who, side, choosing) {
     const p = state.players[id];
-    const choosing =
-      (state.pickStep === 1 && id === "p1") || (state.pickStep === 2 && id === "p2");
+    const isOn =
+      choosing &&
+      ((state.pickStep === 1 && id === "p1") || (state.pickStep === 2 && id === "p2"));
     if (!p?.char) {
-      return `<div class="pick-slot ${id} empty ${choosing ? "on" : ""}">
+      return `<div class="pick-slot ${id} empty ${isOn ? "on" : ""}">
         <span class="pick-slot-side">${side}</span>
         <span class="pick-ghost" aria-hidden="true"></span>
         <strong>${who}</strong>
         <small>Seç</small>
       </div>`;
     }
-    const basket = p.basket ? `<small>${escapeHtml(p.basket.name)}</small>` : "<small> </small>";
-    return `<div class="pick-slot ${id} filled ${choosing ? "on" : ""}">
+    const basketNote = p.basket ? `<small>${escapeHtml(p.basket.name)}</small>` : "<small> </small>";
+    return `<div class="pick-slot ${id} filled ${isOn ? "on" : ""}">
       <span class="pick-slot-side">${side}</span>
-      ${miniChar(p.char)}
+      ${miniChar(p.char, p.basket)}
       <strong>${escapeHtml(p.char.name)}</strong>
-      ${basket}
+      ${basketNote}
     </div>`;
   }
 
-  function pickedChips() {
+  function pickedChips(choosing = true) {
     const leftWho = state.vsBot ? "Sen" : "1. oyuncu";
     const rightWho = state.vsBot ? "Bot" : "2. oyuncu";
-    $("picked-row").innerHTML = `
-      ${pickSlotHtml("p1", leftWho, "Sol")}
+    const html = `
+      ${pickSlotHtml("p1", leftWho, "Sol", choosing)}
       <div class="pick-vs" aria-hidden="true">↔</div>
-      ${pickSlotHtml("p2", rightWho, "Sağ")}
+      ${pickSlotHtml("p2", rightWho, "Sağ", choosing)}
     `;
+    document.querySelectorAll(".pick-stage").forEach((el) => {
+      el.innerHTML = html;
+    });
   }
 
-  function miniChar(c) {
-    return `<div class="mini-char" data-id="${c.id}" style="--skin:${c.skin};--hair:${c.hair};--clothes:${c.clothes}">
+  function miniChar(c, basket) {
+    const basketHtml = basket
+      ? `<div class="mini-basket" style="--basket:${basket.color};--basket-rim:${basket.rim}">
+          <i class="mini-basket-handle"></i>
+          <i class="mini-basket-body"></i>
+        </div>`
+      : "";
+    return `<div class="mini-char ${basket ? "has-basket" : ""}" data-id="${c.id}" style="--skin:${c.skin};--hair:${c.hair};--clothes:${c.clothes}">
       <div class="mini-ear left"></div>
       <div class="mini-ear right"></div>
       <div class="mini-hair"></div>
@@ -591,6 +601,7 @@
         <span class="mini-smile"></span>
       </div>
       <div class="mini-body"></div>
+      ${basketHtml}
     </div>`;
   }
 
@@ -662,6 +673,7 @@
           <span class="sub">${r.toys.length} oyuncak${done ? " · ⭐" : ""}</span>
         </button>`;
     }).join("");
+    pickedChips(false);
   }
 
   function styleActor(el, player) {

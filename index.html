@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.34" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.35" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.34</div>
+        <div id="version-badge" class="version-badge">v0.35</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -182,6 +182,7 @@
       <section id="screen-room" class="screen">
         <h2>Hangi oda dağınık?</h2>
         <p class="hint">Toplanacak odayı seç. En çok toplayan kazanır.</p>
+        <div id="room-picked" class="picked-row pick-stage"></div>
         <div id="room-grid" class="card-grid rooms picks"></div>
       </section>
 
@@ -269,7 +270,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.34";
+        var CURRENT = "0.35";
         var started = false;
 
         function addScript(src) {
