@@ -1,14 +1,14 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.10";
+  const GAME_VERSION = "0.11";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
 
   function boardSize() {
     const landscape = window.matchMedia("(orientation: landscape)").matches;
-    if (landscape) return { cols: 8, rows: 5 };
-    return { cols: 6, rows: 5 };
+    if (landscape) return { cols: 10, rows: 6 };
+    return { cols: 8, rows: 6 };
   }
 
   function midRow() {
@@ -208,6 +208,7 @@
   const CHEERS = ["Aferin!", "Süper!", "Harika!", "Bravo!", "Yaşasın!", "Çok güzel!"];
 
   const ACTOR_HTML = `
+    <div class="char-fit">
     <div class="char-shadow"></div>
     <div class="char-figure">
       <div class="char-hair-back"></div>
@@ -237,6 +238,7 @@
       </div>
     </div>
     <div class="char-label"></div>
+    </div>
   `;
 
   const state = {
@@ -246,8 +248,8 @@
     players: { p1: null, p2: null },
     room: ROOMS[0],
     toys: [],
-    cols: 6,
-    rows: 5,
+    cols: 8,
+    rows: 6,
     ended: false,
     sound: localStorage.getItem("ot-sound") !== "off",
     completed: JSON.parse(localStorage.getItem("ot-done") || "[]"),
@@ -515,10 +517,25 @@
     show("play");
   }
 
+  function syncCellFit() {
+    const stage = $("room-stage");
+    const cell = $("board")?.querySelector(".cell");
+    if (!stage) return;
+    stage.style.setProperty("--cols", String(state.cols));
+    stage.style.setProperty("--rows", String(state.rows));
+    if (!cell) return;
+    const { width, height } = cell.getBoundingClientRect();
+    if (!width || !height) return;
+    const scale = Math.min(width / 58, (height - 4) / 108, 1);
+    stage.style.setProperty("--piece-scale", String(Math.max(0.38, scale)));
+  }
+
   function renderBoard() {
     const board = $("board");
     board.style.setProperty("--cols", state.cols);
     board.style.setProperty("--rows", state.rows);
+    $("room-stage").style.setProperty("--cols", state.cols);
+    $("room-stage").style.setProperty("--rows", state.rows);
     const cells = [];
     for (let row = 0; row < state.rows; row += 1) {
       for (let col = 0; col < state.cols; col += 1) {
@@ -536,6 +553,7 @@
       <div id="actor-p2" class="character actor" data-side="right">${ACTOR_HTML}</div>`;
     styleActor($("actor-p1"), state.players.p1);
     styleActor($("actor-p2"), state.players.p2);
+    requestAnimationFrame(syncCellFit);
   }
 
   function refreshToys() {
@@ -1176,6 +1194,12 @@
       },
       { passive: false }
     );
+
+    const stage = $("room-stage");
+    if (window.ResizeObserver && stage) {
+      new ResizeObserver(() => syncCellFit()).observe(stage);
+    }
+    window.addEventListener("resize", syncCellFit);
   }
 
   $("version-badge").textContent = `v${GAME_VERSION}`;

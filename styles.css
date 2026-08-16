@@ -1315,9 +1315,9 @@ h2 {
 
 .board {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 6), 1fr);
-  grid-template-rows: repeat(var(--rows, 5), 1fr);
-  gap: 3px;
+  grid-template-columns: repeat(var(--cols, 8), 1fr);
+  grid-template-rows: repeat(var(--rows, 6), 1fr);
+  gap: 2px;
 }
 
 .actors {
@@ -1327,14 +1327,22 @@ h2 {
 
 .cell {
   background: rgba(255, 255, 255, 0.42);
-  border-radius: 10px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
   box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.06);
+  container-type: size;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .cell-toy {
-  font-size: clamp(1.1rem, 3.2vw, 1.8rem);
+  font-size: 1.15rem;
+  font-size: min(1.65rem, 58cqmin);
+  line-height: 1;
+  max-width: 86%;
+  max-height: 86%;
   animation: bob 2.2s ease-in-out infinite;
 }
 
@@ -1511,11 +1519,22 @@ h2 {
 
 .character.actor {
   position: absolute;
-  width: 56px;
+  width: calc(100% / var(--cols, 8));
+  height: calc(100% / var(--rows, 6));
   z-index: 3;
-  transform: translate(-50%, -62%);
+  transform: translate(-50%, -50%);
   transition: left 0.38s cubic-bezier(0.22, 0.8, 0.28, 1), top 0.38s cubic-bezier(0.22, 0.8, 0.28, 1);
   pointer-events: none;
+}
+
+.char-fit {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  width: 56px;
+  height: 108px;
+  transform: translateX(-50%) scale(var(--piece-scale, 1));
+  transform-origin: bottom center;
 }
 
 .character.walking .char-figure {
@@ -1533,7 +1552,7 @@ h2 {
 
 .char-shadow {
   position: absolute;
-  bottom: 2px;
+  bottom: 16px;
   left: 50%;
   width: 36px;
   height: 9px;
@@ -2244,10 +2263,6 @@ h2 {
     grid-row: auto;
     min-width: 0;
   }
-
-  .character.actor {
-    width: 54px;
-  }
 }
 
 @media (orientation: portrait) and (max-width: 900px) {
@@ -2289,10 +2304,6 @@ h2 {
 
   .dock-keys {
     display: none;
-  }
-
-  .character.actor {
-    width: 50px;
   }
 }
 
