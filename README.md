@@ -17,9 +17,7 @@ Zaman sınırı ve kaybetme yok. Amaç birlikte toplamak.
 - Bilgisayarda `index.html` dosyasını tarayıcıda açın.
 - Tablette aynı adresi tarayıcıdan açın; ana ekrana eklerseniz uygulama gibi açılır.
 
-Yayınlanmış hali GitHub Pages üzerinde olur:
-
-`https://<kullanıcı-adın>.github.io/oyuncak-toplama/`
+Hemen oyna: [https://salimoglu.github.io/oyuncak-toplama/](https://salimoglu.github.io/oyuncak-toplama/)
 
 ## Geliştirme
 
