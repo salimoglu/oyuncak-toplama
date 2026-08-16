@@ -28,12 +28,15 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.15" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.16" />
   </head>
   <body>
     <div id="app">
+      <button id="btn-back" class="icon-btn small back-btn" type="button" aria-label="Geri" hidden>
+        ←
+      </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.15</div>
+        <div id="version-badge" class="version-badge">v0.16</div>
         <button
           id="sound-btn"
           class="icon-btn"
@@ -70,7 +73,6 @@
         <p id="char-hint" class="hint">Solda oynayacak karakteri seç.</p>
         <div id="picked-row" class="picked-row"></div>
         <div id="character-grid" class="card-grid picks"></div>
-        <button id="btn-back-home" class="text-btn" type="button">← Geri</button>
         <div id="name-modal" class="name-modal" hidden>
           <div class="name-modal-card" role="dialog" aria-labelledby="name-modal-title">
             <p id="name-modal-title">İsmini yaz</p>
@@ -95,14 +97,10 @@
         <h2>Hangi oda dağınık?</h2>
         <p class="hint">Toplanacak odayı seç. En çok toplayan kazanır.</p>
         <div id="room-grid" class="card-grid rooms picks"></div>
-        <button id="btn-back-character" class="text-btn" type="button">← Geri</button>
       </section>
 
       <section id="screen-play" class="screen play">
         <header class="play-bar">
-          <button id="btn-exit-play" class="icon-btn small" type="button" aria-label="Çık">
-            ←
-          </button>
           <div class="play-title">
             <span id="play-room-emoji"></span>
             <span id="play-room-name"></span>
@@ -147,7 +145,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.15";
+        var CURRENT = "0.16";
         var started = false;
 
         function loadGame(version) {

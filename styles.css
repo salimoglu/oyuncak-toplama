@@ -59,6 +59,21 @@ body {
   z-index: 6;
 }
 
+.back-btn {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 12;
+}
+
+#app.has-back .chrome {
+  padding-left: 72px;
+}
+
+#app.playing.has-back .play-bar {
+  padding-left: 64px;
+}
+
 #stage {
   position: relative;
   flex: 1;

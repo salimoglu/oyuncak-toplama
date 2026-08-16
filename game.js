@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.15";
+  const GAME_VERSION = window.__OT_VERSION || "0.16";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -292,7 +292,42 @@
     Object.entries(screens).forEach(([key, el]) => {
       el.classList.toggle("active", key === name);
     });
-    document.getElementById("app").classList.toggle("playing", name === "play");
+    const app = document.getElementById("app");
+    app.classList.toggle("playing", name === "play");
+    const showBack = name !== "home" && name !== "win";
+    $("btn-back").hidden = !showBack;
+    app.classList.toggle("has-back", showBack);
+  }
+
+  function goBack() {
+    playTapSound();
+    if (state.screen === "play") {
+      stopRuns();
+      renderRooms();
+      show("room");
+      return;
+    }
+    if (state.screen === "room") {
+      state.pickStep = state.vsBot ? 1 : 2;
+      state.pickKind = "basket";
+      renderPicks();
+      show("character");
+      return;
+    }
+    if (state.screen !== "character") return;
+    if (state.pickKind === "basket") {
+      state.pickKind = "character";
+      renderPicks();
+      return;
+    }
+    if (state.pickStep === 2) {
+      state.pickStep = 1;
+      state.pickKind = "basket";
+      renderPicks();
+      return;
+    }
+    resetPicks();
+    show("home");
   }
 
   function audioCtx() {
@@ -1127,28 +1162,7 @@
       playTapSound();
     });
 
-    $("btn-back-home").addEventListener("click", () => {
-      if (state.pickKind === "basket") {
-        state.pickKind = "character";
-        renderPicks();
-        return;
-      }
-      if (state.pickStep === 2) {
-        state.pickStep = 1;
-        state.pickKind = "basket";
-        renderPicks();
-        return;
-      }
-      resetPicks();
-      show("home");
-    });
-
-    $("btn-back-character").addEventListener("click", () => {
-      state.pickStep = state.vsBot ? 1 : 2;
-      state.pickKind = "basket";
-      renderPicks();
-      show("character");
-    });
+    $("btn-back").addEventListener("click", goBack);
 
     $("character-grid").addEventListener("click", (e) => {
       const rename = e.target.closest("[data-rename]");
@@ -1234,12 +1248,6 @@
       }
       const eraseBtn = e.target.closest("[data-erase]");
       if (eraseBtn) eraseCommand(eraseBtn.dataset.erase);
-    });
-
-    $("btn-exit-play").addEventListener("click", () => {
-      stopRuns();
-      renderRooms();
-      show("room");
     });
 
     $("btn-next-room").addEventListener("click", () => {
