@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.25";
+  const GAME_VERSION = window.__OT_VERSION || "0.26";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -1449,48 +1449,84 @@
     }
   }
 
+  function userFromFirebase(fbUser, via) {
+    return {
+      id: fbUser.uid,
+      name: fbUser.displayName || fbUser.email || "Aile",
+      via: via || (fbUser.providerData?.[0]?.providerId === "google.com" ? "google" : "password"),
+    };
+  }
+
+  function friendlyAuthError(err) {
+    const code = err && err.code;
+    if (code === "auth/unauthorized-domain") {
+      return "Bu adres Firebase'de yetkili değil. Authentication → Settings → Authorized domains içine salimoglu.github.io ekle.";
+    }
+    if (code === "auth/operation-not-allowed") {
+      return "Google girişi kapalı. Firebase → Authentication → Sign-in method içinde Google'ı aç.";
+    }
+    if (code === "auth/popup-blocked" || code === "auth/popup-closed-by-user") {
+      return "Google penceresi açılmadı. Tekrar dene.";
+    }
+    if (code === "auth/network-request-failed") {
+      return "İnternet bağlantısı yok. Tekrar dene.";
+    }
+    if (code === "auth/internal-error" || code === "auth/configuration-not-found") {
+      return "Google ayarı eksik. Firebase'de Google girişini açıp destek e-postasını kaydet.";
+    }
+    if (code === "auth/account-exists-with-different-credential") {
+      return "Bu Gmail başka bir girişle kayıtlı. İsim ve şifre ile dene.";
+    }
+    return err?.message || "Gmail bağlantısı olmadı.";
+  }
+
+  function googleProvider() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+    provider.addScope("email");
+    provider.addScope("profile");
+    return provider;
+  }
+
   async function loginWithGoogle() {
     setLoginError("");
+    initFirebase();
     if (!firebaseOn()) {
-      setLoginError("Gmail için bir kez Firebase kurulumu gerekir. Şimdilik isim ve şifre ile gir.");
+      setLoginError("Firebase yüklenemedi. Sayfayı yenile veya isim ve şifre ile gir.");
       return;
     }
+    $("btn-google").textContent = "Gmail açılıyor…";
     try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      const cred = await firebase.auth().signInWithPopup(provider);
-      const user = {
-        id: cred.user.uid,
-        name: cred.user.displayName || cred.user.email || "Aile",
-        via: "google",
-      };
-      playTapSound();
-      enterApp(user);
+      firebase.auth().languageCode = "tr";
+      await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      await firebase.auth().signInWithRedirect(googleProvider());
     } catch (err) {
-      if (err.code === "auth/popup-blocked" || err.code === "auth/operation-not-supported-in-this-environment") {
-        firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());
-        return;
-      }
-      setLoginError("Gmail bağlantısı olmadı. İsim ve şifre ile girebilirsin.");
+      $("btn-google").textContent = "Gmail ile bağlan";
+      setLoginError(friendlyAuthError(err));
     }
   }
 
-  function restoreSession() {
+  async function restoreSession() {
     initFirebase();
     if (firebaseOn()) {
-      firebase
-        .auth()
-        .getRedirectResult()
-        .then((cred) => {
-          if (cred?.user) {
-            enterApp({
-              id: cred.user.uid,
-              name: cred.user.displayName || cred.user.email || "Aile",
-              via: "google",
-            });
-          }
-        })
-        .catch(() => {});
+      try {
+        firebase.auth().languageCode = "tr";
+        const cred = await firebase.auth().getRedirectResult();
+        if (cred?.user) {
+          playTapSound();
+          enterApp(userFromFirebase(cred.user, "google"));
+          return true;
+        }
+        if (firebase.auth().currentUser) {
+          enterApp(userFromFirebase(firebase.auth().currentUser));
+          return true;
+        }
+      } catch (err) {
+        setAuthMode("login");
+        show("login");
+        setLoginError(friendlyAuthError(err));
+        return false;
+      }
     }
     try {
       const saved = JSON.parse(localStorage.getItem("ot-session-user") || "null");

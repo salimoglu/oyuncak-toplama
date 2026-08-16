@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.25" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.26" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.25</div>
+        <div id="version-badge" class="version-badge">v0.26</div>
         <button
           id="sound-btn"
           class="icon-btn"
@@ -210,7 +210,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.25";
+        var CURRENT = "0.26";
         var started = false;
 
         function addScript(src) {
@@ -235,8 +235,17 @@
             var cfg = window.OT_FIREBASE;
             var chain = Promise.resolve();
             if (cfg && cfg.apiKey) {
-              chain = addScript("https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js").then(function () {
-                return addScript("https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js");
+              chain = addScript("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js").then(function (ok) {
+                if (!ok) {
+                  return addScript("https://cdnjs.cloudflare.com/ajax/libs/firebase/10.14.1/firebase-app-compat.min.js");
+                }
+                return true;
+              }).then(function (ok) {
+                if (!ok) return false;
+                return addScript("https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js").then(function (authOk) {
+                  if (authOk) return true;
+                  return addScript("https://cdnjs.cloudflare.com/ajax/libs/firebase/10.14.1/firebase-auth-compat.min.js");
+                });
               });
             }
             return chain.then(function () {
