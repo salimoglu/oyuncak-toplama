@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.23";
+  const GAME_VERSION = window.__OT_VERSION || "0.24";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -264,12 +264,12 @@
     renameId: null,
     padSwipe: null,
     padSwiped: false,
+    user: null,
+    authMode: "login",
     parent: {
-      pin: localStorage.getItem("ot-pin") || "",
-      limit: Number(localStorage.getItem("ot-limit") || 0),
+      limit: 0,
       usedMs: 0,
       day: "",
-      step: "enter",
       lastTick: Date.now(),
     },
   };
@@ -291,6 +291,7 @@
 
   const $ = (id) => document.getElementById(id);
   const screens = {
+    login: $("screen-login"),
     home: $("screen-home"),
     character: $("screen-character"),
     room: $("screen-room"),
@@ -306,7 +307,7 @@
     });
     const app = document.getElementById("app");
     app.classList.toggle("playing", name === "play");
-    const showBack = name !== "home" && name !== "win";
+    const showBack = name !== "home" && name !== "win" && name !== "login";
     $("btn-back").hidden = !showBack;
     app.classList.toggle("has-back", showBack);
   }
@@ -1151,11 +1152,42 @@
     return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
   }
 
+  function parentStorageKey() {
+    return `ot-parent-${state.user?.id || "guest"}`;
+  }
+
   function saveParent() {
-    localStorage.setItem("ot-pin", state.parent.pin);
-    localStorage.setItem("ot-limit", String(state.parent.limit));
-    localStorage.setItem("ot-used", String(Math.floor(state.parent.usedMs)));
-    localStorage.setItem("ot-day", state.parent.day);
+    if (!state.user) return;
+    localStorage.setItem(
+      parentStorageKey(),
+      JSON.stringify({
+        limit: state.parent.limit,
+        usedMs: Math.floor(state.parent.usedMs),
+        day: state.parent.day,
+      })
+    );
+  }
+
+  function loadParentSettings() {
+    const day = todayKey();
+    let saved = {};
+    try {
+      saved = JSON.parse(localStorage.getItem(parentStorageKey()) || "{}");
+    } catch (err) {
+      saved = {};
+    }
+    if (!saved.limit && !saved.day && localStorage.getItem("ot-limit")) {
+      saved = {
+        limit: Number(localStorage.getItem("ot-limit") || 0),
+        usedMs: Number(localStorage.getItem("ot-used") || 0),
+        day: localStorage.getItem("ot-day") || day,
+      };
+    }
+    state.parent.day = day;
+    state.parent.limit = Number(saved.limit || 0);
+    state.parent.usedMs = saved.day === day ? Number(saved.usedMs || 0) : 0;
+    state.parent.lastTick = Date.now();
+    saveParent();
   }
 
   function rollParentDay() {
@@ -1209,60 +1241,22 @@
   }
 
   function openParentModal() {
-    playTapSound();
-    const pinInput = $("parent-pin");
-    pinInput.value = "";
-    if (!state.parent.pin) {
-      state.parent.step = "setup";
-      $("parent-title").textContent = "Şifre belirle";
-      $("parent-hint").textContent = "4 rakam yaz. Bunu çocuk görmesin.";
-      pinInput.hidden = false;
-      $("parent-limits").hidden = true;
-    } else {
-      state.parent.step = "enter";
-      $("parent-title").textContent = "Ebeveyn";
-      $("parent-hint").textContent = "4 rakamlı şifreyi yaz.";
-      pinInput.hidden = false;
-      $("parent-limits").hidden = true;
+    if (!state.user) {
+      show("login");
+      return;
     }
-    $("parent-modal").hidden = false;
-    requestAnimationFrame(() => pinInput.focus());
-  }
-
-  function showParentLimits() {
-    state.parent.step = "limits";
-    $("parent-title").textContent = "Oyun süresi";
+    playTapSound();
+    $("parent-title").textContent = "Ebeveyn";
     $("parent-hint").textContent = "Bugün ne kadar oynasın?";
-    $("parent-pin").hidden = true;
+    $("parent-user").textContent = state.user.name ? `Hesap: ${state.user.name}` : "";
     $("parent-limits").hidden = false;
     document.querySelectorAll(".limit-btn").forEach((btn) => {
       btn.classList.toggle("on", Number(btn.dataset.limit) === state.parent.limit);
     });
+    $("parent-modal").hidden = false;
   }
 
   function confirmParentModal() {
-    const pin = $("parent-pin").value.replace(/\D/g, "");
-    if (state.parent.step === "setup") {
-      if (pin.length !== 4) {
-        $("parent-hint").textContent = "4 rakam olmalı.";
-        return;
-      }
-      state.parent.pin = pin;
-      saveParent();
-      showParentLimits();
-      playTapSound();
-      return;
-    }
-    if (state.parent.step === "enter") {
-      if (pin !== state.parent.pin) {
-        $("parent-hint").textContent = "Şifre uyuşmadı. Tekrar dene.";
-        $("parent-pin").value = "";
-        return;
-      }
-      showParentLimits();
-      playTapSound();
-      return;
-    }
     closeParentModal();
   }
 
@@ -1279,7 +1273,237 @@
 
   function closeParentModal() {
     $("parent-modal").hidden = true;
-    $("parent-pin").value = "";
+  }
+
+  function hexFromBuffer(buf) {
+    return Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  async function hashSecret(value, salt) {
+    const data = new TextEncoder().encode(`${salt}:${value}`);
+    const buf = await crypto.subtle.digest("SHA-256", data);
+    return hexFromBuffer(buf);
+  }
+
+  function nameKey(name) {
+    return String(name || "")
+      .trim()
+      .toLocaleLowerCase("tr")
+      .replace(/ı/g, "i")
+      .replace(/ğ/g, "g")
+      .replace(/ü/g, "u")
+      .replace(/ş/g, "s")
+      .replace(/ö/g, "o")
+      .replace(/ç/g, "c")
+      .replace(/[^a-z0-9]/g, "");
+  }
+
+  function readAccounts() {
+    try {
+      return JSON.parse(localStorage.getItem("ot-accounts") || "[]");
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function writeAccounts(list) {
+    localStorage.setItem("ot-accounts", JSON.stringify(list));
+  }
+
+  function firebaseOn() {
+    return Boolean(window.firebase && window.OT_FIREBASE?.apiKey);
+  }
+
+  function initFirebase() {
+    if (!window.OT_FIREBASE?.apiKey || !window.firebase) return;
+    if (firebase.apps && firebase.apps.length) return;
+    firebase.initializeApp(window.OT_FIREBASE);
+  }
+
+  function setLoginError(text) {
+    const el = $("login-error");
+    if (!text) {
+      el.hidden = true;
+      el.textContent = "";
+      return;
+    }
+    el.hidden = false;
+    el.textContent = text;
+  }
+
+  function setAuthMode(mode) {
+    state.authMode = mode;
+    const register = mode === "register";
+    $("login-tagline").textContent = register ? "Aile hesabı oluştur." : "Aile hesabınla gir.";
+    $("btn-login").textContent = register ? "Kayıt ol" : "Giriş yap";
+    $("btn-auth-mode").textContent = register ? "Hesabın var mı? Giriş yap" : "Hesabın yok mu? Kayıt ol";
+    $("login-pass2-wrap").hidden = !register;
+    $("login-pass2").required = register;
+    $("login-pass").autocomplete = register ? "new-password" : "current-password";
+    setLoginError("");
+  }
+
+  function enterApp(user) {
+    state.user = user;
+    localStorage.setItem("ot-session-user", JSON.stringify(user));
+    loadParentSettings();
+    if (timeIsUp()) lockPlayTime();
+    else unlockPlayTime();
+    show("home");
+  }
+
+  function logoutUser() {
+    localStorage.removeItem("ot-session-user");
+    state.user = null;
+    closeParentModal();
+    unlockPlayTime();
+    if (firebaseOn()) {
+      firebase.auth().signOut().catch(() => {});
+    }
+    $("login-pass").value = "";
+    $("login-pass2").value = "";
+    setAuthMode("login");
+    show("login");
+  }
+
+  async function registerLocal(name, pass) {
+    const key = nameKey(name);
+    if (key.length < 2) throw new Error("İsim en az 2 harf olsun.");
+    if (pass.length < 4) throw new Error("Şifre en az 4 karakter olsun.");
+    const accounts = readAccounts();
+    if (accounts.some((a) => a.key === key)) throw new Error("Bu isim alınmış. Giriş yap veya başka isim dene.");
+    const salt = hexFromBuffer(crypto.getRandomValues(new Uint8Array(8)));
+    const hash = await hashSecret(pass, salt);
+    const user = { id: `local-${key}`, name: name.trim(), key, salt, hash, via: "password" };
+    accounts.push(user);
+    writeAccounts(accounts);
+    return { id: user.id, name: user.name, via: "password" };
+  }
+
+  async function loginLocal(name, pass) {
+    const key = nameKey(name);
+    const accounts = readAccounts();
+    const found = accounts.find((a) => a.key === key);
+    if (!found) throw new Error("Bu isimle hesap yok. Kayıt ol.");
+    const hash = await hashSecret(pass, found.salt);
+    if (hash !== found.hash) throw new Error("Şifre uyuşmadı.");
+    return { id: found.id, name: found.name, via: "password" };
+  }
+
+  async function registerFirebase(name, pass) {
+    const key = nameKey(name);
+    const email = `${key}@oyuncak-toplama.web.app`;
+    const cred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: name.trim() });
+    return { id: cred.user.uid, name: name.trim(), via: "password" };
+  }
+
+  async function loginFirebase(name, pass) {
+    const key = nameKey(name);
+    const email = `${key}@oyuncak-toplama.web.app`;
+    const cred = await firebase.auth().signInWithEmailAndPassword(email, pass);
+    return { id: cred.user.uid, name: cred.user.displayName || name.trim(), via: "password" };
+  }
+
+  async function submitAuth(event) {
+    event.preventDefault();
+    const name = $("login-name").value.trim();
+    const pass = $("login-pass").value;
+    const pass2 = $("login-pass2").value;
+    setLoginError("");
+    try {
+      if (state.authMode === "register") {
+        if (pass !== pass2) throw new Error("Şifreler aynı değil.");
+        let user;
+        if (firebaseOn()) {
+          try {
+            user = await registerFirebase(name, pass);
+          } catch (err) {
+            if (err.code === "auth/email-already-in-use") throw new Error("Bu isim alınmış. Giriş yap.");
+            if (err.code === "auth/weak-password") throw new Error("Şifre en az 6 karakter olsun.");
+            user = await registerLocal(name, pass);
+          }
+        } else {
+          user = await registerLocal(name, pass);
+        }
+        playTapSound();
+        enterApp(user);
+        return;
+      }
+      let user;
+      if (firebaseOn()) {
+        try {
+          user = await loginFirebase(name, pass);
+        } catch (err) {
+          user = await loginLocal(name, pass);
+        }
+      } else {
+        user = await loginLocal(name, pass);
+      }
+      playTapSound();
+      enterApp(user);
+    } catch (err) {
+      setLoginError(err.message || "Giriş olmadı.");
+    }
+  }
+
+  async function loginWithGoogle() {
+    setLoginError("");
+    if (!firebaseOn()) {
+      setLoginError("Gmail için bir kez Firebase kurulumu gerekir. Şimdilik isim ve şifre ile gir.");
+      return;
+    }
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      const cred = await firebase.auth().signInWithPopup(provider);
+      const user = {
+        id: cred.user.uid,
+        name: cred.user.displayName || cred.user.email || "Aile",
+        via: "google",
+      };
+      playTapSound();
+      enterApp(user);
+    } catch (err) {
+      if (err.code === "auth/popup-blocked" || err.code === "auth/operation-not-supported-in-this-environment") {
+        firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+        return;
+      }
+      setLoginError("Gmail bağlantısı olmadı. İsim ve şifre ile girebilirsin.");
+    }
+  }
+
+  function restoreSession() {
+    initFirebase();
+    if (firebaseOn()) {
+      firebase
+        .auth()
+        .getRedirectResult()
+        .then((cred) => {
+          if (cred?.user) {
+            enterApp({
+              id: cred.user.uid,
+              name: cred.user.displayName || cred.user.email || "Aile",
+              via: "google",
+            });
+          }
+        })
+        .catch(() => {});
+    }
+    try {
+      const saved = JSON.parse(localStorage.getItem("ot-session-user") || "null");
+      if (saved?.id && saved?.name) {
+        enterApp(saved);
+        return true;
+      }
+    } catch (err) {
+      /* ignore */
+    }
+    setAuthMode("login");
+    show("login");
+    return false;
   }
 
   function resetPicks() {
@@ -1299,6 +1523,10 @@
   }
 
   function beginPlay(vsBot) {
+    if (!state.user) {
+      show("login");
+      return;
+    }
     if (timeIsUp()) {
       lockPlayTime();
       return;
@@ -1323,24 +1551,22 @@
     $("btn-parent-play").addEventListener("click", openParentModal);
     $("btn-parent-lock").addEventListener("click", openParentModal);
     $("parent-ok").addEventListener("click", confirmParentModal);
-    $("parent-cancel").addEventListener("click", closeParentModal);
+    $("btn-logout").addEventListener("click", logoutUser);
     $("parent-modal").addEventListener("click", (e) => {
       if (e.target.id === "parent-modal") closeParentModal();
-    });
-    $("parent-pin").addEventListener("input", (e) => {
-      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 4);
-    });
-    $("parent-pin").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        confirmParentModal();
-      }
     });
     $("parent-limits").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-limit]");
       if (!btn) return;
       setParentLimit(Number(btn.dataset.limit));
     });
+    $("login-form").addEventListener("submit", (e) => {
+      submitAuth(e);
+    });
+    $("btn-auth-mode").addEventListener("click", () => {
+      setAuthMode(state.authMode === "login" ? "register" : "login");
+    });
+    $("btn-google").addEventListener("click", loginWithGoogle);
 
     document.getElementById("diff-row").addEventListener("click", (e) => {
       const btn = e.target.closest("[data-diff]");
@@ -1524,21 +1750,11 @@
     setInterval(tickParent, 1000);
   }
 
-  function initParent() {
-    const day = todayKey();
-    const savedDay = localStorage.getItem("ot-day") || "";
-    state.parent.day = day;
-    state.parent.usedMs = savedDay === day ? Number(localStorage.getItem("ot-used") || 0) : 0;
-    state.parent.lastTick = Date.now();
-    if (savedDay !== day) saveParent();
-    if (timeIsUp()) lockPlayTime();
-  }
-
   $("version-badge").textContent = `v${GAME_VERSION}`;
   updateDiffButtons();
   renderPicks();
   renderRooms();
   updateSoundButton();
-  initParent();
   bind();
+  restoreSession();
 })();

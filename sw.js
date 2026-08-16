@@ -1,4 +1,4 @@
-const VERSION = "0.23";
+const VERSION = "0.24";
 const CACHE_NAME = "oyuncak-toplama-" + VERSION;
 
 self.addEventListener("install", (event) => {
@@ -10,6 +10,7 @@ self.addEventListener("install", (event) => {
         "./index.html",
         "./styles.css?v=" + VERSION,
         "./game.js?v=" + VERSION,
+        "./firebase-config.js?v=" + VERSION,
         "./manifest.json",
         "./icon.svg",
       ])

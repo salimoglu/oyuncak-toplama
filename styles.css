@@ -487,6 +487,54 @@ h2 {
   margin: 0;
 }
 
+.login-hero {
+  width: min(420px, 100%);
+}
+
+.login-form {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.login-field[hidden] {
+  display: none;
+}
+
+.login-field input {
+  width: 100%;
+  min-height: 52px;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  font: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 0 14px;
+  box-shadow: var(--shadow);
+}
+
+.login-error {
+  margin: 0;
+  color: #c73462;
+  font-weight: 700;
+}
+
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.parent-user {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--soft);
+  font-weight: 600;
+}
+
 .parent-entry {
   margin-top: 8px;
   background: transparent;

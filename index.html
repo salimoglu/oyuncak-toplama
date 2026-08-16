@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.23" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.24" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.23</div>
+        <div id="version-badge" class="version-badge">v0.24</div>
         <button
           id="sound-btn"
           class="icon-btn"
@@ -48,7 +48,36 @@
         </button>
       </header>
       <div id="stage">
-      <section id="screen-home" class="screen active">
+      <section id="screen-login" class="screen active">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+        <div class="home-hero login-hero">
+          <div class="logo-toys" aria-hidden="true">🧸 🔐 🎈</div>
+          <h1>Oyuncak Toplama</h1>
+          <p id="login-tagline" class="tagline">Aile hesabınla gir.</p>
+          <form id="login-form" class="login-form" autocomplete="on">
+            <label class="login-field">
+              <span>İsim</span>
+              <input id="login-name" type="text" maxlength="20" autocomplete="username" required />
+            </label>
+            <label class="login-field">
+              <span>Şifre</span>
+              <input id="login-pass" type="password" maxlength="32" autocomplete="current-password" required />
+            </label>
+            <label id="login-pass2-wrap" class="login-field" hidden>
+              <span>Şifre tekrar</span>
+              <input id="login-pass2" type="password" maxlength="32" autocomplete="new-password" />
+            </label>
+            <p id="login-error" class="login-error" hidden></p>
+            <button id="btn-login" class="big-btn" type="submit">Giriş yap</button>
+            <button id="btn-google" class="ghost-btn google-btn" type="button">Gmail ile bağlan</button>
+            <button id="btn-auth-mode" class="text-btn" type="button">Hesabın yok mu? Kayıt ol</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="screen-home" class="screen">
         <div class="cloud c1"></div>
         <div class="cloud c2"></div>
         <div class="cloud c3"></div>
@@ -156,16 +185,9 @@
     <div id="parent-modal" class="name-modal parent-modal" hidden>
       <div class="name-modal-card" role="dialog" aria-labelledby="parent-title">
         <p id="parent-title">Ebeveyn</p>
-        <p id="parent-hint" class="hint">4 rakamlı şifre yaz.</p>
-        <input
-          id="parent-pin"
-          type="password"
-          inputmode="numeric"
-          maxlength="4"
-          autocomplete="off"
-          enterkeyhint="done"
-        />
-        <div id="parent-limits" class="parent-limits" hidden>
+        <p id="parent-hint" class="hint">Bugün ne kadar oynasın?</p>
+        <p id="parent-user" class="parent-user"></p>
+        <div id="parent-limits" class="parent-limits">
           <button type="button" class="limit-btn" data-limit="15">15 dk</button>
           <button type="button" class="limit-btn" data-limit="30">30 dk</button>
           <button type="button" class="limit-btn" data-limit="45">45 dk</button>
@@ -173,7 +195,7 @@
           <button type="button" class="limit-btn" data-limit="0">Süre yok</button>
         </div>
         <div class="name-modal-actions">
-          <button type="button" id="parent-cancel" class="ghost-btn">Vazgeç</button>
+          <button type="button" id="btn-logout" class="ghost-btn">Çıkış</button>
           <button type="button" id="parent-ok" class="big-btn">Tamam</button>
         </div>
       </div>
@@ -188,8 +210,18 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.23";
+        var CURRENT = "0.24";
         var started = false;
+
+        function addScript(src) {
+          return new Promise(function (resolve) {
+            var s = document.createElement("script");
+            s.src = src;
+            s.onload = function () { resolve(true); };
+            s.onerror = function () { resolve(false); };
+            document.body.appendChild(s);
+          });
+        }
 
         function loadGame(version) {
           if (started) return;
@@ -199,9 +231,18 @@
           if (css) css.href = "styles.css?v=" + encodeURIComponent(version);
           var badge = document.getElementById("version-badge");
           if (badge) badge.textContent = "v" + version;
-          var script = document.createElement("script");
-          script.src = "game.js?v=" + encodeURIComponent(version);
-          document.body.appendChild(script);
+          addScript("firebase-config.js?v=" + encodeURIComponent(version)).then(function () {
+            var cfg = window.OT_FIREBASE;
+            var chain = Promise.resolve();
+            if (cfg && cfg.apiKey) {
+              chain = addScript("https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js").then(function () {
+                return addScript("https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js");
+              });
+            }
+            return chain.then(function () {
+              return addScript("game.js?v=" + encodeURIComponent(version));
+            });
+          });
         }
 
         function checkLatest() {
