@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.14";
+  const GAME_VERSION = window.__OT_VERSION || "0.15";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -678,7 +678,7 @@
   function renderDock(playerId) {
     const player = state.players[playerId];
     const side = playerId === "p1" ? "1. oyuncu" : "2. oyuncu";
-    const keys = playerId === "p1" ? "W A S D · E" : "Yön tuşları · Enter";
+    const keys = "Yön tuşları · Enter";
     const myTurn = state.turn === playerId && !player.running && !state.ended;
     const queue = player.queue
       .map(
@@ -1263,33 +1263,22 @@
 
     document.addEventListener("keydown", (e) => {
       if (state.screen !== "play" || state.ended) return;
-      const p1Moves = { KeyW: "up", KeyA: "left", KeyS: "down", KeyD: "right" };
-      const p2Moves = {
+      const moves = {
         ArrowUp: "up",
         ArrowLeft: "left",
         ArrowDown: "down",
         ArrowRight: "right",
       };
-      if (p1Moves[e.code]) {
+      const actor = state.turn;
+      if (moves[e.code]) {
         e.preventDefault();
-        addCommand("p1", p1Moves[e.code]);
-      } else if (p2Moves[e.code]) {
-        if (state.vsBot) return;
-        e.preventDefault();
-        addCommand("p2", p2Moves[e.code]);
-      } else if (e.code === "KeyE") {
-        e.preventDefault();
-        runProgram("p1");
+        addCommand(actor, moves[e.code]);
       } else if (e.code === "Enter") {
-        if (state.vsBot) return;
         e.preventDefault();
-        runProgram("p2");
-      } else if (e.code === "Backspace") {
+        runProgram(actor);
+      } else if (e.code === "Backspace" || e.code === "Delete") {
         e.preventDefault();
-        eraseCommand("p1");
-      } else if (e.code === "Delete") {
-        e.preventDefault();
-        eraseCommand("p2");
+        eraseCommand(actor);
       }
     });
 
