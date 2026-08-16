@@ -1,6 +1,6 @@
 # Oyuncak Toplama
 
-Sürüm **0.24** — 5 yaşındaki çocuklarla birlikte oynanan iki oyunculu web oyunu. Karakterler kodlama bloklarıyla hareket eder; dağınık odadaki oyuncakları kim daha çok toplarsa o kazanır. Tablet ve bilgisayar tarayıcısında çalışır.
+Sürüm **0.25** — 5 yaşındaki çocuklarla birlikte oynanan iki oyunculu web oyunu. Karakterler kodlama bloklarıyla hareket eder; dağınık odadaki oyuncakları kim daha çok toplarsa o kazanır. Tablet ve bilgisayar tarayıcısında çalışır.
 
 ## Nasıl oynanır?
 
@@ -19,7 +19,7 @@ Sıra sıra oynanır: önce 1. oyuncu 6 yön yazıp çalıştırır, sonra 2. oy
 
 ## Sürüm
 
-Şu an: **0.24**
+Şu an: **0.25**
 
 Sürümler `0.1`, `0.2`, … `0.99` gider; sonra `1.0`, ardından `1.1` diye devam eder.
 
