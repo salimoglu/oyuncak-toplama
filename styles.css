@@ -1357,6 +1357,14 @@ h2 {
   outline: 4px solid var(--p2);
 }
 
+.code-dock.waiting {
+  opacity: 0.55;
+}
+
+.code-dock.active-turn {
+  opacity: 1;
+}
+
 .dock-side {
   margin: 0;
   text-align: center;

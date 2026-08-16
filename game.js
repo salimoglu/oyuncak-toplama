@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.9";
+  const GAME_VERSION = "0.10";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -200,9 +200,9 @@
   ];
 
   const BOT = {
-    kolay: { delay: 1600, maxCode: 4, mistake: 0.4, stepMs: 560, label: "Kolay" },
-    orta: { delay: 850, maxCode: 6, mistake: 0.12, stepMs: 420, label: "Orta" },
-    zor: { delay: 280, maxCode: 6, mistake: 0, stepMs: 260, label: "Zor" },
+    kolay: { delay: 1400, mistake: 0.4, stepMs: 560, label: "Kolay" },
+    orta: { delay: 800, mistake: 0.12, stepMs: 420, label: "Orta" },
+    zor: { delay: 350, mistake: 0, stepMs: 260, label: "Zor" },
   };
 
   const CHEERS = ["Aferin!", "Süper!", "Harika!", "Bravo!", "Yaşasın!", "Çok güzel!"];
@@ -254,6 +254,7 @@
     vsBot: false,
     difficulty: localStorage.getItem("ot-diff") || "orta",
     botToken: null,
+    turn: "p1",
     audio: null,
     run: { p1: null, p2: null },
   };
@@ -482,6 +483,7 @@
     state.rows = size.rows;
     state.room = room;
     state.ended = false;
+    state.turn = "p1";
     state.players.p1 = {
       ...emptyPlayer("p1", 0, midRow()),
       char: state.players.p1.char,
@@ -511,7 +513,6 @@
     renderDocks();
     updateScoreboard();
     show("play");
-    if (state.vsBot) startBot();
   }
 
   function renderBoard() {
@@ -579,20 +580,25 @@
     const player = state.players[playerId];
     const side = playerId === "p1" ? "1. oyuncu" : "2. oyuncu";
     const keys = playerId === "p1" ? "W A S D · E" : "Yön tuşları · Enter";
+    const myTurn = state.turn === playerId && !player.running && !state.ended;
     const queue = player.queue
       .map(
         (cmd, i) =>
           `<span class="code-chip ${player.stepIndex === i ? "current" : ""}">${cmd.label}</span>`
       )
       .join("");
+    const countLabel = `${player.queue.length}/${MAX_CODE}`;
+    const dock = $(`dock-${playerId}`);
+    dock.classList.toggle("waiting", !myTurn && !player.running);
+    dock.classList.toggle("active-turn", myTurn || player.running);
 
-    $(`dock-${playerId}`).innerHTML = player.isBot
+    dock.innerHTML = player.isBot
       ? `
       <p class="dock-side">Bot · ${BOT[state.difficulty].label}</p>
       <div class="code-queue">${
-        queue || '<span class="code-empty">Bot oynuyor</span>'
+        queue || `<span class="code-empty">${myTurn ? "Bot 6 yön yazacak" : "Sıra rakipte"}</span>`
       }</div>
-      <p class="bot-note">Bot kendi kodunu yazıyor</p>
+      <p class="bot-note">${player.running ? "Bot ilerliyor" : myTurn ? "Sıra botta" : "Bekliyor"} · ${countLabel}</p>
       <div class="collected-well" style="--basket:${player.basket?.color || "#fff6ea"}; --basket-rim:${player.basket?.rim || "#d4a574"}">
         <p class="collected-label">Toplananlar</p>
         ${
@@ -604,24 +610,24 @@
         }
       </div>`
       : `
-      <p class="dock-side">${side}</p>
+      <p class="dock-side">${side}${myTurn ? " · sıra sende" : player.running ? " · gidiyor" : " · bekle"}</p>
       <div class="code-queue" data-player="${playerId}">${
-        queue || '<span class="code-empty">Komut ekle</span>'
+        queue || `<span class="code-empty">${myTurn ? "6 yön yaz" : "Sıra rakipte"}</span>`
       }</div>
       <div class="code-pad" data-player="${playerId}">
         ${MOVES.map(
           (m) =>
             `<button type="button" class="code-btn" data-move="${m.id}" ${
-              player.running || player.queue.length >= MAX_CODE ? "disabled" : ""
+              !myTurn || player.queue.length >= MAX_CODE ? "disabled" : ""
             }>${m.label}</button>`
         ).join("")}
       </div>
       <div class="dock-actions">
         <button type="button" class="run-btn" data-run="${playerId}" ${
-          player.running || player.queue.length === 0 ? "disabled" : ""
-        }>▶ Çalıştır</button>
+          !myTurn || player.queue.length !== MAX_CODE ? "disabled" : ""
+        }>▶ Çalıştır (${countLabel})</button>
         <button type="button" class="erase-btn" data-erase="${playerId}" ${
-          player.running || player.queue.length === 0 ? "disabled" : ""
+          !myTurn || player.queue.length === 0 ? "disabled" : ""
         }>⌫</button>
       </div>
       <p class="dock-keys">${keys}</p>
@@ -671,6 +677,7 @@
   function addCommand(playerId, moveId) {
     const player = state.players[playerId];
     if (!player || player.running || player.isBot || state.ended) return;
+    if (state.turn !== playerId) return;
     if (player.queue.length >= MAX_CODE) return;
     const move = MOVES.find((m) => m.id === moveId);
     if (!move) return;
@@ -682,6 +689,7 @@
   function eraseCommand(playerId) {
     const player = state.players[playerId];
     if (!player || player.running || player.isBot || state.ended) return;
+    if (state.turn !== playerId) return;
     player.queue.pop();
     playTapSound();
     renderDock(playerId);
@@ -732,53 +740,79 @@
     return moves;
   }
 
-  function botPlan(cfg) {
-    const bot = state.players.p2;
-    if (!bot || !state.toys.length) return [];
-    let toys = [...state.toys].sort(
-      (a, b) =>
-        Math.abs(a.col - bot.col) +
-        Math.abs(a.row - bot.row) -
-        (Math.abs(b.col - bot.col) + Math.abs(b.row - bot.row))
-    );
-    if (cfg.mistake && Math.random() < cfg.mistake && toys.length > 1) {
-      toys = toys.slice(1);
-    }
-    const target = toys[0];
-    if (target.col === bot.col && target.row === bot.row) {
-      maybeCollect(bot);
-      return [];
-    }
-    let path = botPath(bot.col, bot.row, target.col, target.row);
-    if (cfg.mistake && path.length && Math.random() < cfg.mistake) {
-      path = [MOVES[Math.floor(Math.random() * MOVES.length)], ...path];
-    }
-    return path.slice(0, cfg.maxCode).map((m) => ({ ...m }));
+  function validMove(col, row, move) {
+    const nc = col + move.dx;
+    const nr = row + move.dy;
+    return nc >= 0 && nr >= 0 && nc < state.cols && nr < state.rows;
   }
 
-  function startBot() {
-    if (state.botToken) state.botToken.cancelled = true;
-    const token = { cancelled: false };
-    state.botToken = token;
-    const cfg = BOT[state.difficulty] || BOT.orta;
-    (async () => {
-      await wait(600);
-      while (!token.cancelled && !state.ended && state.vsBot) {
-        if (!state.players.p2?.running && state.toys.length) {
-          const plan = botPlan(cfg);
-          if (plan.length) {
-            state.players.p2.queue = plan;
-            await runProgram("p2");
-          }
-        }
-        await wait(cfg.delay);
+  function randomStep(col, row) {
+    const opts = MOVES.filter((m) => validMove(col, row, m));
+    return { ...(opts[Math.floor(Math.random() * opts.length)] || MOVES[0]) };
+  }
+
+  function botPlan(cfg) {
+    const bot = state.players.p2;
+    if (!bot) return [];
+    let col = bot.col;
+    let row = bot.row;
+    let remaining = [...state.toys];
+    const path = [];
+    while (path.length < MAX_CODE) {
+      remaining.sort(
+        (a, b) =>
+          Math.abs(a.col - col) +
+          Math.abs(a.row - row) -
+          (Math.abs(b.col - col) + Math.abs(b.row - row))
+      );
+      let target = remaining[0];
+      if (cfg.mistake && Math.random() < cfg.mistake && remaining.length > 1) {
+        target = remaining[1];
       }
-    })();
+      if (!target) {
+        const step = randomStep(col, row);
+        path.push(step);
+        if (validMove(col, row, step)) {
+          col += step.dx;
+          row += step.dy;
+        }
+        continue;
+      }
+      if (target.col === col && target.row === row) {
+        remaining = remaining.filter((t) => t.id !== target.id);
+        continue;
+      }
+      const toToy = botPath(col, row, target.col, target.row);
+      let step = toToy[0] || randomStep(col, row);
+      if (cfg.mistake && Math.random() < cfg.mistake) step = randomStep(col, row);
+      path.push({ ...step });
+      if (validMove(col, row, step)) {
+        col += step.dx;
+        row += step.dy;
+      }
+      if (remaining.some((t) => t.col === col && t.row === row && t.id === target.id)) {
+        remaining = remaining.filter((t) => t.id !== target.id);
+      }
+    }
+    return path.slice(0, MAX_CODE);
+  }
+
+  async function playBotTurn() {
+    if (!state.vsBot || state.ended || state.turn !== "p2") return;
+    const cfg = BOT[state.difficulty] || BOT.orta;
+    renderDocks();
+    await wait(cfg.delay);
+    if (state.ended || state.turn !== "p2") return;
+    const plan = botPlan(cfg);
+    while (plan.length < MAX_CODE) plan.push(randomStep(state.players.p2.col, state.players.p2.row));
+    state.players.p2.queue = plan.slice(0, MAX_CODE);
+    await runProgram("p2");
   }
 
   async function runProgram(playerId) {
     const player = state.players[playerId];
-    if (!player || player.running || player.queue.length === 0 || state.ended) return;
+    if (!player || player.running || player.queue.length !== MAX_CODE || state.ended) return;
+    if (state.turn !== playerId) return;
 
     const token = { cancelled: false };
     state.run[playerId] = token;
@@ -808,7 +842,11 @@
     player.stepIndex = -1;
     player.running = false;
     if (state.run[playerId] === token) state.run[playerId] = null;
-    if (!state.ended) renderDock(playerId);
+    if (!state.ended) {
+      state.turn = playerId === "p1" ? "p2" : "p1";
+      renderDocks();
+      if (state.players[state.turn]?.isBot) playBotTurn();
+    }
   }
 
   async function stepMove(player, move) {
