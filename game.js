@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.35";
+  const GAME_VERSION = window.__OT_VERSION || "0.36";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -565,7 +565,7 @@
     const basketNote = p.basket ? `<small>${escapeHtml(p.basket.name)}</small>` : "<small> </small>";
     return `<div class="pick-slot ${id} filled ${isOn ? "on" : ""}">
       <span class="pick-slot-side">${side}</span>
-      ${miniChar(p.char, p.basket)}
+      ${miniChar(p.char, p.basket, id === "p2" ? "right" : "left")}
       <strong>${escapeHtml(p.char.name)}</strong>
       ${basketNote}
     </div>`;
@@ -584,24 +584,12 @@
     });
   }
 
-  function miniChar(c, basket) {
-    const basketHtml = basket
-      ? `<div class="mini-basket" style="--basket:${basket.color};--basket-rim:${basket.rim}">
-          <i class="mini-basket-handle"></i>
-          <i class="mini-basket-body"></i>
-        </div>`
+  function miniChar(c, basket, side = "left") {
+    const basketStyle = basket
+      ? `--basket:${basket.color};--basket-rim:${basket.rim};`
       : "";
-    return `<div class="mini-char ${basket ? "has-basket" : ""}" data-id="${c.id}" style="--skin:${c.skin};--hair:${c.hair};--clothes:${c.clothes}">
-      <div class="mini-ear left"></div>
-      <div class="mini-ear right"></div>
-      <div class="mini-hair"></div>
-      <div class="mini-head">
-        <span class="mini-eye left"></span>
-        <span class="mini-eye right"></span>
-        <span class="mini-smile"></span>
-      </div>
-      <div class="mini-body"></div>
-      ${basketHtml}
+    return `<div class="character portrait ${basket ? "has-basket" : ""}" data-id="${c.id}" data-side="${side}" style="--skin:${c.skin};--hair:${c.hair};--clothes:${c.clothes};--legs:${c.legs};${basketStyle}">
+      ${ACTOR_HTML}
     </div>`;
   }
 

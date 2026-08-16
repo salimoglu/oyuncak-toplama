@@ -534,11 +534,11 @@ h2 {
 .pick-card.cute {
   background: linear-gradient(180deg, #fff 0%, var(--card, #fff6ea) 100%);
   border-radius: 24px;
-  min-height: 148px;
-  padding: 12px 8px 10px;
+  min-height: 168px;
+  padding: 8px 8px 10px;
   box-shadow: 0 8px 0 rgba(90, 50, 40, 0.08), var(--shadow);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .pick-card.cute::before {
@@ -1002,7 +1002,7 @@ h2 {
   align-items: stretch;
   gap: 8px;
   width: min(440px, 100%);
-  min-height: 132px;
+  min-height: 148px;
   flex-shrink: 0;
 }
 
@@ -1016,7 +1016,7 @@ h2 {
   justify-content: flex-start;
   gap: 2px;
   outline: 3px dashed #ffd0de;
-  min-height: 124px;
+  min-height: 136px;
 }
 
 .pick-slot.p1 {
@@ -1086,10 +1086,11 @@ h2 {
   );
 }
 
-.pick-slot .mini-char {
-  transform: scale(0.82);
+.pick-slot .character.portrait {
+  transform: scale(0.72);
   transform-origin: top center;
-  margin-bottom: -8px;
+  height: 78px;
+  margin-bottom: -4px;
 }
 
 .pick-vs {
@@ -2328,6 +2329,41 @@ h2 {
   pointer-events: none;
 }
 
+.character.portrait {
+  position: relative;
+  width: 72px;
+  height: 108px;
+  margin: 0 auto 2px;
+  pointer-events: none;
+}
+
+.character.portrait .char-fit {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  width: 56px;
+  height: 108px;
+  margin: 0 auto;
+  transform: none;
+}
+
+.character.portrait .char-shadow,
+.character.portrait .char-label {
+  display: none;
+}
+
+.character.portrait .char-basket {
+  visibility: hidden;
+}
+
+.character.portrait.has-basket .char-basket {
+  visibility: visible;
+}
+
+.character.portrait .char-figure {
+  animation: bob 2.4s ease-in-out infinite;
+}
+
 .char-fit {
   position: absolute;
   left: 50%;
@@ -2370,21 +2406,32 @@ h2 {
 .char-head {
   position: absolute;
   left: 50%;
-  top: 10px;
-  width: 40px;
-  height: 38px;
-  margin-left: -20px;
+  top: 8px;
+  width: 42px;
+  height: 40px;
+  margin-left: -21px;
   background: var(--skin, #f6d7b0);
-  border-radius: 50% 50% 48% 48%;
+  border-radius: 50%;
   z-index: 2;
-  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 -5px 0 rgba(255, 150, 140, 0.12);
+}
+
+.char-head::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  width: 12px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
 }
 
 .char-eye {
   position: absolute;
   top: 12px;
-  width: 11px;
-  height: 13px;
+  width: 12px;
+  height: 14px;
   background: #fff;
   border: 2px solid #3d2b1f;
   border-radius: 50%;
@@ -2401,8 +2448,8 @@ h2 {
 
 .char-eye i {
   display: block;
-  width: 6px;
-  height: 7px;
+  width: 7px;
+  height: 8px;
   margin: 3px auto 0;
   background: #3d2b1f;
   border-radius: 50%;
@@ -2412,7 +2459,7 @@ h2 {
 .char-eye i::after {
   content: "";
   position: absolute;
-  top: 0;
+  top: 1px;
   right: 0;
   width: 3px;
   height: 3px;
@@ -2423,42 +2470,42 @@ h2 {
 .char-nose {
   position: absolute;
   left: 50%;
-  top: 22px;
+  top: 23px;
   width: 6px;
-  height: 4px;
+  height: 5px;
   margin-left: -3px;
-  background: #e8a598;
+  background: #f3b0a2;
   border-radius: 50%;
 }
 
 .char-blush {
   position: absolute;
   top: 22px;
-  width: 8px;
-  height: 6px;
-  background: #ff9aa2;
+  width: 10px;
+  height: 7px;
+  background: #ff8fab;
   border-radius: 50%;
-  opacity: 0.75;
+  opacity: 0.72;
 }
 
 .char-blush.left {
-  left: 2px;
+  left: 1px;
 }
 
 .char-blush.right {
-  right: 2px;
+  right: 1px;
 }
 
 .char-smile {
   position: absolute;
   left: 50%;
   bottom: 6px;
-  width: 12px;
-  height: 7px;
-  margin-left: -6px;
-  border: 2px solid #c0392b;
+  width: 14px;
+  height: 8px;
+  margin-left: -7px;
+  border: 2.5px solid #e03131;
   border-top: none;
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 12px 12px;
 }
 
 .char-bow {
@@ -2635,11 +2682,12 @@ h2 {
   position: absolute;
   left: 50%;
   top: 42px;
-  width: 30px;
-  height: 26px;
-  margin-left: -15px;
+  width: 32px;
+  height: 28px;
+  margin-left: -16px;
   background: var(--clothes, #ff8fab);
-  border-radius: 16px 16px 12px 12px;
+  border-radius: 18px 18px 14px 14px;
+  box-shadow: inset 0 4px 0 rgba(255, 255, 255, 0.28);
 }
 
 .character[data-id="karamel"] .char-body {
@@ -3091,7 +3139,7 @@ h2 {
   }
 
   .pick-card.cute {
-    min-height: 132px;
+    min-height: 150px;
   }
 }
 
