@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.12";
+  const GAME_VERSION = window.__OT_VERSION || "0.13";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -259,6 +259,7 @@
     turn: "p1",
     audio: null,
     run: { p1: null, p2: null },
+    renameId: null,
   };
 
   function emptyPlayer(id, startCol, startRow) {
@@ -287,6 +288,7 @@
 
   function show(name) {
     state.screen = name;
+    if (name !== "character") closeNameModal();
     Object.entries(screens).forEach(([key, el]) => {
       el.classList.toggle("active", key === name);
     });
@@ -345,6 +347,81 @@
     }
   }
 
+  function loadCustomNames() {
+    try {
+      return JSON.parse(localStorage.getItem("ot-names") || "{}");
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function displayName(char) {
+    if (!char) return "";
+    const custom = loadCustomNames()[char.id];
+    return (custom && String(custom).trim()) || char.name;
+  }
+
+  function cloneChar(char) {
+    return { ...char, name: displayName(char) };
+  }
+
+  function cleanName(raw, fallback) {
+    const name = String(raw || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 12);
+    return name || fallback;
+  }
+
+  function saveCustomName(id, name) {
+    const names = loadCustomNames();
+    const fallback = CHARACTERS.find((c) => c.id === id)?.name || "Oyuncu";
+    const next = cleanName(name, fallback);
+    if (next === fallback) delete names[id];
+    else names[id] = next;
+    localStorage.setItem("ot-names", JSON.stringify(names));
+    ["p1", "p2"].forEach((pid) => {
+      const player = state.players[pid];
+      if (player?.char?.id === id) player.char.name = next;
+    });
+    return next;
+  }
+
+  function escapeHtml(text) {
+    return String(text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function openNameModal(charId) {
+    const char = CHARACTERS.find((c) => c.id === charId);
+    if (!char) return;
+    state.renameId = charId;
+    $("name-modal-title").textContent = `${displayName(char)} için yeni isim`;
+    $("name-input").value = displayName(char);
+    $("name-modal").hidden = false;
+    requestAnimationFrame(() => {
+      const input = $("name-input");
+      input.focus();
+      input.select();
+    });
+  }
+
+  function closeNameModal() {
+    state.renameId = null;
+    $("name-modal").hidden = true;
+  }
+
+  function confirmNameModal() {
+    if (!state.renameId) return;
+    saveCustomName(state.renameId, $("name-input").value);
+    closeNameModal();
+    playTapSound();
+    renderPicks();
+  }
+
   function pickedChips() {
     const chips = [];
     ["p1", "p2"].forEach((id, index) => {
@@ -376,13 +453,17 @@
     const taken = state.pickStep === 2 && state.players.p1?.char ? state.players.p1.char.id : null;
     $("character-grid").classList.add("picks");
     $("character-grid").innerHTML = CHARACTERS.map((c) => {
-      const disabled = taken === c.id ? "disabled" : "";
+      const takenClass = taken === c.id ? "taken" : "";
       return `
-        <button class="pick-card cute" type="button" data-character="${c.id}" ${disabled} style="--card:${c.color}">
+        <div class="pick-card cute ${takenClass}" data-character="${c.id}" style="--card:${c.color}" ${
+          taken === c.id ? "" : 'role="button" tabindex="0"'
+        }>
           ${miniChar(c)}
-          <strong>${c.name}</strong>
+          <button type="button" class="char-name" data-rename="${c.id}">${escapeHtml(
+            displayName(c)
+          )}</button>
           <span class="sub">${c.sub}</span>
-        </button>`;
+        </div>`;
     }).join("");
 
     $("char-title").textContent = state.vsBot
@@ -391,10 +472,10 @@
         ? "1. oyuncu kim?"
         : "2. oyuncu kim?";
     $("char-hint").textContent = state.vsBot
-      ? "Karakterini seç, sonra sepetini al."
+      ? "Karakterini seç. İsme dokunursan adı değişir."
       : state.pickStep === 1
-        ? "Solda oynayacak karakteri seç."
-        : "Sağda oynayacak karakteri seç.";
+        ? "Solda oynayacak karakteri seç. İsme dokunursan adı değişir."
+        : "Sağda oynayacak karakteri seç. İsme dokunursan adı değişir.";
     pickedChips();
   }
 
@@ -1013,7 +1094,7 @@
     const chars = CHARACTERS.filter((c) => c.id !== state.players.p1.char.id);
     const baskets = BASKETS.filter((b) => b.id !== state.players.p1.basket.id);
     const bot = emptyPlayer("p2", boardSize().cols - 1, midRow());
-    bot.char = chars[Math.floor(Math.random() * chars.length)];
+    bot.char = cloneChar(chars[Math.floor(Math.random() * chars.length)]);
     bot.basket = baskets[Math.floor(Math.random() * baskets.length)];
     bot.isBot = true;
     state.players.p2 = bot;
@@ -1070,6 +1151,15 @@
     });
 
     $("character-grid").addEventListener("click", (e) => {
+      const rename = e.target.closest("[data-rename]");
+      if (rename) {
+        e.preventDefault();
+        e.stopPropagation();
+        playTapSound();
+        openNameModal(rename.dataset.rename);
+        return;
+      }
+
       const basketBtn = e.target.closest("[data-basket]");
       if (basketBtn && !basketBtn.disabled) {
         const basket = BASKETS.find((b) => b.id === basketBtn.dataset.basket);
@@ -1094,18 +1184,34 @@
       }
 
       const btn = e.target.closest("[data-character]");
-      if (!btn || btn.disabled) return;
+      if (!btn || btn.classList.contains("taken")) return;
       const char = CHARACTERS.find((c) => c.id === btn.dataset.character);
       playTapSound();
       if (state.pickStep === 1) {
         state.players.p1 = emptyPlayer("p1", 0, midRow());
-        state.players.p1.char = char;
+        state.players.p1.char = cloneChar(char);
       } else {
         state.players.p2 = emptyPlayer("p2", boardSize().cols - 1, midRow());
-        state.players.p2.char = char;
+        state.players.p2.char = cloneChar(char);
       }
       state.pickKind = "basket";
       renderPicks();
+    });
+
+    $("name-save").addEventListener("click", confirmNameModal);
+    $("name-cancel").addEventListener("click", () => {
+      closeNameModal();
+    });
+    $("name-modal").addEventListener("click", (e) => {
+      if (e.target.id === "name-modal") closeNameModal();
+    });
+    $("name-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        confirmNameModal();
+      } else if (e.key === "Escape") {
+        closeNameModal();
+      }
     });
 
     $("room-grid").addEventListener("click", (e) => {
