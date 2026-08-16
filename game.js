@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.1";
+  const GAME_VERSION = "0.2";
 
   const COLS = 6;
   const ROWS = 5;
@@ -162,7 +162,6 @@
     Object.entries(screens).forEach(([key, el]) => {
       el.classList.toggle("active", key === name);
     });
-    $("version-badge").hidden = name === "play";
   }
 
   function audioCtx() {
@@ -347,10 +346,37 @@
     });
   }
 
+  function toyPile(items) {
+    if (!items.length) {
+      return `<p class="toy-pile empty">Henüz oyuncak yok</p>`;
+    }
+    return `<div class="toy-pile">${items
+      .map((t) => `<span title="oyuncak">${t.emoji}</span>`)
+      .join("")}</div>`;
+  }
+
+  function playerSummary(player, extraClass = "") {
+    const side = player.id === "p1" ? "1. oyuncu" : "2. oyuncu";
+    const count = player.collected.length;
+    return `
+      <article class="player-card ${player.id} ${extraClass}">
+        <div class="player-card-top">
+          <span class="player-face" style="background:${player.char.color}">${player.char.emoji}</span>
+          <div class="player-meta">
+            <small>${side}</small>
+            <strong>${player.char.name}</strong>
+          </div>
+          <div class="player-points">
+            <b>${count}</b>
+            <small>oyuncak</small>
+          </div>
+        </div>
+        ${toyPile(player.collected)}
+      </article>`;
+  }
+
   function renderDock(playerId) {
     const player = state.players[playerId];
-    const char = player.char;
-    const side = playerId === "p1" ? "1. oyuncu" : "2. oyuncu";
     const keys = playerId === "p1" ? "W A S D · E" : "Yön tuşları · Enter";
     const queue = player.queue
       .map(
@@ -360,14 +386,7 @@
       .join("");
 
     $(`dock-${playerId}`).innerHTML = `
-      <div class="dock-head">
-        <span class="dock-avatar" style="background:${char.color}">${char.emoji}</span>
-        <div>
-          <strong>${char.name}</strong>
-          <small>${side}</small>
-        </div>
-        <span class="dock-score">${player.collected.length}</span>
-      </div>
+      ${playerSummary(player)}
       <div class="code-queue" data-player="${playerId}">${
         queue || '<span class="code-empty">Komut ekle</span>'
       }</div>
@@ -400,10 +419,36 @@
     const a = state.players.p1;
     const b = state.players.p2;
     const left = state.toys.length;
+    const total = a.collected.length + b.collected.length + left;
+    const p1w = total ? (a.collected.length / total) * 100 : 50;
+    const p2w = total ? (b.collected.length / total) * 100 : 50;
     $("scoreboard").innerHTML = `
-      <span class="score p1">${a.char.emoji} ${a.collected.length}</span>
-      <span class="score leftover">🧸 ${left}</span>
-      <span class="score p2">${b.collected.length} ${b.char.emoji}</span>
+      <div class="hud-player p1">
+        <span class="player-face" style="background:${a.char.color}">${a.char.emoji}</span>
+        <div class="hud-copy">
+          <strong>${a.char.name}</strong>
+          <span>${a.collected.length} oyuncak</span>
+        </div>
+      </div>
+      <div class="hud-mid">
+        <div class="remain-chip">
+          <span>🧸</span>
+          <b>${left}</b>
+          <small>kaldı</small>
+        </div>
+        <div class="vs-bar" aria-hidden="true">
+          <i class="p1" style="width:${p1w}%"></i>
+          <i class="left" style="width:${total ? (left / total) * 100 : 0}%"></i>
+          <i class="p2" style="width:${p2w}%"></i>
+        </div>
+      </div>
+      <div class="hud-player p2">
+        <div class="hud-copy">
+          <strong>${b.char.name}</strong>
+          <span>${b.collected.length} oyuncak</span>
+        </div>
+        <span class="player-face" style="background:${b.char.color}">${b.char.emoji}</span>
+      </div>
     `;
   }
 
@@ -553,17 +598,14 @@
     $("win-title").textContent = title;
     $("win-text").textContent = text;
     $("win-stars").textContent = stars;
+    const sum = Math.max(1, scoreA + scoreB);
     $("win-scores").innerHTML = `
-      <div class="win-score ${scoreA >= scoreB ? "winner" : ""}">
-        <span>${a.char.emoji}</span>
-        <strong>${a.char.name}</strong>
-        <b>${scoreA}</b>
+      <div class="vs-bar big" aria-hidden="true">
+        <i class="p1" style="width:${(scoreA / sum) * 100}%"></i>
+        <i class="p2" style="width:${(scoreB / sum) * 100}%"></i>
       </div>
-      <div class="win-score ${scoreB >= scoreA ? "winner" : ""}">
-        <span>${b.char.emoji}</span>
-        <strong>${b.char.name}</strong>
-        <b>${scoreB}</b>
-      </div>
+      ${playerSummary(a, scoreA >= scoreB ? "winner" : "")}
+      ${playerSummary(b, scoreB >= scoreA ? "winner" : "")}
     `;
     burstConfetti();
     setTimeout(() => show("win"), 450);

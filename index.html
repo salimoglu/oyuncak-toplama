@@ -30,16 +30,18 @@
   </head>
   <body>
     <div id="app">
-      <button
-        id="sound-btn"
-        class="icon-btn"
-        type="button"
-        aria-label="Sesi aç veya kapat"
-      >
-        🔊
-      </button>
-      <div id="version-badge" class="version-badge">v0.1</div>
-
+      <header class="chrome">
+        <div id="version-badge" class="version-badge">v0.2</div>
+        <button
+          id="sound-btn"
+          class="icon-btn"
+          type="button"
+          aria-label="Sesi aç veya kapat"
+        >
+          🔊
+        </button>
+      </header>
+      <div id="stage">
       <section id="screen-home" class="screen active">
         <div class="cloud c1"></div>
         <div class="cloud c2"></div>
@@ -76,8 +78,8 @@
             <span id="play-room-emoji"></span>
             <span id="play-room-name"></span>
           </div>
-          <div id="scoreboard" class="scoreboard" aria-live="polite"></div>
         </header>
+        <div id="scoreboard" class="scoreboard" aria-live="polite"></div>
         <div class="play-layout">
           <aside id="dock-p1" class="code-dock p1"></aside>
           <div id="room-stage" class="room-stage">
@@ -104,6 +106,7 @@
         </div>
         <div id="confetti" class="confetti" aria-hidden="true"></div>
       </section>
+      </div>
     </div>
     <script src="game.js"></script>
   </body>
