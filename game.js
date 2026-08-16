@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.21";
+  const GAME_VERSION = window.__OT_VERSION || "0.22";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -673,7 +673,6 @@
       <div id="actor-p2" class="character actor" data-side="right">${ACTOR_HTML}</div>`;
     styleActor($("actor-p1"), state.players.p1);
     styleActor($("actor-p2"), state.players.p2);
-    renderPathPreview();
     requestAnimationFrame(syncCellFit);
   }
 
@@ -834,7 +833,6 @@
     player.queue.push({ ...move });
     playTapSound();
     renderDock(playerId);
-    renderPathPreview();
   }
 
   function eraseCommand(playerId) {
@@ -844,63 +842,6 @@
     player.queue.pop();
     playTapSound();
     renderDock(playerId);
-    renderPathPreview();
-  }
-
-  function plannedPath(player) {
-    let col = player.col;
-    let row = player.row;
-    const visits = {};
-    return player.queue.map((move, index) => {
-      const nextCol = col + move.dx;
-      const nextRow = row + move.dy;
-      const bump =
-        nextCol < 0 || nextCol >= state.cols || nextRow < 0 || nextRow >= state.rows;
-      if (!bump) {
-        col = nextCol;
-        row = nextRow;
-      }
-      const key = `${col},${row}`;
-      visits[key] = (visits[key] || 0) + 1;
-      return { col, row, step: index + 1, bump, stack: visits[key] - 1 };
-    });
-  }
-
-  function renderPathPreview() {
-    const layer = $("path-preview");
-    if (!layer) return;
-    document.querySelectorAll(".cell.preview-on").forEach((cell) => {
-      cell.classList.remove("preview-on", "preview-p1", "preview-p2");
-    });
-    const player = state.players[state.turn];
-    if (
-      !player ||
-      player.isBot ||
-      player.running ||
-      state.ended ||
-      player.queue.length !== MAX_CODE
-    ) {
-      layer.innerHTML = "";
-      return;
-    }
-    const side = player.id;
-    const path = plannedPath(player);
-    path.forEach((spot) => {
-      const cell = document.querySelector(
-        `.cell[data-col="${spot.col}"][data-row="${spot.row}"]`
-      );
-      if (cell) cell.classList.add("preview-on", `preview-${side}`);
-    });
-    layer.innerHTML = path
-      .map(
-        (spot) =>
-          `<span class="preview-dot ${side}${spot.bump ? " bump" : ""}" style="left:${
-            ((spot.col + 0.5) / state.cols) * 100
-          }%;top:${((spot.row + 0.5) / state.rows) * 100}%;margin-left:${
-            spot.stack * 7
-          }px">${spot.step}</span>`
-      )
-      .join("");
   }
 
   function wait(ms) {
@@ -1027,7 +968,6 @@
     player.running = true;
     const program = [...player.queue];
     renderDock(playerId);
-    renderPathPreview();
 
     const stepMs = player.isBot
       ? (BOT[state.difficulty] || BOT.orta).stepMs
@@ -1054,7 +994,6 @@
     if (!state.ended) {
       state.turn = playerId === "p1" ? "p2" : "p1";
       renderDocks();
-      renderPathPreview();
       if (state.players[state.turn]?.isBot) playBotTurn();
     }
   }
