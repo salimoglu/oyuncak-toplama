@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.19";
+  const GAME_VERSION = window.__OT_VERSION || "0.20";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -262,6 +262,8 @@
     audio: null,
     run: { p1: null, p2: null },
     renameId: null,
+    padSwipe: null,
+    padSwiped: false,
   };
 
   function emptyPlayer(id, startCol, startRow) {
@@ -715,7 +717,7 @@
   function renderDock(playerId) {
     const player = state.players[playerId];
     const side = playerId === "p1" ? "1. oyuncu" : "2. oyuncu";
-    const keys = "Yön tuşları · Enter";
+    const keys = "Kaydır veya dokun";
     const myTurn = state.turn === playerId && !player.running && !state.ended;
     const queue = player.queue
       .map(
@@ -748,15 +750,26 @@
       : `
       <p class="dock-side">${side}${myTurn ? " · sıra sende" : player.running ? " · gidiyor" : " · bekle"}</p>
       <div class="code-queue" data-player="${playerId}">${
-        queue || `<span class="code-empty">${myTurn ? "6 yön yaz" : "Sıra rakipte"}</span>`
+        queue || `<span class="code-empty">${myTurn ? "Kaydır veya oka dokun" : "Sıra rakipte"}</span>`
       }</div>
       <div class="code-pad" data-player="${playerId}">
-        ${MOVES.map(
-          (m) =>
-            `<button type="button" class="code-btn dir-${m.id}" data-move="${m.id}" aria-label="${m.name}" ${
-              !myTurn || player.queue.length >= MAX_CODE ? "disabled" : ""
-            }>${DIR_MARK}</button>`
-        ).join("")}
+        <span class="pad-gap"></span>
+        <button type="button" class="code-btn dir-up" data-move="up" aria-label="Yukarı" ${
+          !myTurn || player.queue.length >= MAX_CODE ? "disabled" : ""
+        }>${DIR_MARK}</button>
+        <span class="pad-gap"></span>
+        <button type="button" class="code-btn dir-left" data-move="left" aria-label="Sola" ${
+          !myTurn || player.queue.length >= MAX_CODE ? "disabled" : ""
+        }>${DIR_MARK}</button>
+        <span class="pad-hub" aria-hidden="true"></span>
+        <button type="button" class="code-btn dir-right" data-move="right" aria-label="Sağa" ${
+          !myTurn || player.queue.length >= MAX_CODE ? "disabled" : ""
+        }>${DIR_MARK}</button>
+        <span class="pad-gap"></span>
+        <button type="button" class="code-btn dir-down" data-move="down" aria-label="Aşağı" ${
+          !myTurn || player.queue.length >= MAX_CODE ? "disabled" : ""
+        }>${DIR_MARK}</button>
+        <span class="pad-gap"></span>
       </div>
       <div class="dock-actions">
         <button type="button" class="run-btn" data-run="${playerId}" ${
@@ -1238,6 +1251,10 @@
     });
 
     document.addEventListener("click", (e) => {
+      if (state.padSwiped) {
+        state.padSwiped = false;
+        return;
+      }
       const moveBtn = e.target.closest("[data-move]");
       if (moveBtn) {
         addCommand(moveBtn.closest("[data-player]").dataset.player, moveBtn.dataset.move);
@@ -1270,6 +1287,27 @@
 
     $("sound-btn").addEventListener("click", toggleSound);
     $("sound-btn-play").addEventListener("click", toggleSound);
+
+    document.addEventListener("pointerdown", (e) => {
+      const pad = e.target.closest(".code-pad");
+      if (!pad || state.screen !== "play") return;
+      state.padSwipe = { x: e.clientX, y: e.clientY, player: pad.dataset.player };
+      state.padSwiped = false;
+    });
+    document.addEventListener("pointerup", (e) => {
+      const start = state.padSwipe;
+      state.padSwipe = null;
+      if (!start || state.screen !== "play") return;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      if (Math.hypot(dx, dy) < 28) return;
+      const move = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : dy > 0 ? "down" : "up";
+      state.padSwiped = true;
+      addCommand(start.player, move);
+    });
+    document.addEventListener("pointercancel", () => {
+      state.padSwipe = null;
+    });
 
     document.addEventListener("keydown", (e) => {
       if (state.screen !== "play" || state.ended) return;
