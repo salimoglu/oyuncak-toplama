@@ -1,11 +1,19 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.5";
+  const GAME_VERSION = "0.6";
 
-  const COLS = 6;
-  const ROWS = 5;
   const MAX_CODE = 6;
   const STEP_MS = 420;
+
+  function boardSize() {
+    const landscape = window.matchMedia("(orientation: landscape)").matches;
+    if (landscape) return { cols: 8, rows: 5 };
+    return { cols: 6, rows: 5 };
+  }
+
+  function midRow() {
+    return Math.floor(boardSize().rows / 2);
+  }
 
   const CHARACTERS = [
     {
@@ -128,6 +136,8 @@
     players: { p1: null, p2: null },
     room: ROOMS[0],
     toys: [],
+    cols: 6,
+    rows: 5,
     ended: false,
     sound: localStorage.getItem("ot-sound") !== "off",
     completed: JSON.parse(localStorage.getItem("ot-done") || "[]"),
@@ -263,15 +273,18 @@
   }
 
   function placeActor(el, player) {
-    el.style.left = `${((player.col + 0.5) / COLS) * 100}%`;
-    el.style.top = `${((player.row + 0.5) / ROWS) * 100}%`;
+    el.style.left = `${((player.col + 0.5) / state.cols) * 100}%`;
+    el.style.top = `${((player.row + 0.5) / state.rows) * 100}%`;
   }
 
   function randomToyCells(count) {
-    const blocked = new Set(["0,2", "5,2"]);
+    const blocked = new Set([
+      `0,${midRow()}`,
+      `${state.cols - 1},${midRow()}`,
+    ]);
     const free = [];
-    for (let row = 0; row < ROWS; row += 1) {
-      for (let col = 0; col < COLS; col += 1) {
+    for (let row = 0; row < state.rows; row += 1) {
+      for (let col = 0; col < state.cols; col += 1) {
         const key = `${col},${row}`;
         if (!blocked.has(key)) free.push({ col, row });
       }
@@ -285,14 +298,17 @@
 
   function startRoom(room) {
     stopRuns();
+    const size = boardSize();
+    state.cols = size.cols;
+    state.rows = size.rows;
     state.room = room;
     state.ended = false;
     state.players.p1 = {
-      ...emptyPlayer("p1", 0, 2),
+      ...emptyPlayer("p1", 0, midRow()),
       char: state.players.p1.char,
     };
     state.players.p2 = {
-      ...emptyPlayer("p2", COLS - 1, 2),
+      ...emptyPlayer("p2", state.cols - 1, midRow()),
       char: state.players.p2.char,
     };
 
@@ -317,11 +333,11 @@
 
   function renderBoard() {
     const board = $("board");
-    board.style.setProperty("--cols", COLS);
-    board.style.setProperty("--rows", ROWS);
+    board.style.setProperty("--cols", state.cols);
+    board.style.setProperty("--rows", state.rows);
     const cells = [];
-    for (let row = 0; row < ROWS; row += 1) {
-      for (let col = 0; col < COLS; col += 1) {
+    for (let row = 0; row < state.rows; row += 1) {
+      for (let col = 0; col < state.cols; col += 1) {
         const toy = state.toys.find((t) => t.col === col && t.row === row);
         cells.push(
           `<div class="cell" data-col="${col}" data-row="${row}">${
@@ -521,7 +537,7 @@
     const nextCol = player.col + move.dx;
     const nextRow = player.row + move.dy;
     const actor = $(`actor-${player.id}`);
-    if (nextCol < 0 || nextCol >= COLS || nextRow < 0 || nextRow >= ROWS) {
+    if (nextCol < 0 || nextCol >= state.cols || nextRow < 0 || nextRow >= state.rows) {
       playBumpSound();
       actor.classList.add("bump");
       await wait(180);
@@ -676,12 +692,12 @@
       const char = CHARACTERS.find((c) => c.id === btn.dataset.character);
       playTapSound();
       if (state.pickStep === 1) {
-        state.players.p1 = emptyPlayer("p1", 0, 2);
+        state.players.p1 = emptyPlayer("p1", 0, midRow());
         state.players.p1.char = char;
         state.pickStep = 2;
         renderCharacters();
       } else {
-        state.players.p2 = emptyPlayer("p2", COLS - 1, 2);
+        state.players.p2 = emptyPlayer("p2", boardSize().cols - 1, midRow());
         state.players.p2.char = char;
         renderRooms();
         show("room");
