@@ -14,6 +14,8 @@
       name="description"
       content="İki oyuncu, kodlama bloklarıyla karakterini hareket ettirip oyuncak toplar. En çok toplayan kazanır."
     />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
     <title>Oyuncak Toplama</title>
     <link rel="manifest" href="manifest.json" />
     <link
@@ -26,12 +28,12 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.12" />
   </head>
   <body>
     <div id="app">
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.11</div>
+        <div id="version-badge" class="version-badge">v0.12</div>
         <button
           id="sound-btn"
           class="icon-btn"
@@ -125,6 +127,77 @@
       </section>
       </div>
     </div>
-    <script src="game.js"></script>
+    <script>
+      (function () {
+        var CURRENT = "0.12";
+        var started = false;
+
+        function loadGame(version) {
+          if (started) return;
+          started = true;
+          window.__OT_VERSION = version;
+          var css = document.getElementById("app-css");
+          if (css) css.href = "styles.css?v=" + encodeURIComponent(version);
+          var badge = document.getElementById("version-badge");
+          if (badge) badge.textContent = "v" + version;
+          var script = document.createElement("script");
+          script.src = "game.js?v=" + encodeURIComponent(version);
+          document.body.appendChild(script);
+        }
+
+        function checkLatest() {
+          return fetch("version.json?t=" + Date.now(), { cache: "no-store" })
+            .then(function (res) {
+              return res.json();
+            })
+            .then(function (data) {
+              var version = (data && data.version) || CURRENT;
+              if (started && version !== window.__OT_VERSION) {
+                sessionStorage.setItem("ot-reload", version);
+                location.reload();
+                return;
+              }
+              loadGame(version);
+            })
+            .catch(function () {
+              loadGame(CURRENT);
+            });
+        }
+
+        if (sessionStorage.getItem("ot-reload") === CURRENT) {
+          sessionStorage.removeItem("ot-reload");
+        }
+        checkLatest();
+        setTimeout(function () {
+          loadGame(CURRENT);
+        }, 900);
+
+        window.addEventListener("pageshow", function (event) {
+          if (navigator.serviceWorker) {
+            navigator.serviceWorker.getRegistration().then(function (reg) {
+              if (reg) reg.update();
+            });
+          }
+          if (event.persisted) checkLatest();
+        });
+        document.addEventListener("visibilitychange", function () {
+          if (document.visibilityState === "visible") checkLatest();
+        });
+
+        if ("serviceWorker" in navigator) {
+          var hadWorker = navigator.serviceWorker.controller;
+          navigator.serviceWorker
+            .register("./sw.js", { updateViaCache: "none" })
+            .then(function (reg) {
+              reg.update();
+            });
+          navigator.serviceWorker.addEventListener("controllerchange", function () {
+            if (!hadWorker || window.__otReloading) return;
+            window.__otReloading = true;
+            location.reload();
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
