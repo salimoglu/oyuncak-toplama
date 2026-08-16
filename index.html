@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.29" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.30" />
   </head>
   <body>
     <div id="app">
@@ -37,8 +37,12 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.29</div>
+        <div id="version-badge" class="version-badge">v0.30</div>
         <div class="chrome-right">
+          <div id="time-left" class="time-left" hidden>
+            <span class="time-left-icon" aria-hidden="true">⏳</span>
+            <span class="time-left-text">0:00</span>
+          </div>
           <div id="account-wrap" class="account-wrap" hidden>
             <button
               id="btn-account"
@@ -53,8 +57,14 @@
               <span id="account-name" class="account-name"></span>
             </button>
             <div id="account-menu" class="account-menu" hidden role="menu">
-              <p id="account-menu-who" class="account-menu-who"></p>
-              <button type="button" id="btn-account-settings" role="menuitem">⚙️ Ayarlar</button>
+              <p class="account-menu-label">Süre</p>
+              <div id="account-times" class="account-time-row">
+                <button type="button" data-limit="15">15 dk</button>
+                <button type="button" data-limit="30">30 dk</button>
+                <button type="button" data-limit="45">45 dk</button>
+                <button type="button" data-limit="60">60 dk</button>
+                <button type="button" class="time-none" data-limit="0">Süre yok</button>
+              </div>
               <button type="button" id="btn-account-logout" role="menuitem">Çıkış</button>
             </div>
           </div>
@@ -181,6 +191,10 @@
             <span id="play-room-name"></span>
           </div>
           <div id="scoreboard" class="scoreboard" aria-live="polite"></div>
+          <div id="play-time-left" class="time-left" hidden>
+            <span class="time-left-icon" aria-hidden="true">⏳</span>
+            <span class="time-left-text">0:00</span>
+          </div>
           <button
             id="sound-btn-play"
             class="icon-btn small"
@@ -228,7 +242,7 @@
     </div>
     <div id="parent-modal" class="name-modal parent-modal" hidden>
       <div class="name-modal-card" role="dialog" aria-labelledby="parent-title">
-        <p id="parent-title">Ayarlar</p>
+        <p id="parent-title">Süre</p>
         <p id="parent-hint" class="hint">Bugün ne kadar oynasın?</p>
         <p id="parent-user" class="parent-user"></p>
         <div id="parent-limits" class="parent-limits">
@@ -253,7 +267,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.29";
+        var CURRENT = "0.30";
         var started = false;
 
         function addScript(src) {

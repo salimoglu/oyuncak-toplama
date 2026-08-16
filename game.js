@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.29";
+  const GAME_VERSION = window.__OT_VERSION || "0.30";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -1212,7 +1212,41 @@
   }
 
   function sessionCounts() {
-    return ["character", "room", "play", "win"].includes(state.screen);
+    return Boolean(state.user) && state.screen !== "login";
+  }
+
+  function remainingMs() {
+    if (!state.parent.limit || !state.user) return 0;
+    rollParentDay();
+    return Math.max(0, parentLimitMs() - state.parent.usedMs);
+  }
+
+  function formatRemaining(ms) {
+    const total = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  }
+
+  function markAccountTimes() {
+    document.querySelectorAll("#account-times [data-limit]").forEach((btn) => {
+      btn.classList.toggle("on", Number(btn.dataset.limit) === state.parent.limit);
+    });
+  }
+
+  function renderTimeLeft() {
+    const show = Boolean(state.user && state.parent.limit && state.screen !== "login");
+    const left = remainingMs();
+    const text = formatRemaining(left);
+    const low = show && left <= 2 * 60 * 1000;
+    ["time-left", "play-time-left"].forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.hidden = !show;
+      el.classList.toggle("low", low);
+      const label = el.querySelector(".time-left-text");
+      if (label) label.textContent = text;
+    });
   }
 
   function lockPlayTime() {
@@ -1230,16 +1264,22 @@
     const last = state.parent.lastTick || now;
     const delta = now - last;
     state.parent.lastTick = now;
-    if (document.hidden || !state.parent.limit || !$("time-lock").hidden) return;
-    if (!sessionCounts()) return;
-    state.parent.usedMs += delta;
-    if (state.parent.usedMs >= parentLimitMs()) {
-      state.parent.usedMs = parentLimitMs();
-      saveParent();
-      lockPlayTime();
-    } else {
-      saveParent();
+    const counting =
+      !document.hidden &&
+      Boolean(state.parent.limit) &&
+      $("time-lock").hidden &&
+      sessionCounts();
+    if (counting) {
+      state.parent.usedMs += delta;
+      if (state.parent.usedMs >= parentLimitMs()) {
+        state.parent.usedMs = parentLimitMs();
+        saveParent();
+        lockPlayTime();
+      } else {
+        saveParent();
+      }
     }
+    renderTimeLeft();
   }
 
   function openParentModal() {
@@ -1249,7 +1289,7 @@
     }
     playTapSound();
     closeAccountMenu();
-    $("parent-title").textContent = "Ayarlar";
+    $("parent-title").textContent = "Süre";
     $("parent-hint").textContent = "Bugün ne kadar oynasın?";
     $("parent-user").textContent = state.user.email || state.user.name || "";
     $("parent-limits").hidden = false;
@@ -1272,6 +1312,9 @@
     playTapSound();
     if (!timeIsUp()) unlockPlayTime();
     else lockPlayTime();
+    markAccountTimes();
+    renderTimeLeft();
+    closeAccountMenu();
   }
 
   function closeParentModal() {
@@ -1367,7 +1410,10 @@
     const open = menu.hidden;
     menu.hidden = !open;
     btn.setAttribute("aria-expanded", open ? "true" : "false");
-    if (open) playTapSound();
+    if (open) {
+      markAccountTimes();
+      playTapSound();
+    }
   }
 
   function renderAccount() {
@@ -1377,6 +1423,7 @@
     if (!user || state.screen === "login") {
       wrap.hidden = true;
       closeAccountMenu();
+      renderTimeLeft();
       return;
     }
     wrap.hidden = false;
@@ -1393,7 +1440,8 @@
       initial.hidden = false;
       initial.textContent = firstName(user.name).charAt(0).toUpperCase();
     }
-    $("account-menu-who").textContent = user.email || user.name || "";
+    markAccountTimes();
+    renderTimeLeft();
   }
 
   function enterApp(user) {
@@ -1733,7 +1781,12 @@
       e.stopPropagation();
       toggleAccountMenu();
     });
-    $("btn-account-settings").addEventListener("click", openParentModal);
+    $("account-times").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-limit]");
+      if (!btn) return;
+      e.stopPropagation();
+      setParentLimit(Number(btn.dataset.limit));
+    });
     $("btn-account-logout").addEventListener("click", logoutUser);
     $("account-photo").addEventListener("error", () => {
       $("account-photo").hidden = true;

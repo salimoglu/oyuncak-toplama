@@ -182,49 +182,94 @@ body {
   top: calc(100% + 8px);
   right: 0;
   z-index: 20;
-  min-width: 200px;
-  padding: 10px;
-  border-radius: 20px;
+  min-width: 220px;
+  padding: 12px;
+  border-radius: 22px;
   background: var(--white);
   box-shadow: var(--shadow);
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .account-menu[hidden] {
   display: none;
 }
 
-.account-menu-who {
-  margin: 0 8px 4px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--soft);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.account-menu-label {
+  margin: 0 4px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #d6406a;
+  text-align: left;
 }
 
-.account-menu button {
-  min-height: 48px;
+.account-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.account-time-row button {
+  min-height: 44px;
   border: none;
   border-radius: 14px;
   background: #fff6ea;
   color: var(--ink);
   font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.account-time-row button.on {
+  background: linear-gradient(180deg, #ff9ebd, #ff5d8f);
+  color: #fff;
+}
+
+.account-time-row .time-none {
+  grid-column: 1 / -1;
+}
+
+.account-menu > #btn-account-logout {
+  min-height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: #fff6ea;
+  color: #c73462;
+  font-family: inherit;
   font-size: 1.05rem;
   font-weight: 800;
   cursor: pointer;
-  text-align: left;
-  padding: 0 14px;
 }
 
-.account-menu button:active {
-  background: #ffe0c2;
-}
-
-#btn-account-logout {
+.time-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 48px;
+  padding: 0 14px 0 10px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff8ee, #ffe0c2);
   color: #c73462;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 4px 0 #ffb347, var(--shadow);
+}
+
+.time-left[hidden] {
+  display: none;
+}
+
+.time-left-icon {
+  font-size: 1.15rem;
+}
+
+.time-left.low {
+  background: linear-gradient(180deg, #ffd0de, #ff8fab);
+  color: #fff;
+  box-shadow: 0 4px 0 #c73462, var(--shadow);
 }
 
 #app.playing.has-back .play-bar {
@@ -1023,6 +1068,13 @@ h2 {
   padding: 4px 8px 6px;
   width: 100%;
   z-index: 4;
+  flex-shrink: 0;
+}
+
+.play-bar .time-left {
+  min-height: 44px;
+  padding: 0 12px 0 8px;
+  font-size: 0.95rem;
   flex-shrink: 0;
 }
 
@@ -2772,6 +2824,16 @@ h2 {
 
   .account-btn {
     padding: 4px;
+  }
+
+  .time-left-icon {
+    display: none;
+  }
+
+  .time-left {
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 0.9rem;
   }
 }
 
