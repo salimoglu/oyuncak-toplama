@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.27";
+  const GAME_VERSION = window.__OT_VERSION || "0.28";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -1341,7 +1341,8 @@
     $("btn-auth-mode").textContent = register ? "Hesabın var mı? Giriş yap" : "Hesabın yok mu? Kayıt ol";
     $("login-pass2-wrap").hidden = !register;
     $("login-pass2").required = register;
-    $("login-pass").autocomplete = register ? "new-password" : "current-password";
+    $("login-pass").autocomplete = "new-password";
+    $("login-name").autocomplete = "off";
     setLoginError("");
   }
 
@@ -1366,6 +1367,7 @@
     $("login-pass2").value = "";
     setAuthMode("login");
     show("login");
+    stripAutofill();
   }
 
   async function registerLocal(name, pass) {
@@ -1409,6 +1411,9 @@
 
   async function submitAuth(event) {
     event.preventDefault();
+    $("login-name").readOnly = false;
+    $("login-pass").readOnly = false;
+    $("login-pass2").readOnly = false;
     const name = $("login-name").value.trim();
     const pass = $("login-pass").value;
     const pass2 = $("login-pass2").value;
@@ -1488,6 +1493,56 @@
     return provider;
   }
 
+  function waitForFirebaseUser(ms) {
+    return new Promise((resolve) => {
+      if (!firebaseOn()) {
+        resolve(null);
+        return;
+      }
+      if (firebase.auth().currentUser) {
+        resolve(firebase.auth().currentUser);
+        return;
+      }
+      let done = false;
+      const finish = (user) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        unsub();
+        resolve(user || null);
+      };
+      const unsub = firebase.auth().onAuthStateChanged((user) => {
+        if (user) finish(user);
+      });
+      const timer = setTimeout(() => finish(firebase.auth().currentUser), ms);
+    });
+  }
+
+  let autofillGuardBound = false;
+  function stripAutofill() {
+    const name = $("login-name");
+    const pass = $("login-pass");
+    const pass2 = $("login-pass2");
+    [name, pass, pass2].forEach((el) => {
+      el.value = "";
+      el.readOnly = true;
+    });
+    const unlock = (el) => {
+      el.readOnly = false;
+    };
+    if (!autofillGuardBound) {
+      autofillGuardBound = true;
+      [name, pass, pass2].forEach((el) => {
+        el.addEventListener("focus", () => unlock(el));
+        el.addEventListener("pointerdown", () => unlock(el));
+      });
+    }
+    setTimeout(() => {
+      if (document.activeElement !== name) name.value = "";
+      if (document.activeElement !== pass) pass.value = "";
+    }, 400);
+  }
+
   async function loginWithGoogle() {
     setLoginError("");
     initFirebase();
@@ -1499,8 +1554,23 @@
     try {
       firebase.auth().languageCode = "tr";
       await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-      await firebase.auth().signInWithRedirect(googleProvider());
+      const provider = googleProvider();
+      try {
+        const cred = await firebase.auth().signInWithPopup(provider);
+        $("btn-google").textContent = "Gmail ile bağlan";
+        playTapSound();
+        enterApp(userFromFirebase(cred.user, "google"));
+        return;
+      } catch (err) {
+        const needRedirect =
+          err.code === "auth/popup-blocked" ||
+          err.code === "auth/operation-not-supported-in-this-environment";
+        if (!needRedirect) throw err;
+      }
+      sessionStorage.setItem("ot-google-pending", "1");
+      await firebase.auth().signInWithRedirect(provider);
     } catch (err) {
+      sessionStorage.removeItem("ot-google-pending");
       $("btn-google").textContent = "Gmail ile bağlan";
       setLoginError(friendlyAuthError(err));
     }
@@ -1509,36 +1579,34 @@
   async function restoreSession() {
     initFirebase();
     if (firebaseOn()) {
-      $("login-tagline").textContent = "Giriş kontrol ediliyor…";
+      const pending = sessionStorage.getItem("ot-google-pending") === "1";
+      $("login-tagline").textContent = pending ? "Gmail ile bağlanıyor…" : "Giriş kontrol ediliyor…";
       try {
         firebase.auth().languageCode = "tr";
         try {
-          await firebase.auth().getRedirectResult();
+          const result = await firebase.auth().getRedirectResult();
+          if (result?.user) {
+            sessionStorage.removeItem("ot-google-pending");
+            enterApp(userFromFirebase(result.user, "google"));
+            return true;
+          }
         } catch (err) {
+          sessionStorage.removeItem("ot-google-pending");
           setLoginError(friendlyAuthError(err));
         }
-        const fbUser = await new Promise((resolve) => {
-          const unsub = firebase.auth().onAuthStateChanged((user) => {
-            unsub();
-            resolve(user || null);
-          });
-        });
         firebase.auth().onAuthStateChanged((user) => {
           if (!user) return;
-          if (state.screen === "login" || state.user?.id !== user.uid) {
+          sessionStorage.removeItem("ot-google-pending");
+          if (state.screen === "login" || !state.user || state.user.id !== user.uid) {
             enterApp(userFromFirebase(user));
           }
         });
+        const fbUser = await waitForFirebaseUser(pending ? 5000 : 1800);
         if (fbUser) {
+          sessionStorage.removeItem("ot-google-pending");
           enterApp(userFromFirebase(fbUser));
           return true;
         }
-        setTimeout(() => {
-          const later = firebase.auth().currentUser;
-          if (later && (state.screen === "login" || !state.user)) {
-            enterApp(userFromFirebase(later));
-          }
-        }, 1200);
       } catch (err) {
         setLoginError(friendlyAuthError(err));
       }
@@ -1554,6 +1622,7 @@
     }
     setAuthMode("login");
     show("login");
+    stripAutofill();
     return false;
   }
 

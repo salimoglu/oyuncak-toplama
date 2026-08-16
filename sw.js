@@ -1,4 +1,4 @@
-const VERSION = "0.27";
+const VERSION = "0.28";
 const CACHE_NAME = "oyuncak-toplama-" + VERSION;
 
 self.addEventListener("install", (event) => {
@@ -34,6 +34,13 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request, { cache: "no-store" }).catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
   const alwaysNetwork =
     url.pathname.endsWith("/sw.js") || url.pathname.endsWith("/version.json");
 
@@ -46,6 +53,6 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       })
-      .catch(() => caches.match(event.request).then((cached) => cached || caches.match("./index.html")))
+      .catch(() => caches.match(event.request))
   );
 });

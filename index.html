@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.27" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.28" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.27</div>
+        <div id="version-badge" class="version-badge">v0.28</div>
         <button
           id="sound-btn"
           class="icon-btn"
@@ -56,18 +56,42 @@
           <div class="logo-toys" aria-hidden="true">🧸 🔐 🎈</div>
           <h1>Oyuncak Toplama</h1>
           <p id="login-tagline" class="tagline">Aile hesabınla gir.</p>
-          <form id="login-form" class="login-form" autocomplete="on">
+          <form id="login-form" class="login-form" autocomplete="off">
+            <input class="login-decoy" type="text" name="username" autocomplete="username" tabindex="-1" aria-hidden="true" />
+            <input class="login-decoy" type="password" name="password" autocomplete="current-password" tabindex="-1" aria-hidden="true" />
             <label class="login-field">
               <span>İsim</span>
-              <input id="login-name" type="text" maxlength="20" autocomplete="username" required />
+              <input
+                id="login-name"
+                name="ot-aile-adi"
+                type="text"
+                maxlength="20"
+                autocomplete="off"
+                autocapitalize="words"
+                spellcheck="false"
+                required
+              />
             </label>
             <label class="login-field">
               <span>Şifre</span>
-              <input id="login-pass" type="password" maxlength="32" autocomplete="current-password" required />
+              <input
+                id="login-pass"
+                name="ot-aile-sifre"
+                type="password"
+                maxlength="32"
+                autocomplete="new-password"
+                required
+              />
             </label>
             <label id="login-pass2-wrap" class="login-field" hidden>
               <span>Şifre tekrar</span>
-              <input id="login-pass2" type="password" maxlength="32" autocomplete="new-password" />
+              <input
+                id="login-pass2"
+                name="ot-aile-sifre2"
+                type="password"
+                maxlength="32"
+                autocomplete="new-password"
+              />
             </label>
             <p id="login-error" class="login-error" hidden></p>
             <button id="btn-login" class="big-btn" type="submit">Giriş yap</button>
@@ -210,7 +234,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.27";
+        var CURRENT = "0.28";
         var started = false;
 
         function addScript(src) {
