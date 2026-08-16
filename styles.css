@@ -1322,6 +1322,7 @@ h2 {
   flex-direction: column;
   gap: 6px;
   box-shadow: var(--shadow);
+  position: relative;
 }
 
 .player-card.p1 {
@@ -1335,6 +1336,25 @@ h2 {
 .player-card.winner {
   background: #e6fcf5;
   outline-color: #12b886;
+}
+
+.player-card.loser {
+  opacity: 0.8;
+}
+
+.win-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #69db7c, #12b886);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  box-shadow: 0 3px 0 #0b9b6e;
+  white-space: nowrap;
 }
 
 .player-card-top {
@@ -2785,6 +2805,38 @@ h2 {
   flex-direction: column;
   gap: 10px;
   align-items: center;
+}
+
+.win-result {
+  margin: 0;
+  font-size: clamp(1.15rem, 4vw, 1.5rem);
+  font-weight: 800;
+  padding: 8px 18px;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.win-result.you {
+  background: #e6fcf5;
+  color: #087f5b;
+}
+
+.win-result.bot {
+  background: #d0ebff;
+  color: #1864ab;
+}
+
+.win-result.tie {
+  background: #fff3bf;
+  color: #e67700;
+}
+
+.win-card.bot-won h2 {
+  color: #1c7ed6;
+}
+
+.win-card.you-won h2 {
+  color: #0b9b6e;
 }
 
 .stars {

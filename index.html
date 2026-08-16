@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.31" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.32" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.31</div>
+        <div id="version-badge" class="version-badge">v0.32</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -226,7 +226,8 @@
       </section>
 
       <section id="screen-win" class="screen win">
-        <div class="win-card">
+        <div class="win-card" id="win-card">
+          <p id="win-result" class="win-result"></p>
           <div id="win-stars" class="stars" aria-hidden="true">⭐ ⭐ ⭐</div>
           <h2 id="win-title">Oda tertemiz!</h2>
           <p id="win-text">En çok toplayan kazandı.</p>
@@ -268,7 +269,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.31";
+        var CURRENT = "0.32";
         var started = false;
 
         function addScript(src) {

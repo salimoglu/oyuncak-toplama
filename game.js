@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.31";
+  const GAME_VERSION = window.__OT_VERSION || "0.32";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -787,14 +787,25 @@
   }
 
   function playerSummary(player, extraClass = "", showToys = true) {
-    const side = player.id === "p1" ? "1. oyuncu" : "2. oyuncu";
+    const vsBot = state.vsBot;
+    const side = vsBot
+      ? player.isBot
+        ? `Bot · ${BOT[state.difficulty].label}`
+        : "Sen"
+      : player.id === "p1"
+        ? "1. oyuncu"
+        : "2. oyuncu";
     const count = player.collected.length;
+    const badge = extraClass.includes("winner")
+      ? `<span class="win-badge">Kazandı</span>`
+      : "";
     return `
       <article class="player-card ${player.id} ${extraClass}">
+        ${badge}
         <div class="player-card-top">
           <span class="player-face" style="background:${player.char.color}">${player.char.emoji}</span>
           <div class="player-meta">
-            <small>${player.isBot ? `Bot · ${BOT[state.difficulty].label}` : side}</small>
+            <small>${side}</small>
             <strong>${player.char.name}</strong>
           </div>
           <div class="player-points">
@@ -1151,30 +1162,73 @@
     state.ended = true;
     stopRuns();
     saveDone();
-    playWinSound();
 
     const a = state.players.p1;
     const b = state.players.p2;
     const scoreA = a.collected.length;
     const scoreB = b.collected.length;
+    const vsBot = state.vsBot;
+    let outcome = "tie";
+    if (scoreA > scoreB) outcome = "p1";
+    else if (scoreB > scoreA) outcome = "p2";
 
+    let result = "Berabere";
+    let resultKind = "tie";
     let title;
     let text;
     let stars;
-    if (scoreA > scoreB) {
+    let celebrate = false;
+
+    if (vsBot) {
+      if (outcome === "p1") {
+        result = "Sen kazandın";
+        resultKind = "you";
+        title = `${a.char.name} kazandı!`;
+        text = `Sen ${scoreA} oyuncak · Bot ${scoreB} oyuncak`;
+        stars = "⭐ ⭐ ⭐";
+        celebrate = true;
+      } else if (outcome === "p2") {
+        result = "Bot kazandı";
+        resultKind = "bot";
+        title = `Bot (${b.char.name}) kazandı`;
+        text = `Bot ${scoreB} oyuncak topladı. Sen ${scoreA} topladın.`;
+        stars = "🤖";
+        celebrate = false;
+      } else {
+        result = "Berabere";
+        resultKind = "tie";
+        title = "İkiniz de aynı sayıdasınız";
+        text = `Sen ${scoreA} oyuncak · Bot ${scoreB} oyuncak`;
+        stars = "⭐ ⭐";
+      }
+    } else if (outcome === "p1") {
+      result = "1. oyuncu kazandı";
+      resultKind = "you";
       title = `${a.char.name} kazandı!`;
-      text = `${a.char.emoji} ${scoreA} oyuncak topladı.`;
+      text = `${a.char.name} ${scoreA} oyuncak · ${b.char.name} ${scoreB} oyuncak`;
       stars = "⭐ ⭐ ⭐";
-    } else if (scoreB > scoreA) {
+      celebrate = true;
+    } else if (outcome === "p2") {
+      result = "2. oyuncu kazandı";
+      resultKind = "bot";
       title = `${b.char.name} kazandı!`;
-      text = `${b.char.emoji} ${scoreB} oyuncak topladı.`;
+      text = `${b.char.name} ${scoreB} oyuncak · ${a.char.name} ${scoreA} oyuncak`;
       stars = "⭐ ⭐ ⭐";
+      celebrate = true;
     } else {
-      title = "Berabere!";
-      text = "İkiniz de aynı sayıda oyuncak topladınız.";
+      result = "Berabere";
+      resultKind = "tie";
+      title = "İkiniz de aynı sayıdasınız";
+      text = `${a.char.name} ${scoreA} oyuncak · ${b.char.name} ${scoreB} oyuncak`;
       stars = "⭐ ⭐";
     }
 
+    const card = $("win-card");
+    card.classList.remove("you-won", "bot-won", "tie-game");
+    card.classList.add(outcome === "tie" ? "tie-game" : outcome === "p1" ? "you-won" : "bot-won");
+    const resultEl = $("win-result");
+    resultEl.textContent = result;
+    resultEl.className = `win-result ${resultKind}`;
     $("win-title").textContent = title;
     $("win-text").textContent = text;
     $("win-stars").textContent = stars;
@@ -1184,10 +1238,15 @@
         <i class="p1" style="width:${(scoreA / sum) * 100}%"></i>
         <i class="p2" style="width:${(scoreB / sum) * 100}%"></i>
       </div>
-      ${playerSummary(a, scoreA >= scoreB ? "winner" : "")}
-      ${playerSummary(b, scoreB >= scoreA ? "winner" : "")}
+      ${playerSummary(a, outcome === "p1" ? "winner" : outcome === "p2" ? "loser" : "")}
+      ${playerSummary(b, outcome === "p2" ? "winner" : outcome === "p1" ? "loser" : "")}
     `;
-    burstConfetti();
+    if (celebrate) {
+      playWinSound();
+      burstConfetti();
+    } else {
+      $("confetti").innerHTML = "";
+    }
     setTimeout(() => show("win"), 450);
   }
 
