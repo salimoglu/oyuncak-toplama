@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.17";
+  const GAME_VERSION = window.__OT_VERSION || "0.18";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -193,10 +193,10 @@
   ];
 
   const MOVES = [
-    { id: "up", label: "↑", dx: 0, dy: -1 },
-    { id: "down", label: "↓", dx: 0, dy: 1 },
-    { id: "left", label: "←", dx: -1, dy: 0 },
-    { id: "right", label: "→", dx: 1, dy: 0 },
+    { id: "up", label: "↑", name: "Yukarı", dx: 0, dy: -1 },
+    { id: "down", label: "↓", name: "Aşağı", dx: 0, dy: 1 },
+    { id: "left", label: "←", name: "Sola", dx: -1, dy: 0 },
+    { id: "right", label: "→", name: "Sağa", dx: 1, dy: 0 },
   ];
 
   const BOT = {
@@ -718,7 +718,7 @@
     const queue = player.queue
       .map(
         (cmd, i) =>
-          `<span class="code-chip ${player.stepIndex === i ? "current" : ""}">${cmd.label}</span>`
+          `<span class="code-chip dir-${cmd.id} ${player.stepIndex === i ? "current" : ""}"><i class="dir-arrow" aria-hidden="true"></i></span>`
       )
       .join("");
     const countLabel = `${player.queue.length}/${MAX_CODE}`;
@@ -751,9 +751,9 @@
       <div class="code-pad" data-player="${playerId}">
         ${MOVES.map(
           (m) =>
-            `<button type="button" class="code-btn" data-move="${m.id}" ${
+            `<button type="button" class="code-btn dir-${m.id}" data-move="${m.id}" aria-label="${m.name}" ${
               !myTurn || player.queue.length >= MAX_CODE ? "disabled" : ""
-            }>${m.label}</button>`
+            }><i class="dir-arrow" aria-hidden="true"></i></button>`
         ).join("")}
       </div>
       <div class="dock-actions">

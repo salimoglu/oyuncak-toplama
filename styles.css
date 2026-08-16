@@ -1543,18 +1543,15 @@ h2 {
 .code-chip {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
-  background: #fff;
+  border-radius: 12px;
   display: grid;
   place-items: center;
-  font-size: 1.1rem;
-  font-weight: 700;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.12);
 }
 
 .code-chip.current {
-  background: #ffd166;
   transform: scale(1.08);
+  box-shadow: 0 0 0 3px #fff3bf;
 }
 
 .code-empty {
@@ -1566,20 +1563,79 @@ h2 {
 .code-pad {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 8px;
 }
 
 .code-btn {
-  min-height: 52px;
-  border-radius: 14px;
-  background: #fff;
-  font-size: 1.5rem;
-  font-weight: 700;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
+  min-height: 56px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: #fff;
 }
 
-.code-btn:active {
-  transform: translateY(2px);
+.code-btn:active:not(:disabled) {
+  transform: translateY(3px);
+}
+
+.dir-up {
+  background: linear-gradient(180deg, #91d5ff, #4dabf7);
+  box-shadow: 0 5px 0 #1c7ed6;
+}
+
+.dir-down {
+  background: linear-gradient(180deg, #8ce99a, #51cf66);
+  box-shadow: 0 5px 0 #2f9e44;
+}
+
+.dir-left {
+  background: linear-gradient(180deg, #ffb3d0, #ff6b9d);
+  box-shadow: 0 5px 0 #c73462;
+}
+
+.dir-right {
+  background: linear-gradient(180deg, #d0bfff, #9775fa);
+  box-shadow: 0 5px 0 #7048e8;
+}
+
+.code-btn:active:not(:disabled).dir-up { box-shadow: 0 2px 0 #1c7ed6; }
+.code-btn:active:not(:disabled).dir-down { box-shadow: 0 2px 0 #2f9e44; }
+.code-btn:active:not(:disabled).dir-left { box-shadow: 0 2px 0 #c73462; }
+.code-btn:active:not(:disabled).dir-right { box-shadow: 0 2px 0 #7048e8; }
+
+.dir-arrow {
+  width: 12px;
+  height: 12px;
+  border-left: 4px solid #fff;
+  border-bottom: 4px solid #fff;
+  border-radius: 2px;
+  display: block;
+}
+
+.dir-up .dir-arrow {
+  transform: rotate(135deg);
+  margin-top: 4px;
+}
+
+.dir-down .dir-arrow {
+  transform: rotate(-45deg);
+  margin-bottom: 4px;
+}
+
+.dir-left .dir-arrow {
+  transform: rotate(45deg);
+  margin-right: 3px;
+}
+
+.dir-right .dir-arrow {
+  transform: rotate(-135deg);
+  margin-left: 3px;
+}
+
+.code-chip .dir-arrow {
+  width: 8px;
+  height: 8px;
+  border-width: 3px;
 }
 
 .code-btn:disabled,
