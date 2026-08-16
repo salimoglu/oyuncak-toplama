@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = "0.8";
+  const GAME_VERSION = "0.9";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -112,32 +112,72 @@
       name: "Yatak Odası",
       emoji: "🛏️",
       theme: "bedroom",
-      furniture: '<div class="window"></div><div class="bed"></div>',
-      toys: ["🧸", "🎀", "📚", "🧦", "🎈", "👗", "🪀", "👠"],
+      furniture:
+        '<div class="curtain"></div><div class="window"></div><div class="lamp"></div><div class="nightstand"></div><div class="bed"><i></i></div><div class="rug pink"></div>',
+      toys: ["🧸", "🎀", "📚", "🧦", "🎈", "👗", "🪀", "👠", "🌙", "🧴", "👛", "🧸"],
     },
     {
       id: "oyun",
       name: "Oyun Odası",
       emoji: "🎲",
       theme: "playroom",
-      furniture: '<div class="shelf"></div><div class="window"></div>',
-      toys: ["🚗", "🧩", "🎨", "🤖", "🦄", "🚂", "🧱", "🪀", "🎯", "🎪"],
+      furniture:
+        '<div class="window"></div><div class="shelf"></div><div class="tent"></div><div class="blocks"></div><div class="rug mint"></div>',
+      toys: ["🚗", "🧩", "🎨", "🤖", "🦄", "🚂", "🧱", "🪀", "🎯", "🎪", "🎲", "🪁"],
     },
     {
       id: "salon",
       name: "Salon",
       emoji: "🛋️",
       theme: "living",
-      furniture: '<div class="sofa"></div><div class="window"></div>',
-      toys: ["📚", "🖍️", "🧸", "⚽", "🎧", "🧩", "🎀", "🪀"],
+      furniture:
+        '<div class="window"></div><div class="tv"></div><div class="sofa"></div><div class="floor-lamp"></div><div class="rug lilac"></div>',
+      toys: ["📚", "🖍️", "🧸", "⚽", "🎧", "🧩", "🎀", "🪀", "📱", "🌵", "🎮", "📷"],
     },
     {
       id: "bahce",
       name: "Bahçe",
       emoji: "🌳",
       theme: "garden",
-      furniture: '<div class="sun"></div><div class="tree"></div>',
-      toys: ["⚽", "🪁", "🚲", "🪣", "🦋", "🏐", "🌸", "🧸"],
+      furniture:
+        '<div class="sun"></div><div class="cloud-deco"></div><div class="tree"></div><div class="flowerbed"></div><div class="fence"></div><div class="sandbox"></div>',
+      toys: ["⚽", "🪁", "🚲", "🪣", "🦋", "🏐", "🌸", "🧸", "🫧", "🌻", "🐛", "🪴"],
+    },
+    {
+      id: "mutfak",
+      name: "Mutfak",
+      emoji: "🍳",
+      theme: "kitchen",
+      furniture:
+        '<div class="fridge"></div><div class="stove"></div><div class="kitchen-table"></div><div class="cabinets"></div>',
+      toys: ["🍎", "🍌", "🧁", "🍪", "🥄", "🥣", "🧸", "🥕", "🥛", "🍞", "🍇", "🍩"],
+    },
+    {
+      id: "banyo",
+      name: "Banyo",
+      emoji: "🛁",
+      theme: "bath",
+      furniture:
+        '<div class="tiles"></div><div class="tub"></div><div class="sink"></div><div class="mirror"></div><div class="towel"></div>',
+      toys: ["🦆", "🫧", "🧴", "🧼", "🧸", "🚤", "🐚", "🪥", "🚿", "🐠", "💜", "🎀"],
+    },
+    {
+      id: "plaj",
+      name: "Plaj",
+      emoji: "🏖️",
+      theme: "beach",
+      furniture:
+        '<div class="sky-band"></div><div class="sun"></div><div class="water"></div><div class="umbrella"></div><div class="castle"></div>',
+      toys: ["🐚", "🏐", "🪣", "🧸", "🍦", "🕶️", "🪁", "🐠", "🏖️", "🦋", "🌸", "🫧"],
+    },
+    {
+      id: "atolye",
+      name: "Atölye",
+      emoji: "🛠️",
+      theme: "workshop",
+      furniture:
+        '<div class="workbench"></div><div class="toolbox"></div><div class="pegboard"></div><div class="stool"></div>',
+      toys: ["🚂", "🧱", "🚗", "🔧", "🧸", "🎨", "🪵", "⚙️", "🪁", "🤖", "🪀", "🎯"],
     },
   ];
 
@@ -158,6 +198,12 @@
     { id: "left", label: "←", dx: -1, dy: 0 },
     { id: "right", label: "→", dx: 1, dy: 0 },
   ];
+
+  const BOT = {
+    kolay: { delay: 1600, maxCode: 4, mistake: 0.4, stepMs: 560, label: "Kolay" },
+    orta: { delay: 850, maxCode: 6, mistake: 0.12, stepMs: 420, label: "Orta" },
+    zor: { delay: 280, maxCode: 6, mistake: 0, stepMs: 260, label: "Zor" },
+  };
 
   const CHEERS = ["Aferin!", "Süper!", "Harika!", "Bravo!", "Yaşasın!", "Çok güzel!"];
 
@@ -205,6 +251,9 @@
     ended: false,
     sound: localStorage.getItem("ot-sound") !== "off",
     completed: JSON.parse(localStorage.getItem("ot-done") || "[]"),
+    vsBot: false,
+    difficulty: localStorage.getItem("ot-diff") || "orta",
+    botToken: null,
     audio: null,
     run: { p1: null, p2: null },
   };
@@ -219,6 +268,7 @@
       running: false,
       collected: [],
       basket: null,
+      isBot: false,
       stepIndex: -1,
     };
   }
@@ -332,9 +382,16 @@
         </button>`;
     }).join("");
 
-    $("char-title").textContent = state.pickStep === 1 ? "1. oyuncu kim?" : "2. oyuncu kim?";
-    $("char-hint").textContent =
-      state.pickStep === 1 ? "Solda oynayacak karakteri seç." : "Sağda oynayacak karakteri seç.";
+    $("char-title").textContent = state.vsBot
+      ? "Sen kimsin?"
+      : state.pickStep === 1
+        ? "1. oyuncu kim?"
+        : "2. oyuncu kim?";
+    $("char-hint").textContent = state.vsBot
+      ? "Karakterini seç, sonra sepetini al."
+      : state.pickStep === 1
+        ? "Solda oynayacak karakteri seç."
+        : "Sağda oynayacak karakteri seç.";
     pickedChips();
   }
 
@@ -434,6 +491,7 @@
       ...emptyPlayer("p2", state.cols - 1, midRow()),
       char: state.players.p2.char,
       basket: state.players.p2.basket,
+      isBot: state.players.p2.isBot,
     };
 
     const spots = randomToyCells(room.toys.length);
@@ -453,6 +511,7 @@
     renderDocks();
     updateScoreboard();
     show("play");
+    if (state.vsBot) startBot();
   }
 
   function renderBoard() {
@@ -504,7 +563,7 @@
         <div class="player-card-top">
           <span class="player-face" style="background:${player.char.color}">${player.char.emoji}</span>
           <div class="player-meta">
-            <small>${side}</small>
+            <small>${player.isBot ? `Bot · ${BOT[state.difficulty].label}` : side}</small>
             <strong>${player.char.name}</strong>
           </div>
           <div class="player-points">
@@ -527,7 +586,24 @@
       )
       .join("");
 
-    $(`dock-${playerId}`).innerHTML = `
+    $(`dock-${playerId}`).innerHTML = player.isBot
+      ? `
+      <p class="dock-side">Bot · ${BOT[state.difficulty].label}</p>
+      <div class="code-queue">${
+        queue || '<span class="code-empty">Bot oynuyor</span>'
+      }</div>
+      <p class="bot-note">Bot kendi kodunu yazıyor</p>
+      <div class="collected-well" style="--basket:${player.basket?.color || "#fff6ea"}; --basket-rim:${player.basket?.rim || "#d4a574"}">
+        <p class="collected-label">Toplananlar</p>
+        ${
+          player.collected.length
+            ? `<div class="collected-toys">${player.collected
+                .map((t) => `<span>${t.emoji}</span>`)
+                .join("")}</div>`
+            : `<p class="collected-empty">Toplanan oyuncaklar burada</p>`
+        }
+      </div>`
+      : `
       <p class="dock-side">${side}</p>
       <div class="code-queue" data-player="${playerId}">${
         queue || '<span class="code-empty">Komut ekle</span>'
@@ -594,7 +670,7 @@
 
   function addCommand(playerId, moveId) {
     const player = state.players[playerId];
-    if (!player || player.running || state.ended) return;
+    if (!player || player.running || player.isBot || state.ended) return;
     if (player.queue.length >= MAX_CODE) return;
     const move = MOVES.find((m) => m.id === moveId);
     if (!move) return;
@@ -605,7 +681,7 @@
 
   function eraseCommand(playerId) {
     const player = state.players[playerId];
-    if (!player || player.running || state.ended) return;
+    if (!player || player.running || player.isBot || state.ended) return;
     player.queue.pop();
     playTapSound();
     renderDock(playerId);
@@ -616,6 +692,7 @@
   }
 
   function stopRuns() {
+    if (state.botToken) state.botToken.cancelled = true;
     ["p1", "p2"].forEach((id) => {
       if (state.run[id]) {
         state.run[id].cancelled = true;
@@ -623,6 +700,80 @@
       }
       if (state.players[id]) state.players[id].running = false;
     });
+  }
+
+  function botPath(fromCol, fromRow, toCol, toRow) {
+    const key = (c, r) => `${c},${r}`;
+    const start = key(fromCol, fromRow);
+    const goal = key(toCol, toRow);
+    const prev = { [start]: null };
+    const queue = [[fromCol, fromRow]];
+    while (queue.length) {
+      const [c, r] = queue.shift();
+      if (key(c, r) === goal) break;
+      MOVES.forEach((move) => {
+        const nc = c + move.dx;
+        const nr = r + move.dy;
+        const k = key(nc, nr);
+        if (nc < 0 || nr < 0 || nc >= state.cols || nr >= state.rows) return;
+        if (k in prev) return;
+        prev[k] = { c, r, move };
+        queue.push([nc, nr]);
+      });
+    }
+    if (!(goal in prev)) return [];
+    const moves = [];
+    let cur = { c: toCol, r: toRow };
+    while (prev[key(cur.c, cur.r)]) {
+      const step = prev[key(cur.c, cur.r)];
+      moves.unshift(step.move);
+      cur = { c: step.c, r: step.r };
+    }
+    return moves;
+  }
+
+  function botPlan(cfg) {
+    const bot = state.players.p2;
+    if (!bot || !state.toys.length) return [];
+    let toys = [...state.toys].sort(
+      (a, b) =>
+        Math.abs(a.col - bot.col) +
+        Math.abs(a.row - bot.row) -
+        (Math.abs(b.col - bot.col) + Math.abs(b.row - bot.row))
+    );
+    if (cfg.mistake && Math.random() < cfg.mistake && toys.length > 1) {
+      toys = toys.slice(1);
+    }
+    const target = toys[0];
+    if (target.col === bot.col && target.row === bot.row) {
+      maybeCollect(bot);
+      return [];
+    }
+    let path = botPath(bot.col, bot.row, target.col, target.row);
+    if (cfg.mistake && path.length && Math.random() < cfg.mistake) {
+      path = [MOVES[Math.floor(Math.random() * MOVES.length)], ...path];
+    }
+    return path.slice(0, cfg.maxCode).map((m) => ({ ...m }));
+  }
+
+  function startBot() {
+    if (state.botToken) state.botToken.cancelled = true;
+    const token = { cancelled: false };
+    state.botToken = token;
+    const cfg = BOT[state.difficulty] || BOT.orta;
+    (async () => {
+      await wait(600);
+      while (!token.cancelled && !state.ended && state.vsBot) {
+        if (!state.players.p2?.running && state.toys.length) {
+          const plan = botPlan(cfg);
+          if (plan.length) {
+            state.players.p2.queue = plan;
+            await runProgram("p2");
+          }
+        }
+        await wait(cfg.delay);
+      }
+    })();
   }
 
   async function runProgram(playerId) {
@@ -635,6 +786,9 @@
     const program = [...player.queue];
     renderDock(playerId);
 
+    const stepMs = player.isBot
+      ? (BOT[state.difficulty] || BOT.orta).stepMs
+      : STEP_MS;
     const actor = $(`actor-${playerId}`);
     actor.classList.add("walking");
 
@@ -646,7 +800,7 @@
       if (token.cancelled || state.ended) break;
       maybeCollect(player);
       if (state.ended) break;
-      await wait(STEP_MS);
+      await wait(stepMs);
     }
 
     actor.classList.remove("walking", "bump");
@@ -799,12 +953,41 @@
     state.players = { p1: null, p2: null };
   }
 
+  function assignBot() {
+    const chars = CHARACTERS.filter((c) => c.id !== state.players.p1.char.id);
+    const baskets = BASKETS.filter((b) => b.id !== state.players.p1.basket.id);
+    const bot = emptyPlayer("p2", boardSize().cols - 1, midRow());
+    bot.char = chars[Math.floor(Math.random() * chars.length)];
+    bot.basket = baskets[Math.floor(Math.random() * baskets.length)];
+    bot.isBot = true;
+    state.players.p2 = bot;
+  }
+
+  function beginPlay(vsBot) {
+    playTapSound();
+    resetPicks();
+    state.vsBot = vsBot;
+    renderPicks();
+    show("character");
+  }
+
+  function updateDiffButtons() {
+    document.querySelectorAll(".diff-btn").forEach((btn) => {
+      btn.classList.toggle("on", btn.dataset.diff === state.difficulty);
+    });
+  }
+
   function bind() {
-    $("btn-play").addEventListener("click", () => {
+    $("btn-play").addEventListener("click", () => beginPlay(false));
+    $("btn-play-bot").addEventListener("click", () => beginPlay(true));
+
+    document.getElementById("diff-row").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-diff]");
+      if (!btn) return;
+      state.difficulty = btn.dataset.diff;
+      localStorage.setItem("ot-diff", state.difficulty);
+      updateDiffButtons();
       playTapSound();
-      resetPicks();
-      renderPicks();
-      show("character");
     });
 
     $("btn-back-home").addEventListener("click", () => {
@@ -824,7 +1007,7 @@
     });
 
     $("btn-back-character").addEventListener("click", () => {
-      state.pickStep = 2;
+      state.pickStep = state.vsBot ? 1 : 2;
       state.pickKind = "basket";
       renderPicks();
       show("character");
@@ -837,9 +1020,15 @@
         playTapSound();
         if (state.pickStep === 1) {
           state.players.p1.basket = basket;
-          state.pickStep = 2;
-          state.pickKind = "character";
-          renderPicks();
+          if (state.vsBot) {
+            assignBot();
+            renderRooms();
+            show("room");
+          } else {
+            state.pickStep = 2;
+            state.pickKind = "character";
+            renderPicks();
+          }
         } else {
           state.players.p2.basket = basket;
           renderRooms();
@@ -903,6 +1092,7 @@
 
     $("btn-home").addEventListener("click", () => {
       resetPicks();
+      state.vsBot = false;
       show("home");
     });
 
@@ -922,12 +1112,14 @@
         e.preventDefault();
         addCommand("p1", p1Moves[e.code]);
       } else if (p2Moves[e.code]) {
+        if (state.vsBot) return;
         e.preventDefault();
         addCommand("p2", p2Moves[e.code]);
       } else if (e.code === "KeyE") {
         e.preventDefault();
         runProgram("p1");
       } else if (e.code === "Enter") {
+        if (state.vsBot) return;
         e.preventDefault();
         runProgram("p2");
       } else if (e.code === "Backspace") {
@@ -949,6 +1141,7 @@
   }
 
   $("version-badge").textContent = `v${GAME_VERSION}`;
+  updateDiffButtons();
   renderPicks();
   renderRooms();
   updateSoundButton();

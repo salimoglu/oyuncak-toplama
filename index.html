@@ -31,7 +31,7 @@
   <body>
     <div id="app">
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.8</div>
+        <div id="version-badge" class="version-badge">v0.9</div>
         <button
           id="sound-btn"
           class="icon-btn"
@@ -49,8 +49,17 @@
         <div class="home-hero">
           <div class="logo-toys" aria-hidden="true">🧸 🚗 🎈 🎨</div>
           <h1>Oyuncak Toplama</h1>
-          <p class="tagline">İki kişi, kodlarla yarışarak toplar!</p>
-          <button id="btn-play" class="big-btn" type="button">Oyna</button>
+          <p class="tagline">İki kişi veya bota karşı, kodlarla yarışın!</p>
+          <div class="home-actions">
+            <button id="btn-play" class="big-btn" type="button">İki kişi</button>
+            <button id="btn-play-bot" class="ghost-btn" type="button">Bota karşı</button>
+            <div id="diff-row" class="diff-row">
+              <span>Bot:</span>
+              <button type="button" class="diff-btn" data-diff="kolay">Kolay</button>
+              <button type="button" class="diff-btn on" data-diff="orta">Orta</button>
+              <button type="button" class="diff-btn" data-diff="zor">Zor</button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -65,7 +74,7 @@
       <section id="screen-room" class="screen">
         <h2>Hangi oda dağınık?</h2>
         <p class="hint">Toplanacak odayı seç. En çok toplayan kazanır.</p>
-        <div id="room-grid" class="card-grid rooms"></div>
+        <div id="room-grid" class="card-grid rooms picks"></div>
         <button id="btn-back-character" class="text-btn" type="button">← Geri</button>
       </section>
 
