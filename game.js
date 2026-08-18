@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.38";
+  const GAME_VERSION = window.__OT_VERSION || "0.39";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -866,12 +866,11 @@
     const side = playerId === "p1" ? "1. oyuncu" : "2. oyuncu";
     const keys = "Kaydır veya dokun";
     const myTurn = state.turn === playerId && !player.running && !state.ended;
-    const queue = player.queue
-      .map(
-        (cmd, i) =>
-          `<span class="code-chip dir-${cmd.id} ${player.stepIndex === i ? "current" : ""}">${DIR_MARK}</span>`
-      )
-      .join("");
+    const queue = Array.from({ length: MAX_CODE }, (_, i) => {
+      const cmd = player.queue[i];
+      if (!cmd) return `<span class="code-chip empty" aria-hidden="true"></span>`;
+      return `<span class="code-chip dir-${cmd.id} ${player.stepIndex === i ? "current" : ""}">${DIR_MARK}</span>`;
+    }).join("");
     const countLabel = `${player.queue.length}/${MAX_CODE}`;
     const dock = $(`dock-${playerId}`);
     dock.classList.toggle("waiting", !myTurn && !player.running);
@@ -880,9 +879,7 @@
     dock.innerHTML = player.isBot
       ? `
       <p class="dock-side">Bot · ${BOT[state.difficulty].label}</p>
-      <div class="code-queue">${
-        queue || `<span class="code-empty">${myTurn ? "Bot 6 yön yazacak" : "Sıra rakipte"}</span>`
-      }</div>
+      <div class="code-queue">${queue}</div>
       <p class="bot-note">${player.running ? "Bot ilerliyor" : myTurn ? "Sıra botta" : "Bekliyor"} · ${countLabel}</p>
       <div class="collected-well" style="--basket:${player.basket?.color || "#fff6ea"}; --basket-rim:${player.basket?.rim || "#d4a574"}">
         <p class="collected-label">Toplananlar</p>
@@ -896,9 +893,7 @@
       </div>`
       : `
       <p class="dock-side">${side}${myTurn ? " · sıra sende" : player.running ? " · gidiyor" : " · bekle"}</p>
-      <div class="code-queue" data-player="${playerId}">${
-        queue || `<span class="code-empty">${myTurn ? "Kaydır veya oka dokun" : "Sıra rakipte"}</span>`
-      }</div>
+      <div class="code-queue" data-player="${playerId}">${queue}</div>
       <div class="code-pad" data-player="${playerId}">
         <span class="pad-gap"></span>
         <button type="button" class="code-btn dir-up" data-move="up" aria-label="Yukarı" ${
