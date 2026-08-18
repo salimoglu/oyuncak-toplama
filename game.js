@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.40";
+  const GAME_VERSION = window.__OT_VERSION || "0.41";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -1330,6 +1330,17 @@
     } else {
       $("confetti").innerHTML = "";
     }
+    recordHistoryGame({
+      t: Date.now(),
+      vsBot: Boolean(vsBot),
+      outcome: vsBot ? (outcome === "p1" ? "win" : outcome === "p2" ? "loss" : "tie") : outcome,
+      scoreA,
+      scoreB,
+      room: state.room?.name || "",
+      roomEmoji: state.room?.emoji || "",
+      p1: a.char?.name || "1. oyuncu",
+      p2: vsBot ? "Bot" : b.char?.name || "2. oyuncu",
+    });
     setTimeout(() => show("win"), 450);
   }
 
@@ -1368,9 +1379,247 @@
     if (state.sound) playTapSound();
   }
 
+  function dateKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
   function todayKey() {
+    return dateKey(new Date());
+  }
+
+  function normalizeDayKey(raw) {
+    const parts = String(raw || "").split("-").map(Number);
+    if (parts.length !== 3 || parts.some((n) => !n)) return String(raw || "");
+    return `${parts[0]}-${String(parts[1]).padStart(2, "0")}-${String(parts[2]).padStart(2, "0")}`;
+  }
+
+  function sameDayKey(a, b) {
+    return normalizeDayKey(a) === normalizeDayKey(b);
+  }
+
+  const HISTORY_DAYS = 31;
+
+  function historyStorageKey() {
+    return `ot-history-${state.user?.id || "guest"}`;
+  }
+
+  function readHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(historyStorageKey()) || "{}");
+    } catch (err) {
+      return {};
+    }
+  }
+
+  function cutoffDayKey() {
     const d = new Date();
-    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - (HISTORY_DAYS - 1));
+    return dateKey(d);
+  }
+
+  function pruneHistory(data) {
+    const cutoff = cutoffDayKey();
+    const next = {};
+    Object.keys(data || {}).forEach((key) => {
+      const day = normalizeDayKey(key);
+      if (day >= cutoff) next[day] = data[key];
+    });
+    return next;
+  }
+
+  function writeHistory(data) {
+    if (!state.user) return;
+    localStorage.setItem(historyStorageKey(), JSON.stringify(pruneHistory(data)));
+  }
+
+  function emptyDayRecord() {
+    return { playMs: 0, games: [] };
+  }
+
+  function dayRecord(all, day) {
+    const key = normalizeDayKey(day);
+    const rec = all[key] || emptyDayRecord();
+    if (!Array.isArray(rec.games)) rec.games = [];
+    rec.playMs = Number(rec.playMs || 0);
+    all[key] = rec;
+    return rec;
+  }
+
+  function saveTodayPlayMs() {
+    if (!state.user) return;
+    const all = readHistory();
+    const rec = dayRecord(all, todayKey());
+    rec.playMs = Math.max(rec.playMs, Math.floor(state.parent.usedMs || 0));
+    writeHistory(all);
+  }
+
+  function recordHistoryGame(entry) {
+    if (!state.user) return;
+    const all = readHistory();
+    const rec = dayRecord(all, todayKey());
+    rec.playMs = Math.max(rec.playMs, Math.floor(state.parent.usedMs || 0));
+    rec.games.push(entry);
+    writeHistory(all);
+  }
+
+  function lastDayKeys() {
+    const keys = [];
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    for (let i = 0; i < HISTORY_DAYS; i += 1) {
+      keys.push(dateKey(d));
+      d.setDate(d.getDate() - 1);
+    }
+    return keys;
+  }
+
+  function formatPlayMs(ms) {
+    const total = Math.max(0, Math.floor(Number(ms) || 0));
+    const mins = Math.floor(total / 60000);
+    if (mins < 1) return total < 10000 ? "0 dk" : "1 dk";
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (h) return m ? `${h} sa ${m} dk` : `${h} sa`;
+    return `${m} dk`;
+  }
+
+  function formatDayTitle(key) {
+    const today = todayKey();
+    if (key === today) return "Bugün";
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - 1);
+    if (key === dateKey(d)) return "Dün";
+    const [y, mo, da] = key.split("-").map(Number);
+    const date = new Date(y, mo - 1, da);
+    const weekdays = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+    const months = [
+      "Ocak",
+      "Şubat",
+      "Mart",
+      "Nisan",
+      "Mayıs",
+      "Haziran",
+      "Temmuz",
+      "Ağustos",
+      "Eylül",
+      "Ekim",
+      "Kasım",
+      "Aralık",
+    ];
+    return `${da} ${months[mo - 1]} ${weekdays[date.getDay()]}`;
+  }
+
+  function gameResultLabel(game) {
+    if (game.vsBot) {
+      if (game.outcome === "win") return { text: "Kazandı", kind: "win" };
+      if (game.outcome === "loss") return { text: "Kaybetti", kind: "loss" };
+      return { text: "Berabere", kind: "tie" };
+    }
+    if (game.outcome === "p1") return { text: `${game.p1} kazandı`, kind: "win" };
+    if (game.outcome === "p2") return { text: `${game.p2} kazandı`, kind: "win" };
+    return { text: "Berabere", kind: "tie" };
+  }
+
+  function summarizeGames(games) {
+    let win = 0;
+    let loss = 0;
+    let tie = 0;
+    (games || []).forEach((game) => {
+      if (game.vsBot) {
+        if (game.outcome === "win") win += 1;
+        else if (game.outcome === "loss") loss += 1;
+        else tie += 1;
+      } else if (game.outcome === "tie") tie += 1;
+    });
+    return { win, loss, tie, count: (games || []).length };
+  }
+
+  function renderStats() {
+    const boxToday = $("stats-today");
+    const boxDays = $("stats-days");
+    if (!boxToday || !boxDays) return;
+    const all = readHistory();
+    const today = todayKey();
+    const todayRec = dayRecord(all, today);
+    todayRec.playMs = Math.max(todayRec.playMs, Math.floor(state.parent.usedMs || 0));
+    const todaySum = summarizeGames(todayRec.games);
+    boxToday.innerHTML = `
+      <div class="stats-chip"><b>${escapeHtml(formatPlayMs(todayRec.playMs))}</b><span>bugün süre</span></div>
+      <div class="stats-chip"><b>${todaySum.count}</b><span>bugün oyun</span></div>
+      <div class="stats-chip"><b>${todaySum.win}</b><span>bugün kazandı</span></div>
+    `;
+
+    const keys = lastDayKeys().filter((key) => {
+      if (key === today) return true;
+      const rec = all[key];
+      return rec && (Number(rec.playMs) > 0 || (rec.games && rec.games.length));
+    });
+    const hasAny = keys.some((key) => {
+      const rec = all[key];
+      return rec && (rec.playMs > 0 || (rec.games && rec.games.length));
+    });
+    if (!hasAny) {
+      boxDays.innerHTML = `<p class="stats-empty">Henüz kayıt yok. Oyun bitince burada görünür.</p>`;
+      return;
+    }
+
+    boxDays.innerHTML = keys
+      .map((key) => {
+        const rec = all[key] || emptyDayRecord();
+        const games = [...(rec.games || [])].reverse();
+        const sum = summarizeGames(games);
+        const empty = !rec.playMs && !games.length;
+        const meta = empty
+          ? "Oyun yok"
+          : [
+              `${sum.count} oyun`,
+              sum.win ? `${sum.win} kazandı` : "",
+              sum.loss ? `${sum.loss} kaybetti` : "",
+              sum.tie ? `${sum.tie} berabere` : "",
+            ]
+              .filter(Boolean)
+              .join(" · ");
+        const rows = games
+          .map((game) => {
+            const result = gameResultLabel(game);
+            const mode = game.vsBot ? "Bota karşı" : "İki kişi";
+            const score = `${game.scoreA}-${game.scoreB}`;
+            const room = [game.roomEmoji, game.room].filter(Boolean).join(" ");
+            return `<div class="stats-game">
+              <span class="stats-result ${result.kind}">${escapeHtml(result.text)} · ${escapeHtml(score)}</span>
+              <small>${escapeHtml(mode)}${room ? ` · ${escapeHtml(room)}` : ""} · ${escapeHtml(game.p1)} / ${escapeHtml(game.p2)}</small>
+            </div>`;
+          })
+          .join("");
+        return `<article class="stats-day${empty ? " empty" : ""}">
+          <div class="stats-day-head">
+            <strong>${escapeHtml(formatDayTitle(key))}</strong>
+            <span>${escapeHtml(formatPlayMs(rec.playMs))}</span>
+          </div>
+          <p class="stats-day-meta">${escapeHtml(meta)}</p>
+          ${rows}
+        </article>`;
+      })
+      .join("");
+  }
+
+  function closeStatsModal() {
+    const modal = $("stats-modal");
+    if (modal) modal.hidden = true;
+  }
+
+  function openStatsModal() {
+    if (!state.user) {
+      show("login");
+      return;
+    }
+    playTapSound();
+    closeAccountMenu();
+    closeParentModal();
+    renderStats();
+    $("stats-modal").hidden = false;
   }
 
   function parentStorageKey() {
@@ -1387,6 +1636,7 @@
         day: state.parent.day,
       })
     );
+    saveTodayPlayMs();
   }
 
   function loadParentSettings() {
@@ -1406,7 +1656,7 @@
     }
     state.parent.day = day;
     state.parent.limit = Number(saved.limit || 0);
-    state.parent.usedMs = saved.day === day ? Number(saved.usedMs || 0) : 0;
+    state.parent.usedMs = sameDayKey(saved.day, day) ? Number(saved.usedMs || 0) : 0;
     state.parent.lastTick = Date.now();
     saveParent();
   }
@@ -1485,12 +1735,11 @@
     state.parent.lastTick = now;
     const counting =
       !document.hidden &&
-      Boolean(state.parent.limit) &&
       $("time-lock").hidden &&
       sessionCounts();
     if (counting) {
       state.parent.usedMs += delta;
-      if (state.parent.usedMs >= parentLimitMs()) {
+      if (state.parent.limit && state.parent.usedMs >= parentLimitMs()) {
         state.parent.usedMs = parentLimitMs();
         saveParent();
         lockPlayTime();
@@ -1674,9 +1923,12 @@
   }
 
   function logoutUser() {
+    saveParent();
     localStorage.removeItem("ot-session-user");
     state.user = null;
+    closeStatsModal();
     closeParentModal();
+    closeAccountMenu();
     unlockPlayTime();
     if (firebaseOn()) {
       firebase.auth().signOut().catch(() => {});
@@ -1997,6 +2249,15 @@
     $("btn-parent-play").addEventListener("click", openParentModal);
     $("btn-parent-lock").addEventListener("click", openParentModal);
     $("parent-ok").addEventListener("click", confirmParentModal);
+    $("btn-account-history").addEventListener("click", (e) => {
+      e.stopPropagation();
+      openStatsModal();
+    });
+    $("btn-parent-history").addEventListener("click", openStatsModal);
+    $("stats-ok").addEventListener("click", closeStatsModal);
+    $("stats-modal").addEventListener("click", (e) => {
+      if (e.target.id === "stats-modal") closeStatsModal();
+    });
     $("btn-account").addEventListener("click", (e) => {
       e.stopPropagation();
       toggleAccountMenu();
@@ -2017,7 +2278,16 @@
       if (!$("account-wrap")?.contains(e.target)) closeAccountMenu();
     });
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeAccountMenu();
+      if (e.key !== "Escape") return;
+      if (!$("stats-modal")?.hidden) {
+        closeStatsModal();
+        return;
+      }
+      if (!$("parent-modal")?.hidden) {
+        closeParentModal();
+        return;
+      }
+      closeAccountMenu();
     });
     $("parent-modal").addEventListener("click", (e) => {
       if (e.target.id === "parent-modal") closeParentModal();
@@ -2241,7 +2511,7 @@
       "wheel",
       (e) => {
         if (state.screen !== "home" || homePull.reloading) return;
-        if (e.target.closest(".account-menu")) return;
+        if (e.target.closest(".account-menu") || document.querySelector(".name-modal:not([hidden])")) return;
         const dy =
           e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
         if (dy <= 0) {
@@ -2266,6 +2536,7 @@
     );
     document.addEventListener("pointerdown", (e) => {
       if (state.screen !== "home" || homePull.reloading) return;
+      if (document.querySelector(".name-modal:not([hidden])")) return;
       if (e.target.closest("button, a, input, .account-menu, .diff-row")) return;
       homePull.drag = { y: e.clientY, id: e.pointerId };
     });

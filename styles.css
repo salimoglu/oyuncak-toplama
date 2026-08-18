@@ -281,16 +281,20 @@ body {
   grid-column: 1 / -1;
 }
 
-.account-menu > #btn-account-logout {
+.account-menu-action {
   min-height: 48px;
   border: none;
   border-radius: 14px;
   background: #fff6ea;
-  color: #c73462;
+  color: var(--ink);
   font-family: inherit;
   font-size: 1.05rem;
   font-weight: 800;
   cursor: pointer;
+}
+
+.account-menu-action.logout {
+  color: #c73462;
 }
 
 .time-left {
@@ -693,6 +697,145 @@ h2 {
 
 .parent-modal .name-modal-actions {
   grid-template-columns: 1fr;
+}
+
+.parent-modal .parent-modal-actions {
+  grid-template-columns: 1fr 1fr;
+}
+
+.stats-modal-card {
+  width: min(520px, 100%);
+  max-height: min(88vh, 740px);
+  text-align: left;
+  overflow: hidden;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+}
+
+.stats-modal-card > #stats-title,
+.stats-modal-card > .hint {
+  text-align: center;
+}
+
+.stats-modal-card > .hint {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.stats-modal-card .name-modal-actions {
+  grid-template-columns: 1fr;
+}
+
+.stats-today {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stats-chip {
+  background: #fff6ea;
+  border-radius: 16px;
+  padding: 10px 8px;
+  text-align: center;
+  min-width: 0;
+}
+
+.stats-chip b {
+  display: block;
+  font-size: 1.15rem;
+  line-height: 1.1;
+  color: #d6406a;
+}
+
+.stats-chip span {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--soft);
+}
+
+.stats-days {
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+  min-height: 120px;
+  padding: 2px 4px 6px 0;
+}
+
+.stats-day {
+  background: #fff6ea;
+  border-radius: 18px;
+  padding: 10px 12px;
+}
+
+.stats-day.empty {
+  opacity: 0.55;
+}
+
+.stats-day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stats-day-head strong {
+  font-size: 0.98rem;
+}
+
+.stats-day-head span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--soft);
+  white-space: nowrap;
+}
+
+.stats-day-meta {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--soft);
+}
+
+.stats-modal-card .stats-day-meta {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.stats-game {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #ffd0de;
+  display: grid;
+  gap: 2px;
+}
+
+.stats-game .stats-result {
+  font-weight: 800;
+}
+
+.stats-game .stats-result.win {
+  color: #087f5b;
+}
+
+.stats-game .stats-result.loss {
+  color: #c73462;
+}
+
+.stats-game .stats-result.tie {
+  color: #e67700;
+}
+
+.stats-game small {
+  color: var(--soft);
+  font-weight: 700;
+}
+
+.stats-empty {
+  margin: 12px 4px;
+  text-align: center;
+  color: var(--soft);
+  font-weight: 700;
 }
 
 .name-modal-actions .big-btn,

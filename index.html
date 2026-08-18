@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.40" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.41" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.40</div>
+        <div id="version-badge" class="version-badge">v0.41</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -65,7 +65,8 @@
                 <button type="button" data-limit="60">60 dk</button>
                 <button type="button" class="time-none" data-limit="0">Süre yok</button>
               </div>
-              <button type="button" id="btn-account-logout" role="menuitem">Çıkış</button>
+              <button type="button" id="btn-account-history" class="account-menu-action" role="menuitem">Geçmiş</button>
+              <button type="button" id="btn-account-logout" class="account-menu-action logout" role="menuitem">Çıkış</button>
             </div>
           </div>
           <button
@@ -259,8 +260,20 @@
           <button type="button" class="limit-btn" data-limit="60">60 dk</button>
           <button type="button" class="limit-btn" data-limit="0">Süre yok</button>
         </div>
-        <div class="name-modal-actions">
+        <div class="name-modal-actions parent-modal-actions">
+          <button type="button" id="btn-parent-history" class="ghost-btn">Geçmiş</button>
           <button type="button" id="parent-ok" class="big-btn">Tamam</button>
+        </div>
+      </div>
+    </div>
+    <div id="stats-modal" class="name-modal stats-modal" hidden>
+      <div class="name-modal-card stats-modal-card" role="dialog" aria-labelledby="stats-title">
+        <p id="stats-title">Geçmiş</p>
+        <p class="hint">Son 30 günün oyunları ve süreleri</p>
+        <div id="stats-today" class="stats-today"></div>
+        <div id="stats-days" class="stats-days"></div>
+        <div class="name-modal-actions">
+          <button type="button" id="stats-ok" class="big-btn">Tamam</button>
         </div>
       </div>
     </div>
@@ -274,7 +287,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.40";
+        var CURRENT = "0.41";
         var started = false;
 
         function addScript(src) {
