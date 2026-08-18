@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.39" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.40" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.39</div>
+        <div id="version-badge" class="version-badge">v0.40</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -78,6 +78,10 @@
           </button>
         </div>
       </header>
+      <div id="pull-refresh" class="pull-refresh" aria-hidden="true">
+        <span class="pull-refresh-icon" aria-hidden="true">↓</span>
+        <span id="pull-refresh-text">Yenile</span>
+      </div>
       <div id="stage">
       <div id="sky-toys" class="sky-toys" aria-hidden="true" hidden></div>
       <section id="screen-login" class="screen active">
@@ -270,7 +274,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.39";
+        var CURRENT = "0.40";
         var started = false;
 
         function addScript(src) {

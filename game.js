@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.39";
+  const GAME_VERSION = window.__OT_VERSION || "0.40";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -304,6 +304,49 @@
     win: $("screen-win"),
   };
 
+  const homePull = {
+    wheel: 0,
+    wheelIdle: 0,
+    drag: null,
+    reloading: false,
+  };
+
+  function resetHomePull() {
+    homePull.wheel = 0;
+    homePull.drag = null;
+    window.clearTimeout(homePull.wheelIdle);
+    const hint = $("pull-refresh");
+    const home = screens.home;
+    if (hint) {
+      hint.classList.remove("show", "ready");
+      hint.style.removeProperty("--pull-y");
+    }
+    if (home) {
+      home.classList.remove("pulling");
+      home.style.transform = "";
+    }
+  }
+
+  function showHomePull(amount, need) {
+    const hint = $("pull-refresh");
+    const text = $("pull-refresh-text");
+    const home = screens.home;
+    const t = Math.min(1, Math.max(0, amount / need));
+    hint.classList.add("show");
+    hint.classList.toggle("ready", t >= 1);
+    hint.style.setProperty("--pull-y", `${6 + t * 16}px`);
+    home.classList.add("pulling");
+    home.style.transform = `translateY(${Math.round(t * 28)}px)`;
+    text.textContent = t >= 1 ? "Yenileniyor" : "Yenile";
+  }
+
+  function reloadHome() {
+    if (homePull.reloading) return;
+    homePull.reloading = true;
+    showHomePull(1, 1);
+    location.reload();
+  }
+
   function show(name) {
     state.screen = name;
     if (name !== "character") closeNameModal();
@@ -319,6 +362,7 @@
     if (name === "login") closeAccountMenu();
     if (name === "home" || name === "login") startSkyToys();
     else stopSkyToys();
+    if (name !== "home") resetHomePull();
   }
 
   function skyToysOn() {
@@ -2190,6 +2234,64 @@
       saveParent();
     });
     setInterval(tickParent, 1000);
+
+    const WHEEL_NEED = 280;
+    const DRAG_NEED = 90;
+    window.addEventListener(
+      "wheel",
+      (e) => {
+        if (state.screen !== "home" || homePull.reloading) return;
+        if (e.target.closest(".account-menu")) return;
+        const dy =
+          e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
+        if (dy <= 0) {
+          if (homePull.wheel > 0) {
+            homePull.wheel = Math.max(0, homePull.wheel + dy);
+            if (homePull.wheel === 0) resetHomePull();
+            else showHomePull(homePull.wheel, WHEEL_NEED);
+          }
+          return;
+        }
+        e.preventDefault();
+        homePull.wheel += dy;
+        showHomePull(homePull.wheel, WHEEL_NEED);
+        window.clearTimeout(homePull.wheelIdle);
+        homePull.wheelIdle = window.setTimeout(() => {
+          if (homePull.wheel >= WHEEL_NEED) reloadHome();
+          else resetHomePull();
+        }, 280);
+        if (homePull.wheel >= WHEEL_NEED) reloadHome();
+      },
+      { passive: false }
+    );
+    document.addEventListener("pointerdown", (e) => {
+      if (state.screen !== "home" || homePull.reloading) return;
+      if (e.target.closest("button, a, input, .account-menu, .diff-row")) return;
+      homePull.drag = { y: e.clientY, id: e.pointerId };
+    });
+    document.addEventListener(
+      "pointermove",
+      (e) => {
+        if (!homePull.drag || e.pointerId !== homePull.drag.id) return;
+        const dy = e.clientY - homePull.drag.y;
+        if (dy <= 8) return;
+        e.preventDefault();
+        showHomePull(dy, DRAG_NEED);
+      },
+      { passive: false }
+    );
+    document.addEventListener("pointerup", (e) => {
+      if (!homePull.drag || e.pointerId !== homePull.drag.id) return;
+      const dy = e.clientY - homePull.drag.y;
+      homePull.drag = null;
+      if (dy >= DRAG_NEED) reloadHome();
+      else resetHomePull();
+    });
+    document.addEventListener("pointercancel", () => {
+      if (!homePull.drag) return;
+      homePull.drag = null;
+      resetHomePull();
+    });
   }
 
   $("version-badge").textContent = `v${GAME_VERSION}`;
