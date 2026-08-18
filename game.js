@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.41";
+  const GAME_VERSION = window.__OT_VERSION || "0.42";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -276,6 +276,7 @@
       usedMs: 0,
       day: "",
       lastTick: Date.now(),
+      verified: false,
     },
   };
 
@@ -1736,6 +1737,7 @@
     const counting =
       !document.hidden &&
       $("time-lock").hidden &&
+      $("parent-modal").hidden &&
       sessionCounts();
     if (counting) {
       state.parent.usedMs += delta;
@@ -1750,6 +1752,42 @@
     renderTimeLeft();
   }
 
+  function setParentPinError(text) {
+    const el = $("parent-pin-error");
+    if (!el) return;
+    if (!text) {
+      el.hidden = true;
+      el.textContent = "";
+      return;
+    }
+    el.hidden = false;
+    el.textContent = text;
+  }
+
+  function renderParentModal() {
+    const gated = timeIsUp() && !state.parent.verified;
+    const google = state.user?.via === "google";
+    $("parent-title").textContent = gated ? "Ebeveyn" : "Süre";
+    $("parent-hint").textContent = gated
+      ? google
+        ? "Devam etmek için Gmail ile onayla."
+        : "Devam etmek için aile şifresini yaz."
+      : "Bugün ne kadar oynasın?";
+    $("parent-user").textContent = state.user?.email || state.user?.name || "";
+    $("parent-pin-form").hidden = !gated || google;
+    $("parent-google").hidden = !gated || !google;
+    $("parent-limits").hidden = gated;
+    $("parent-actions").hidden = gated;
+    document.querySelectorAll(".limit-btn").forEach((btn) => {
+      btn.classList.toggle("on", Number(btn.dataset.limit) === state.parent.limit);
+    });
+    if (gated && !google) {
+      $("parent-pin").value = "";
+      setParentPinError("");
+      setTimeout(() => $("parent-pin").focus(), 50);
+    }
+  }
+
   function openParentModal() {
     if (!state.user) {
       show("login");
@@ -1757,13 +1795,8 @@
     }
     playTapSound();
     closeAccountMenu();
-    $("parent-title").textContent = "Süre";
-    $("parent-hint").textContent = "Bugün ne kadar oynasın?";
-    $("parent-user").textContent = state.user.email || state.user.name || "";
-    $("parent-limits").hidden = false;
-    document.querySelectorAll(".limit-btn").forEach((btn) => {
-      btn.classList.toggle("on", Number(btn.dataset.limit) === state.parent.limit);
-    });
+    state.parent.verified = !timeIsUp();
+    renderParentModal();
     $("parent-modal").hidden = false;
   }
 
@@ -1772,21 +1805,100 @@
   }
 
   function setParentLimit(minutes) {
+    const wasLocked = !$("time-lock").hidden;
     state.parent.limit = minutes;
     saveParent();
     document.querySelectorAll(".limit-btn").forEach((btn) => {
       btn.classList.toggle("on", Number(btn.dataset.limit) === minutes);
     });
     playTapSound();
-    if (!timeIsUp()) unlockPlayTime();
-    else lockPlayTime();
+    if (!timeIsUp()) {
+      unlockPlayTime();
+      if (wasLocked) closeParentModal();
+    } else {
+      lockPlayTime();
+      if (!$("parent-modal").hidden) renderParentModal();
+    }
     markAccountTimes();
     renderTimeLeft();
     closeAccountMenu();
   }
 
   function closeParentModal() {
+    state.parent.verified = false;
+    setParentPinError("");
     $("parent-modal").hidden = true;
+    if (timeIsUp()) lockPlayTime();
+  }
+
+  async function checkLocalPass(name, pass) {
+    const key = nameKey(name);
+    const accounts = readAccounts();
+    const found = accounts.find((a) => a.key === key);
+    if (!found) return false;
+    const hash = await hashSecret(pass, found.salt);
+    return hash === found.hash;
+  }
+
+  async function verifyParentPassword(pass) {
+    const user = state.user;
+    if (!user) throw new Error("Önce giriş yap.");
+    if (!pass) throw new Error("Şifre yaz.");
+    if (await checkLocalPass(user.name, pass)) return;
+    if (firebaseOn()) {
+      const email = user.email || `${nameKey(user.name)}@oyuncak-toplama.web.app`;
+      try {
+        const current = firebase.auth().currentUser;
+        if (current) {
+          const cred = firebase.auth.EmailAuthProvider.credential(email, pass);
+          await current.reauthenticateWithCredential(cred);
+          return;
+        }
+        await firebase.auth().signInWithEmailAndPassword(email, pass);
+        return;
+      } catch (err) {
+        if (err && !String(err.code || "").startsWith("auth/")) throw err;
+      }
+    }
+    throw new Error("Şifre uyuşmadı.");
+  }
+
+  async function submitParentPin(event) {
+    event.preventDefault();
+    setParentPinError("");
+    try {
+      await verifyParentPassword($("parent-pin").value);
+      state.parent.verified = true;
+      $("parent-pin").value = "";
+      playTapSound();
+      renderParentModal();
+    } catch (err) {
+      setParentPinError(err.message || "Şifre uyuşmadı.");
+    }
+  }
+
+  async function confirmParentGoogle() {
+    setParentPinError("");
+    $("parent-google").textContent = "Gmail açılıyor…";
+    try {
+      initFirebase();
+      if (!firebaseOn()) throw new Error("Firebase yüklenemedi. Sayfayı yenile.");
+      const provider = googleProvider();
+      const current = firebase.auth().currentUser;
+      if (current) {
+        await current.reauthenticateWithPopup(provider);
+      } else {
+        const cred = await firebase.auth().signInWithPopup(provider);
+        if (cred.user.uid !== state.user.id) throw new Error("Başka bir Gmail seçildi.");
+      }
+      state.parent.verified = true;
+      playTapSound();
+      renderParentModal();
+    } catch (err) {
+      setParentPinError(friendlyAuthError(err));
+    } finally {
+      $("parent-google").textContent = "Gmail ile onayla";
+    }
   }
 
   function hexFromBuffer(buf) {
@@ -1959,8 +2071,7 @@
     const accounts = readAccounts();
     const found = accounts.find((a) => a.key === key);
     if (!found) throw new Error("Bu isimle hesap yok. Kayıt ol.");
-    const hash = await hashSecret(pass, found.salt);
-    if (hash !== found.hash) throw new Error("Şifre uyuşmadı.");
+    if (!(await checkLocalPass(name, pass))) throw new Error("Şifre uyuşmadı.");
     return { id: found.id, name: found.name, via: "password" };
   }
 
@@ -2249,6 +2360,8 @@
     $("btn-parent-play").addEventListener("click", openParentModal);
     $("btn-parent-lock").addEventListener("click", openParentModal);
     $("parent-ok").addEventListener("click", confirmParentModal);
+    $("parent-pin-form").addEventListener("submit", submitParentPin);
+    $("parent-google").addEventListener("click", confirmParentGoogle);
     $("btn-account-history").addEventListener("click", (e) => {
       e.stopPropagation();
       openStatsModal();
@@ -2467,6 +2580,8 @@
 
     document.addEventListener("keydown", (e) => {
       if (state.screen !== "play" || state.ended) return;
+      if (!$("time-lock")?.hidden || document.querySelector(".name-modal:not([hidden])")) return;
+      if (e.target.closest("input, textarea, [contenteditable]")) return;
       const moves = {
         ArrowUp: "up",
         ArrowLeft: "left",
@@ -2489,7 +2604,10 @@
     document.addEventListener(
       "touchmove",
       (e) => {
-        if (state.screen === "play") e.preventDefault();
+        if (state.screen !== "play") return;
+        if (!$("time-lock")?.hidden || document.querySelector(".name-modal:not([hidden])")) return;
+        if (e.target.closest("input, textarea, [contenteditable]")) return;
+        e.preventDefault();
       },
       { passive: false }
     );

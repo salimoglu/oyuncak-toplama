@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.41" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.42" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.41</div>
+        <div id="version-badge" class="version-badge">v0.42</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -253,6 +253,21 @@
         <p id="parent-title">Süre</p>
         <p id="parent-hint" class="hint">Bugün ne kadar oynasın?</p>
         <p id="parent-user" class="parent-user"></p>
+        <form id="parent-pin-form" autocomplete="off" hidden>
+          <label class="login-field">
+            <span>Şifre</span>
+            <input
+              id="parent-pin"
+              type="password"
+              maxlength="32"
+              autocomplete="new-password"
+              required
+            />
+          </label>
+          <button type="submit" class="big-btn">Aç</button>
+        </form>
+        <button type="button" id="parent-google" class="ghost-btn google-btn" hidden>Gmail ile onayla</button>
+        <p id="parent-pin-error" class="login-error" hidden></p>
         <div id="parent-limits" class="parent-limits">
           <button type="button" class="limit-btn" data-limit="15">15 dk</button>
           <button type="button" class="limit-btn" data-limit="30">30 dk</button>
@@ -260,7 +275,7 @@
           <button type="button" class="limit-btn" data-limit="60">60 dk</button>
           <button type="button" class="limit-btn" data-limit="0">Süre yok</button>
         </div>
-        <div class="name-modal-actions parent-modal-actions">
+        <div id="parent-actions" class="name-modal-actions parent-modal-actions">
           <button type="button" id="btn-parent-history" class="ghost-btn">Geçmiş</button>
           <button type="button" id="parent-ok" class="big-btn">Tamam</button>
         </div>
@@ -281,13 +296,13 @@
       <div class="time-lock-card">
         <p class="time-lock-emoji" aria-hidden="true">🌙</p>
         <h2>Süre doldu</h2>
-        <p>Bugünlük oyun bitti. Yarın yine oynayalım.</p>
+        <p>Bugünlük oyun bitti. Ebeveyn şifresiyle devam edebilirsin.</p>
         <button type="button" id="btn-parent-lock" class="ghost-btn">Ebeveyn</button>
       </div>
     </div>
     <script>
       (function () {
-        var CURRENT = "0.41";
+        var CURRENT = "0.42";
         var started = false;
 
         function addScript(src) {

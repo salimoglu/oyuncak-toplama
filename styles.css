@@ -921,8 +921,37 @@ h2 {
 }
 
 .parent-limits[hidden],
+#parent-pin-form[hidden],
+#parent-google[hidden],
+#parent-actions[hidden],
 #parent-pin[hidden] {
   display: none;
+}
+
+.parent-modal,
+.stats-modal {
+  z-index: 80;
+}
+
+#parent-pin-form {
+  display: grid;
+  gap: 10px;
+  text-align: left;
+}
+
+#parent-pin-form .login-field {
+  display: grid;
+  gap: 6px;
+}
+
+#parent-pin-form .login-field span {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--soft);
+}
+
+.name-modal-card #parent-pin-error {
+  font-size: 1rem;
 }
 
 .limit-btn {
