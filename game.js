@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.59";
+  const GAME_VERSION = window.__OT_VERSION || "0.60";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -2795,65 +2795,58 @@
       <path d="M${cx - 6.2} ${cy + 16.2} Q${cx} ${cy + 21} ${cx + 6.2} ${cy + 16.2}" fill="none" stroke="#c73462" stroke-width="1.7" stroke-linecap="round"/>`;
   }
 
-  function thickStrokePath(points, radius) {
-    const n = points.length;
-    const left = [];
-    const right = [];
-    for (let i = 0; i < n; i += 1) {
-      const cur = points[i];
-      const prev = points[Math.max(0, i - 1)];
-      const next = points[Math.min(n - 1, i + 1)];
-      let dx = next.x - prev.x;
-      let dy = next.y - prev.y;
-      if (i === 0) {
-        dx = next.x - cur.x;
-        dy = next.y - cur.y;
-      } else if (i === n - 1) {
-        dx = cur.x - prev.x;
-        dy = cur.y - prev.y;
-      }
-      const len = Math.hypot(dx, dy) || 1;
-      const nx = (-dy / len) * radius;
-      const ny = (dx / len) * radius;
-      left.push({ x: cur.x + nx, y: cur.y + ny });
-      right.push({ x: cur.x - nx, y: cur.y - ny });
-    }
-    const start = left[0];
-    const tipL = left[n - 1];
-    const tipR = right[n - 1];
-    let d = `M${start.x.toFixed(1)} ${start.y.toFixed(1)}`;
-    for (let i = 1; i < n; i += 1) d += ` L${left[i].x.toFixed(1)} ${left[i].y.toFixed(1)}`;
-    d += ` A${radius} ${radius} 0 0 1 ${tipR.x.toFixed(1)} ${tipR.y.toFixed(1)}`;
-    for (let i = n - 2; i >= 0; i -= 1) d += ` L${right[i].x.toFixed(1)} ${right[i].y.toFixed(1)}`;
-    d += ` A${radius} ${radius} 0 0 1 ${start.x.toFixed(1)} ${start.y.toFixed(1)}Z`;
-    return d;
+  function sideX(side, x) {
+    return side === "L" ? x : 200 - x;
   }
 
-  function limbShape(points, radius) {
-    return `<path d="${thickStrokePath(points, radius)}" fill="${P.g("limb")}" ${ink()}/>`;
+  function armSvg(side) {
+    const x = (n) => sideX(side, n);
+    return `<path d="M${x(88)} 100 C${x(70)} 96 ${x(56)} 102 ${x(52)} 116 C${x(48)} 130 ${x(46)} 148 ${x(45)} 166 C${x(45)} 171 ${x(48)} 174 ${x(54)} 174 L${x(62)} 172 C${x(60)} 152 ${x(62)} 134 ${x(70)} 120 C${x(76)} 110 ${x(84)} 104 ${x(92)} 102Z" fill="${P.g("limb")}" ${ink()}/>
+      <path d="M${x(72)} 108 Q${x(60)} 118 ${x(56)} 136" fill="none" stroke="#fff" stroke-width="2.2" opacity=".18" stroke-linecap="round"/>`;
   }
 
   function handsSvg() {
-    return `<ellipse cx="50" cy="178" rx="8.6" ry="7.5" fill="${P.g("skin")}" ${ink(1.3)}/>
-      <ellipse cx="150" cy="178" rx="8.6" ry="7.5" fill="${P.g("skin")}" ${ink(1.3)}/>`;
+    return `${handSvg("L")}${handSvg("R")}`;
+  }
+
+  function handSvg(side) {
+    const x = (n) => sideX(side, n);
+    return `<ellipse cx="${x(50)}" cy="184" rx="9" ry="10.4" fill="${P.g("skin")}" ${ink(1.3)}/>
+      <ellipse cx="${x(59)}" cy="176" rx="4.4" ry="6" fill="${P.g("skin")}" ${ink(1.15)}/>
+      <ellipse cx="${x(47)}" cy="180" rx="3.2" ry="2.2" fill="#fff" opacity=".28"/>`;
+  }
+
+  function legSvg(side) {
+    const x = (n) => sideX(side, n);
+    return `<path d="M${x(78)} 170 C${x(75)} 220 ${x(75)} 268 ${x(78)} 300 L${x(96)} 300 C${x(99)} 268 ${x(99)} 220 ${x(96)} 170 Q${x(87)} 178 ${x(78)} 170Z" fill="${P.g("limb")}" ${ink()}/>`;
+  }
+
+  function feetSvg() {
+    return `${footSvg("L")}${footSvg("R")}`;
+  }
+
+  function footSvg(side) {
+    const x = (n) => sideX(side, n);
+    return `<path d="M${x(78)} 298 C${x(68)} 300 ${x(58)} 308 ${x(62)} 316 C${x(70)} 324 ${x(98)} 322 ${x(102)} 312 C${x(104)} 304 ${x(96)} 296 ${x(88)} 297 L${x(80)} 298Z" fill="${P.g("limb")}" ${ink()}/>
+      <ellipse cx="${x(76)}" cy="314" rx="4.2" ry="2.1" fill="#fff" opacity=".22"/>`;
+  }
+
+  function topSilhouette(hemY, fill) {
+    return `<path d="M91 88 C74 90 58 100 52 116 C48 128 50 136 56 142 L70 136 L76 ${hemY} Q100 ${hemY + 12} 124 ${hemY} L130 136 L144 142 C150 136 152 128 148 116 C142 100 126 90 109 88 C104 100 96 100 91 88Z" fill="${fill}" ${ink()}/>`;
   }
 
   function dressBodice(fill) {
-    return `<path d="M88 88 C80 90 68 94 60 108 C50 122 48 128 56 136 L76 128 L74 150 L126 150 L124 128 L144 136 C152 128 150 122 140 108 C132 94 120 90 112 88 C106 100 94 100 88 88Z" fill="${fill}" ${ink()}/>`;
+    return topSilhouette(150, fill);
   }
 
   function kidBody(shirt, skin, dressed) {
-    const legs = `${limbShape([{ x: 86, y: 176 }, { x: 86, y: 306 }], 9.4)}${limbShape([{ x: 114, y: 176 }, { x: 114, y: 306 }], 9.4)}`;
-    const arms = `${limbShape([{ x: 82, y: 104 }, { x: 62, y: 138 }, { x: 52, y: 170 }], 8.1)}
-      ${limbShape([{ x: 118, y: 104 }, { x: 138, y: 138 }, { x: 148, y: 170 }], 8.1)}
-      <circle cx="62" cy="138" r="7.8" fill="${P.g("limb")}"/>
-      <circle cx="138" cy="138" r="7.8" fill="${P.g("limb")}"/>`;
-    const torso = `<path d="M80 94 C70 102 68 116 74 130 L76 172 Q100 184 124 172 L126 130 C132 116 130 102 120 94 Q100 86 80 94Z" fill="${P.g("limb")}" ${ink()}/>`;
-    const neck = `${limbShape([{ x: 100, y: 78 }, { x: 100, y: 96 }], 8.6)}`;
-    const base = `${legs}${arms}${torso}${neck}`;
+    const base = `${legSvg("L")}${legSvg("R")}${feetSvg()}
+      <path d="M80 94 C74 100 72 120 74 150 L76 174 Q100 186 124 174 L126 150 C128 120 126 100 120 94 Q100 86 80 94Z" fill="${P.g("limb")}" ${ink()}/>
+      ${armSvg("L")}${armSvg("R")}
+      <rect x="91.5" y="78" width="17" height="22" rx="8.5" fill="${P.g("limb")}" ${ink()}/>`;
     if (dressed) return base;
     return `${base}
-      <path d="M88 90 C80 92 70 96 62 108 C52 122 50 128 58 134 L76 126 L74 166 Q100 178 126 166 L124 126 L142 134 C150 128 148 122 138 108 C130 96 120 92 112 90 C106 102 94 102 88 90Z" fill="${P.g("shirt")}" ${ink()}/>
+      ${topSilhouette(168, P.g("shirt"))}
       <path d="M94 96 L106 96 L104 114 L96 114Z" fill="#fff" opacity=".22"/>
       <circle cx="100" cy="124" r="2.4" fill="#fff" ${ink(1.1)}/>
       <circle cx="100" cy="142" r="2.4" fill="#fff" ${ink(1.1)}/>
@@ -2870,8 +2863,8 @@
   function dressSvg(id) {
     if (!id) return "";
     if (id === "princess") {
-      return `<ellipse cx="60" cy="116" rx="14" ry="17" fill="${P.g("light")}" ${ink()}/>
-        <ellipse cx="140" cy="116" rx="14" ry="17" fill="${P.g("light")}" ${ink()}/>
+      return `<ellipse cx="54" cy="122" rx="15" ry="18" fill="${P.g("light")}" ${ink()}/>
+        <ellipse cx="146" cy="122" rx="15" ry="18" fill="${P.g("light")}" ${ink()}/>
         ${dressBodice(P.g("light"))}
         ${ruffleSkirt()}
         <path d="M76 146 L124 146 L128 158 L72 158Z" fill="${P.g("gold")}" ${ink(1.25)}/>
@@ -3011,7 +3004,10 @@
   }
 
   function shoesSvg(kind) {
-    return `${shoeOne(kind, 86, 314)}${shoeOne(kind, 114, 314)}`;
+    if (!kind) return "";
+    const left = shoeOne(kind, 86, 312);
+    const right = shoeOne(kind, 114, 312);
+    return `<g transform="translate(86 312) scale(-1 1) translate(-86 -312)">${left}</g>${right}`;
   }
 
   function bagSvg(id) {
@@ -3135,7 +3131,7 @@
     }
     if (cat === "shoes") {
       const kind = id === "none" ? "" : id;
-      return `<span class="pv-svg-wrap">${svgWrap("64 278 72 50", `${defs}${shoesSvg(kind)}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("58 278 84 52", `${defs}${feetSvg()}${shoesSvg(kind)}`)}</span>`;
     }
     if (cat === "bag") {
       if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
