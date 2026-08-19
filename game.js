@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.42";
+  const GAME_VERSION = window.__OT_VERSION || "0.50";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -213,6 +213,69 @@
   };
 
   const CHEERS = ["Aferin!", "Süper!", "Harika!", "Bravo!", "Yaşasın!", "Çok güzel!"];
+  const DRESS_CHEERS = ["Çok şık!", "Harika kombin!", "Aferin!", "Ne güzel!", "Masal gibi!", "İşte bu!"];
+
+  const DRESS_CATS = [
+    { id: "hat", label: "Şapka", emoji: "👒" },
+    { id: "top", label: "Üst", emoji: "👕" },
+    { id: "bottom", label: "Alt", emoji: "👖" },
+    { id: "bag", label: "Çanta", emoji: "👜" },
+    { id: "shoes", label: "Ayakkabı", emoji: "👟" },
+    { id: "acc", label: "Aksesuar", emoji: "🧿" },
+  ];
+
+  const DRESS_ITEMS = {
+    hat: [
+      { id: "", name: "Yok", emoji: "👶" },
+      { id: "bow", name: "Fiyonk", emoji: "🎀" },
+      { id: "beanie", name: "Bere", emoji: "🧶" },
+      { id: "fes", name: "Fes", emoji: "🎩", cultural: true },
+      { id: "yemeni", name: "Yemeni", emoji: "🧣", cultural: true },
+      { id: "flowers", name: "Çiçek", emoji: "🌸" },
+      { id: "beret", name: "Kep", emoji: "🧢" },
+      { id: "pompom", name: "Ponpon", emoji: "❄️" },
+    ],
+    top: [
+      { id: "", name: "Tulum", emoji: "🍼" },
+      { id: "tshirt", name: "Çizgili", emoji: "👕" },
+      { id: "sweater", name: "Kazak", emoji: "🧥" },
+      { id: "yelek", name: "Yelek", emoji: "🧵", cultural: true },
+      { id: "bindalli", name: "Bindallı", emoji: "✨", cultural: true, dress: true },
+      { id: "sailor", name: "Denizci", emoji: "⚓" },
+      { id: "hoodie", name: "Kapüşon", emoji: "💗" },
+      { id: "flower", name: "Çiçekli", emoji: "🌺" },
+    ],
+    bottom: [
+      { id: "", name: "Tulum", emoji: "🍼" },
+      { id: "pants", name: "Pantolon", emoji: "👖" },
+      { id: "skirt", name: "Etek", emoji: "👗" },
+      { id: "salvar", name: "Şalvar", emoji: "🪔", cultural: true },
+      { id: "shorts", name: "Şort", emoji: "🩳" },
+      { id: "overall", name: "Askılı", emoji: "🧸" },
+    ],
+    bag: [
+      { id: "", name: "Yok", emoji: "✋" },
+      { id: "backpack", name: "Sırt çanta", emoji: "🎒" },
+      { id: "purse", name: "Çanta", emoji: "👛" },
+      { id: "kilim", name: "Kilim", emoji: "🧶", cultural: true },
+      { id: "star", name: "Yıldız", emoji: "⭐" },
+    ],
+    shoes: [
+      { id: "", name: "Çorap", emoji: "🧦" },
+      { id: "sneakers", name: "Spor", emoji: "👟" },
+      { id: "boots", name: "Bot", emoji: "🥾" },
+      { id: "yemeni", name: "Yemeni", emoji: "👞", cultural: true },
+      { id: "slipper", name: "Terlik", emoji: "🩷" },
+    ],
+    acc: [
+      { id: "", name: "Yok", emoji: "✨" },
+      { id: "nazar", name: "Nazar", emoji: "🧿", cultural: true },
+      { id: "glasses", name: "Gözlük", emoji: "👓" },
+      { id: "beads", name: "Boncuk", emoji: "📿", cultural: true },
+    ],
+  };
+
+  const EMPTY_WEAR = { hat: "", top: "", bottom: "", bag: "", shoes: "", acc: "" };
 
   const ACTOR_HTML = `
     <div class="char-fit">
@@ -248,6 +311,47 @@
     </div>
   `;
 
+  const BABY_HTML = `
+    <div class="char-fit">
+    <div class="char-shadow"></div>
+    <div class="char-figure">
+      <div class="char-hair-back"></div>
+      <div class="wear-hoodie"></div>
+      <div class="char-ear left"></div>
+      <div class="char-ear right"></div>
+      <div class="char-head">
+        <div class="char-blush left"></div>
+        <div class="char-blush right"></div>
+        <div class="char-eye left"><i></i></div>
+        <div class="char-eye right"><i></i></div>
+        <div class="char-nose"></div>
+        <div class="char-smile"></div>
+        <div class="char-bow"></div>
+        <div class="wear-glasses"></div>
+      </div>
+      <div class="char-hair-front"></div>
+      <div class="wear-hat"></div>
+      <div class="char-body">
+        <div class="char-arm left"></div>
+        <div class="char-arm right"></div>
+        <div class="wear-onesie"></div>
+        <div class="wear-top"></div>
+        <div class="wear-dress"></div>
+        <div class="wear-nazar"></div>
+        <div class="wear-beads"></div>
+        <div class="wear-bag"></div>
+      </div>
+      <div class="char-legs">
+        <div class="char-leg left"></div>
+        <div class="char-leg right"></div>
+        <div class="wear-bottom"></div>
+      </div>
+      <div class="wear-shoes"><i class="left"></i><i class="right"></i></div>
+    </div>
+    <div class="char-label"></div>
+    </div>
+  `;
+
   const state = {
     screen: "home",
     pickStep: 1,
@@ -269,6 +373,11 @@
     pickFrom: null,
     padSwipe: null,
     padSwiped: false,
+    dress: {
+      babyId: "elif",
+      cat: "hat",
+      wear: { ...EMPTY_WEAR },
+    },
     user: null,
     authMode: "login",
     parent: {
@@ -298,10 +407,12 @@
   const $ = (id) => document.getElementById(id);
   const screens = {
     login: $("screen-login"),
+    hub: $("screen-hub"),
     home: $("screen-home"),
     character: $("screen-character"),
     room: $("screen-room"),
     play: $("screen-play"),
+    dress: $("screen-dress"),
     win: $("screen-win"),
   };
 
@@ -317,21 +428,32 @@
     homePull.drag = null;
     window.clearTimeout(homePull.wheelIdle);
     const hint = $("pull-refresh");
-    const home = screens.home;
     if (hint) {
       hint.classList.remove("show", "ready");
       hint.style.removeProperty("--pull-y");
     }
-    if (home) {
-      home.classList.remove("pulling");
-      home.style.transform = "";
-    }
+    [screens.hub, screens.home].forEach((el) => {
+      if (!el) return;
+      el.classList.remove("pulling");
+      el.style.transform = "";
+    });
+  }
+
+  function pullScreenEl() {
+    if (state.screen === "hub") return screens.hub;
+    if (state.screen === "home") return screens.home;
+    return null;
+  }
+
+  function canHomePull() {
+    return state.screen === "hub" || state.screen === "home";
   }
 
   function showHomePull(amount, need) {
     const hint = $("pull-refresh");
     const text = $("pull-refresh-text");
-    const home = screens.home;
+    const home = pullScreenEl();
+    if (!home) return;
     const t = Math.min(1, Math.max(0, amount / need));
     hint.classList.add("show");
     hint.classList.toggle("ready", t >= 1);
@@ -352,22 +474,22 @@
     state.screen = name;
     if (name !== "character") closeNameModal();
     Object.entries(screens).forEach(([key, el]) => {
-      el.classList.toggle("active", key === name);
+      if (el) el.classList.toggle("active", key === name);
     });
     const app = document.getElementById("app");
     app.classList.toggle("playing", name === "play");
-    const showBack = name !== "home" && name !== "win" && name !== "login";
+    const showBack = name !== "hub" && name !== "win" && name !== "login";
     $("btn-back").hidden = !showBack;
     app.classList.toggle("has-back", showBack);
     renderAccount();
     if (name === "login") closeAccountMenu();
-    if (name === "home" || name === "login") startSkyToys();
+    if (name === "home" || name === "login" || name === "hub") startSkyToys();
     else stopSkyToys();
-    if (name !== "home") resetHomePull();
+    if (name !== "home" && name !== "hub") resetHomePull();
   }
 
   function skyToysOn() {
-    return state.screen === "home" || state.screen === "login";
+    return state.screen === "home" || state.screen === "login" || state.screen === "hub";
   }
 
   function stopSkyToys() {
@@ -438,6 +560,11 @@
 
   function goBack() {
     playTapSound();
+    if (state.screen === "dress" || state.screen === "home") {
+      resetPicks();
+      show("hub");
+      return;
+    }
     if (state.screen === "play") {
       stopRuns();
       renderRooms();
@@ -2031,7 +2158,7 @@
     if (timeIsUp()) lockPlayTime();
     else unlockPlayTime();
     renderAccount();
-    show("home");
+    show("hub");
   }
 
   function logoutUser() {
@@ -2315,6 +2442,176 @@
     return false;
   }
 
+  function loadDressSave() {
+    try {
+      const saved = JSON.parse(localStorage.getItem("ot-dress") || "null");
+      if (saved?.babyId && CHARACTERS.some((ch) => ch.id === saved.babyId)) {
+        state.dress.babyId = saved.babyId;
+      }
+      if (saved?.wear && typeof saved.wear === "object") {
+        state.dress.wear = { ...EMPTY_WEAR, ...saved.wear };
+      }
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function saveDress() {
+    localStorage.setItem(
+      "ot-dress",
+      JSON.stringify({ babyId: state.dress.babyId, wear: state.dress.wear })
+    );
+  }
+
+  function dressItem(cat, id) {
+    return (DRESS_ITEMS[cat] || []).find((item) => item.id === id) || (DRESS_ITEMS[cat] || [])[0];
+  }
+
+  function babyCharHtml(c) {
+    return `<div class="character portrait baby" data-id="${c.id}" style="--skin:${c.skin};--hair:${c.hair};--clothes:${c.clothes};--legs:${c.legs};">
+      ${BABY_HTML}
+    </div>`;
+  }
+
+  function applyWearAttrs(el) {
+    const wear = state.dress.wear;
+    Object.keys(EMPTY_WEAR).forEach((key) => {
+      el.dataset[key] = wear[key] || "";
+    });
+    const top = dressItem("top", wear.top);
+    el.classList.toggle("wearing-dress", Boolean(top?.dress));
+  }
+
+  function renderDressBaby() {
+    const c = CHARACTERS.find((ch) => ch.id === state.dress.babyId) || CHARACTERS[0];
+    const box = $("dress-baby");
+    if (!box) return;
+    box.innerHTML = babyCharHtml(c);
+    const el = box.querySelector(".character");
+    el.classList.add("stage");
+    applyWearAttrs(el);
+    const label = el.querySelector(".char-label");
+    if (label) label.textContent = displayName(c);
+  }
+
+  function renderDressBabies() {
+    $("dress-babies").innerHTML = CHARACTERS.map((c) => {
+      const on = c.id === state.dress.babyId ? "on" : "";
+      return `<button type="button" class="dress-baby-pick ${on}" data-baby="${c.id}" aria-label="${escapeHtml(
+        displayName(c)
+      )}">${babyCharHtml(c)}</button>`;
+    }).join("");
+    const selected = $("dress-babies").querySelector(".dress-baby-pick.on .character");
+    if (selected) applyWearAttrs(selected);
+  }
+
+  function renderDressCats() {
+    $("dress-cats").innerHTML = DRESS_CATS.map((cat) => {
+      const on = cat.id === state.dress.cat ? "on" : "";
+      return `<button type="button" class="dress-cat ${on}" data-cat="${cat.id}" role="tab" aria-selected="${
+        cat.id === state.dress.cat
+      }"><span aria-hidden="true">${cat.emoji}</span>${cat.label}</button>`;
+    }).join("");
+  }
+
+  function renderDressItems() {
+    const cat = state.dress.cat;
+    const current = state.dress.wear[cat] || "";
+    $("dress-items").innerHTML = DRESS_ITEMS[cat]
+      .map((item) => {
+        const on = item.id === current ? "on" : "";
+        const cultural = item.cultural ? "cultural" : "";
+        return `<button type="button" class="dress-item ${on} ${cultural}" data-item="${item.id}">
+          <span class="item-preview ${cat}-${item.id || "none"}" aria-hidden="true">${item.emoji}</span>
+          <strong>${item.name}</strong>
+        </button>`;
+      })
+      .join("");
+  }
+
+  function renderDress() {
+    renderDressBaby();
+    renderDressBabies();
+    renderDressCats();
+    renderDressItems();
+    updateDressSparkle();
+  }
+
+  function outfitScore() {
+    return Object.keys(EMPTY_WEAR).filter((key) => state.dress.wear[key]).length;
+  }
+
+  function updateDressSparkle() {
+    const sparkle = $("dress-sparkle");
+    if (sparkle) sparkle.hidden = outfitScore() < 4;
+  }
+
+  function showDressCheer() {
+    const cheer = $("dress-cheer");
+    if (!cheer) return;
+    cheer.textContent = DRESS_CHEERS[Math.floor(Math.random() * DRESS_CHEERS.length)];
+    cheer.hidden = false;
+    window.clearTimeout(showDressCheer.timer);
+    showDressCheer.timer = window.setTimeout(() => {
+      cheer.hidden = true;
+    }, 1500);
+  }
+
+  function wearItem(id) {
+    const cat = state.dress.cat;
+    const item = dressItem(cat, id);
+    if (!item) return;
+    if (state.dress.wear[cat] === item.id) state.dress.wear[cat] = "";
+    else state.dress.wear[cat] = item.id;
+    if (cat === "top" && dressItem("top", state.dress.wear.top)?.dress) {
+      state.dress.wear.bottom = "";
+    }
+    if (cat === "bottom" && state.dress.wear.bottom && dressItem("top", state.dress.wear.top)?.dress) {
+      state.dress.wear.top = "";
+    }
+    saveDress();
+    renderDress();
+    if (state.dress.wear[cat]) showDressCheer();
+  }
+
+  function randomOutfit() {
+    const pick = (cat) => {
+      const items = DRESS_ITEMS[cat].filter((entry) => entry.id);
+      return items[Math.floor(Math.random() * items.length)];
+    };
+    const top = pick("top");
+    state.dress.wear = {
+      hat: pick("hat").id,
+      top: top.id,
+      bottom: top.dress ? "" : pick("bottom").id,
+      bag: pick("bag").id,
+      shoes: pick("shoes").id,
+      acc: pick("acc").id,
+    };
+    saveDress();
+    renderDress();
+    showDressCheer();
+    playWinSound();
+  }
+
+  function clearOutfit() {
+    state.dress.wear = { ...EMPTY_WEAR };
+    saveDress();
+    renderDress();
+    const cheer = $("dress-cheer");
+    if (cheer) cheer.hidden = true;
+  }
+
+  function startDressUp() {
+    if (timeIsUp()) {
+      lockPlayTime();
+      return;
+    }
+    loadDressSave();
+    renderDress();
+    show("dress");
+  }
+
   function resetPicks() {
     state.pickStep = 1;
     state.pickKind = "character";
@@ -2355,6 +2652,48 @@
   }
 
   function bind() {
+    $("hub-game-toys").addEventListener("click", () => {
+      if (timeIsUp()) {
+        lockPlayTime();
+        return;
+      }
+      playTapSound();
+      show("home");
+    });
+    $("hub-game-dress").addEventListener("click", () => {
+      playTapSound();
+      startDressUp();
+    });
+    $("dress-babies").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-baby]");
+      if (!btn) return;
+      playTapSound();
+      state.dress.babyId = btn.dataset.baby;
+      saveDress();
+      renderDress();
+    });
+    $("dress-cats").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-cat]");
+      if (!btn) return;
+      playTapSound();
+      state.dress.cat = btn.dataset.cat;
+      renderDressCats();
+      renderDressItems();
+    });
+    $("dress-items").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-item]");
+      if (!btn) return;
+      playTapSound();
+      wearItem(btn.dataset.item);
+    });
+    $("dress-random").addEventListener("click", () => {
+      playTapSound();
+      randomOutfit();
+    });
+    $("dress-clear").addEventListener("click", () => {
+      playTapSound();
+      clearOutfit();
+    });
     $("btn-play").addEventListener("click", () => beginPlay(false));
     $("btn-play-bot").addEventListener("click", () => beginPlay(true));
     $("btn-parent-play").addEventListener("click", openParentModal);
@@ -2628,7 +2967,7 @@
     window.addEventListener(
       "wheel",
       (e) => {
-        if (state.screen !== "home" || homePull.reloading) return;
+        if (!canHomePull() || homePull.reloading) return;
         if (e.target.closest(".account-menu") || document.querySelector(".name-modal:not([hidden])")) return;
         const dy =
           e.deltaMode === 1 ? e.deltaY * 16 : e.deltaMode === 2 ? e.deltaY * window.innerHeight : e.deltaY;
@@ -2653,7 +2992,7 @@
       { passive: false }
     );
     document.addEventListener("pointerdown", (e) => {
-      if (state.screen !== "home" || homePull.reloading) return;
+      if (!canHomePull() || homePull.reloading) return;
       if (document.querySelector(".name-modal:not([hidden])")) return;
       if (e.target.closest("button, a, input, .account-menu, .diff-row")) return;
       homePull.drag = { y: e.clientY, id: e.pointerId };

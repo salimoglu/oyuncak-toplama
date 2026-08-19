@@ -1,13 +1,13 @@
 {
-  "name": "Oyuncak Toplama",
-  "short_name": "Oyuncaklar",
+  "name": "Minik Oyunlar",
+  "short_name": "Oyunlar",
   "lang": "tr",
   "start_url": ".",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#fff3e0",
   "theme_color": "#ff8fab",
-  "description": "İki oyuncu kodlama bloklarıyla karakterini hareket ettirip oyuncak toplar.",
+  "description": "Çocuklar için oyun kutusu: oyuncak toplama ve bebek giydirme.",
   "icons": [
     {
       "src": "icon.svg",

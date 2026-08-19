@@ -9,14 +9,14 @@
     <meta name="theme-color" content="#ff8fab" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Oyuncak Toplama" />
+    <meta name="apple-mobile-web-app-title" content="Minik Oyunlar" />
     <meta
       name="description"
-      content="İki oyuncu, kodlama bloklarıyla karakterini hareket ettirip oyuncak toplar. En çok toplayan kazanır."
+      content="Çocuklar için oyun kutusu: oyuncak toplama ve bebek giydirme."
     />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
-    <title>Oyuncak Toplama</title>
+    <title>Minik Oyunlar</title>
     <link rel="manifest" href="manifest.json" />
     <link
       rel="icon"
@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.42" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.50" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.42</div>
+        <div id="version-badge" class="version-badge">v0.50</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -90,9 +90,9 @@
         <div class="cloud c2"></div>
         <div class="cloud c3"></div>
         <div class="home-hero login-hero">
-          <div class="logo-toys" aria-hidden="true">🧸 🔐 🎈</div>
-          <h1>Oyuncak Toplama</h1>
-          <p id="login-tagline" class="tagline">Aile hesabınla gir.</p>
+          <div class="logo-toys" aria-hidden="true">🧸 👗 🎈</div>
+          <h1>Minik Oyunlar</h1>
+          <p id="login-tagline" class="tagline">Aile hesabınla gir, sonra oyununu seç.</p>
           <form id="login-form" class="login-form" autocomplete="off">
             <input class="login-decoy" type="text" name="username" autocomplete="username" tabindex="-1" aria-hidden="true" />
             <input class="login-decoy" type="password" name="password" autocomplete="current-password" tabindex="-1" aria-hidden="true" />
@@ -135,6 +135,52 @@
             <button id="btn-google" class="ghost-btn google-btn" type="button">Gmail ile bağlan</button>
             <button id="btn-auth-mode" class="text-btn" type="button">Hesabın yok mu? Kayıt ol</button>
           </form>
+        </div>
+      </section>
+
+      <section id="screen-hub" class="screen">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+        <div class="hub-hero">
+          <div class="logo-toys" aria-hidden="true">🧸 👗 🎈 🎨</div>
+          <h1>Hangi oyunu oynayalım?</h1>
+          <p class="tagline">Bir kutuya dokun, oyuna başla.</p>
+          <div class="hub-games">
+            <button id="hub-game-toys" class="hub-game" type="button">
+              <span class="hub-num">1</span>
+              <div class="hub-art scene-toys" aria-hidden="true">
+                <div class="hub-doll">
+                  <i class="hub-hair"></i>
+                  <i class="hub-face"></i>
+                  <i class="hub-body"></i>
+                  <i class="hub-basket"></i>
+                </div>
+                <span class="hub-float toy-a">🧸</span>
+                <span class="hub-float toy-b">🚗</span>
+                <span class="hub-float toy-c">🎈</span>
+              </div>
+              <strong>Oyuncak Toplama</strong>
+              <span class="sub">Kodlarla yarış, oyuncakları topla</span>
+            </button>
+            <button id="hub-game-dress" class="hub-game" type="button">
+              <span class="hub-num">2</span>
+              <div class="hub-art scene-dress" aria-hidden="true">
+                <div class="hub-doll baby">
+                  <i class="hub-hat"></i>
+                  <i class="hub-hair purple"></i>
+                  <i class="hub-face"></i>
+                  <i class="hub-body lilac"></i>
+                  <i class="hub-bag"></i>
+                </div>
+                <span class="hub-float toy-a">👒</span>
+                <span class="hub-float toy-b">👜</span>
+                <span class="hub-float toy-c">🧿</span>
+              </div>
+              <strong>Bebek Giydirme</strong>
+              <span class="sub">Şapka, çanta, kıyafet seç</span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -231,6 +277,27 @@
         </div>
       </section>
 
+      <section id="screen-dress" class="screen dress">
+        <h2>Bebek Giydirme</h2>
+        <p class="hint">Bebeğini seç, sonra kıyafetlere dokun. Tulum her zaman üstünde kalır.</p>
+        <div class="dress-layout">
+          <div class="dress-stage">
+            <div id="dress-sparkle" class="dress-sparkle" aria-hidden="true" hidden></div>
+            <div id="dress-baby" class="dress-baby"></div>
+            <p id="dress-cheer" class="dress-cheer" hidden></p>
+          </div>
+          <div class="dress-panel">
+            <div id="dress-babies" class="dress-babies" role="listbox" aria-label="Bebekler"></div>
+            <div id="dress-cats" class="dress-cats" role="tablist" aria-label="Kıyafet türü"></div>
+            <div id="dress-items" class="dress-items" role="listbox" aria-label="Kıyafetler"></div>
+            <div class="dress-actions">
+              <button id="dress-random" class="ghost-btn" type="button">Sürpriz</button>
+              <button id="dress-clear" class="text-btn" type="button">Tulum</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="screen-win" class="screen win">
         <div class="win-card" id="win-card">
           <p id="win-result" class="win-result"></p>
@@ -302,7 +369,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.42";
+        var CURRENT = "0.50";
         var started = false;
 
         function addScript(src) {

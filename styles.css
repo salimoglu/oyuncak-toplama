@@ -165,11 +165,13 @@ body {
   transform: rotate(180deg);
 }
 
-#screen-home {
+#screen-home,
+#screen-hub {
   transition: transform 0.22s ease;
 }
 
-#screen-home.pulling {
+#screen-home.pulling,
+#screen-hub.pulling {
   transition: none;
 }
 
@@ -3492,5 +3494,1025 @@ h2 {
   .run-btn,
   .erase-btn {
     min-height: 48px;
+  }
+}
+
+.hub-hero {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: min(760px, 100%);
+  background: rgba(255, 253, 248, 0.72);
+  border-radius: 40px;
+  padding: 28px 22px 24px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+}
+
+.hub-games {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.hub-game {
+  position: relative;
+  border: none;
+  border-radius: 32px;
+  background: linear-gradient(180deg, #fff 0%, #fff6ea 100%);
+  padding: 18px 14px 16px;
+  min-height: 236px;
+  font-family: inherit;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 0 rgba(90, 50, 40, 0.08), var(--shadow);
+}
+
+.hub-game:active {
+  transform: translateY(3px);
+  box-shadow: 0 5px 0 rgba(90, 50, 40, 0.08), var(--shadow);
+}
+
+.hub-num {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ff9ebd, #ff5d8f);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 3px 0 #c73462;
+}
+
+.hub-game strong {
+  font-size: 1.2rem;
+}
+
+.hub-game .sub {
+  font-size: 0.9rem;
+  color: var(--soft);
+  text-align: center;
+  font-weight: 600;
+}
+
+.hub-art {
+  width: 150px;
+  height: 112px;
+  border-radius: 28px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.scene-toys {
+  background: linear-gradient(180deg, #d0ebff 0%, #fff0f6 100%);
+}
+
+.scene-dress {
+  background: linear-gradient(180deg, #e5dbff 0%, #fff3e0 100%);
+}
+
+.hub-doll {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  width: 44px;
+  height: 70px;
+  margin-left: -22px;
+}
+
+.hub-hair {
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  width: 34px;
+  height: 22px;
+  margin-left: -17px;
+  background: #5c3317;
+  border-radius: 16px 16px 8px 8px;
+}
+
+.hub-hair.purple {
+  background: #6d4c9a;
+}
+
+.hub-face {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  width: 28px;
+  height: 26px;
+  margin-left: -14px;
+  background: #f6d7b0;
+  border-radius: 50%;
+  box-shadow: inset 0 -3px 0 rgba(255, 150, 140, 0.15);
+}
+
+.hub-face::before,
+.hub-face::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  width: 5px;
+  height: 6px;
+  background: #3d2b1f;
+  border-radius: 50%;
+}
+
+.hub-face::before {
+  left: 6px;
+}
+
+.hub-face::after {
+  right: 6px;
+}
+
+.hub-body {
+  position: absolute;
+  left: 50%;
+  top: 34px;
+  width: 24px;
+  height: 22px;
+  margin-left: -12px;
+  background: #ff8fab;
+  border-radius: 12px 12px 10px 10px;
+}
+
+.hub-body.lilac {
+  background: #9775fa;
+}
+
+.hub-basket {
+  position: absolute;
+  right: -10px;
+  top: 40px;
+  width: 16px;
+  height: 14px;
+  background: #74c0fc;
+  border-radius: 0 0 10px 10px;
+  box-shadow: inset 0 3px 0 #1c7ed6;
+}
+
+.hub-hat {
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  width: 22px;
+  height: 12px;
+  margin-left: -11px;
+  background: #c92a2a;
+  border-radius: 4px 4px 2px 2px;
+  z-index: 2;
+  box-shadow: 10px -2px 0 -4px #222;
+}
+
+.hub-bag {
+  position: absolute;
+  right: -12px;
+  top: 38px;
+  width: 14px;
+  height: 16px;
+  background: #f08c00;
+  border-radius: 4px;
+  box-shadow: inset 0 -4px 0 #d9480f;
+}
+
+.hub-bag::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: -5px;
+  height: 8px;
+  border: 2px solid #d9480f;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.hub-float {
+  position: absolute;
+  font-size: 1.35rem;
+  animation: bob 2.6s ease-in-out infinite;
+}
+
+.hub-float.toy-a {
+  top: 10px;
+  left: 10px;
+}
+
+.hub-float.toy-b {
+  top: 14px;
+  right: 12px;
+  animation-delay: -0.8s;
+}
+
+.hub-float.toy-c {
+  bottom: 12px;
+  left: 16px;
+  animation-delay: -1.4s;
+}
+
+#screen-dress {
+  justify-content: flex-start;
+  overflow: hidden;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+#screen-hub {
+  overflow: auto;
+  justify-content: center;
+}
+
+#screen-dress h2 {
+  color: #7048e8;
+  text-shadow: 0 3px 0 #e5dbff;
+}
+
+.dress-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 1.15fr);
+  gap: 12px;
+  width: min(1080px, 100%);
+  flex: 1;
+  min-height: 0;
+}
+
+.dress-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.9), transparent 42%),
+    linear-gradient(180deg, #fff8ee 0%, #ffe0f0 100%);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.dress-sparkle {
+  position: absolute;
+  inset: 12px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 22%, #ffe066 0 4px, transparent 5px),
+    radial-gradient(circle at 82% 18%, #ff8fab 0 3px, transparent 4px),
+    radial-gradient(circle at 14% 78%, #9775fa 0 3px, transparent 4px),
+    radial-gradient(circle at 86% 72%, #69db7c 0 4px, transparent 5px);
+  animation: bob 2.2s ease-in-out infinite;
+}
+
+.dress-sparkle[hidden] {
+  display: none;
+}
+
+.dress-cheer {
+  position: absolute;
+  top: 14px;
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #fff;
+  color: #7048e8;
+  font-weight: 800;
+  box-shadow: var(--shadow);
+  animation: pop 0.7s ease;
+  z-index: 3;
+}
+
+.dress-cheer[hidden] {
+  display: none;
+}
+
+.dress-baby {
+  height: 250px;
+  display: grid;
+  place-items: end center;
+}
+
+.character.portrait.baby.stage {
+  width: 150px;
+  height: 240px;
+}
+
+.character.portrait.baby.stage .char-fit {
+  transform: scale(2.2);
+  transform-origin: top center;
+  height: 230px;
+  width: 72px;
+}
+
+.character.portrait.baby.stage .char-label {
+  display: block;
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%) scale(0.48);
+  font-size: 1.35rem;
+  padding: 2px 14px;
+}
+
+.character.portrait.baby.stage .char-figure {
+  animation: bob 2.6s ease-in-out infinite;
+}
+
+.character.baby .wear-onesie {
+  position: absolute;
+  left: 50%;
+  top: 1px;
+  width: 18px;
+  height: 7px;
+  margin-left: -9px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 0 0 8px 8px;
+  z-index: 2;
+}
+
+.character.baby .wear-onesie::before,
+.character.baby .wear-onesie::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.character.baby .wear-onesie::before {
+  left: 3px;
+}
+
+.character.baby .wear-onesie::after {
+  right: 3px;
+}
+
+.character.baby[data-id="karamel"] .wear-onesie,
+.character.baby[data-id="pamuk"] .wear-onesie {
+  width: 22px;
+  height: 16px;
+  margin-left: -11px;
+  top: 4px;
+  background: #fff0f6;
+  border-radius: 10px 10px 8px 8px;
+}
+
+.wear-hat,
+.wear-hoodie,
+.wear-glasses,
+.wear-top,
+.wear-dress,
+.wear-nazar,
+.wear-beads,
+.wear-bag,
+.wear-bottom,
+.wear-shoes {
+  display: none;
+  pointer-events: none;
+}
+
+.character.baby[data-hat]:not([data-hat=""]) .wear-hat,
+.character.baby[data-top="hoodie"] .wear-hoodie,
+.character.baby[data-acc="glasses"] .wear-glasses,
+.character.baby[data-top]:not([data-top=""]) .wear-top,
+.character.baby.wearing-dress .wear-dress,
+.character.baby[data-acc="nazar"] .wear-nazar,
+.character.baby[data-acc="beads"] .wear-beads,
+.character.baby[data-bag]:not([data-bag=""]) .wear-bag,
+.character.baby[data-bottom]:not([data-bottom=""]) .wear-bottom,
+.character.baby[data-shoes]:not([data-shoes=""]) .wear-shoes {
+  display: block;
+  position: absolute;
+}
+
+.character.baby.wearing-dress .wear-top,
+.character.baby.wearing-dress .wear-bottom {
+  display: none !important;
+}
+
+.character.baby[data-hat]:not([data-hat=""]) .char-bow {
+  display: none;
+}
+
+.wear-hat {
+  left: 50%;
+  top: 0;
+  z-index: 7;
+}
+
+.character.baby[data-hat="bow"] .wear-hat {
+  width: 16px;
+  height: 12px;
+  margin-left: -8px;
+  top: 2px;
+  background: #ff8fab;
+  border-radius: 50%;
+  box-shadow: 12px 2px 0 #ff8fab;
+}
+
+.character.baby[data-hat="bow"] .wear-hat::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 3px;
+  width: 6px;
+  height: 6px;
+  background: #c73462;
+  border-radius: 50%;
+}
+
+.character.baby[data-hat="beanie"] .wear-hat {
+  width: 36px;
+  height: 16px;
+  margin-left: -18px;
+  top: 4px;
+  background: #4dabf7;
+  border-radius: 18px 18px 4px 4px;
+}
+
+.character.baby[data-hat="fes"] .wear-hat {
+  width: 26px;
+  height: 16px;
+  margin-left: -13px;
+  top: 2px;
+  background: #c92a2a;
+  border-radius: 4px 4px 2px 2px;
+  box-shadow: inset 0 -3px 0 #862e2e;
+}
+
+.character.baby[data-hat="fes"] .wear-hat::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: -3px;
+  height: 6px;
+  background: #e03131;
+  border-radius: 3px;
+}
+
+.character.baby[data-hat="fes"] .wear-hat::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: -2px;
+  width: 7px;
+  height: 7px;
+  background: #222;
+  border-radius: 50%;
+  box-shadow: 5px 7px 0 -2px #222;
+}
+
+.character.baby[data-hat="yemeni"] .wear-hat {
+  width: 46px;
+  height: 20px;
+  margin-left: -23px;
+  top: 6px;
+  background: linear-gradient(90deg, #e03131 0 28%, #fff 28% 72%, #e03131 72%);
+  border-radius: 18px 18px 8px 8px;
+  box-shadow: 0 4px 0 rgba(90, 50, 40, 0.08);
+}
+
+.character.baby[data-hat="flowers"] .wear-hat {
+  width: 40px;
+  height: 12px;
+  margin-left: -20px;
+  top: 4px;
+  background: transparent;
+  box-shadow:
+    -12px 2px 0 5px #ff8fab,
+    0 0 0 6px #ffe066,
+    12px 2px 0 5px #9775fa;
+}
+
+.character.baby[data-hat="beret"] .wear-hat {
+  width: 34px;
+  height: 12px;
+  margin-left: -20px;
+  top: 4px;
+  background: #c73462;
+  border-radius: 16px;
+  transform: rotate(-12deg);
+}
+
+.character.baby[data-hat="pompom"] .wear-hat {
+  width: 36px;
+  height: 18px;
+  margin-left: -18px;
+  top: 2px;
+  background: #ffd43b;
+  border-radius: 18px 18px 4px 4px;
+}
+
+.character.baby[data-hat="pompom"] .wear-hat::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #ffd43b;
+}
+
+.wear-hoodie {
+  left: 50%;
+  top: 6px;
+  width: 46px;
+  height: 28px;
+  margin-left: -23px;
+  background: #ffdeeb;
+  border-radius: 22px 22px 8px 8px;
+  z-index: 1;
+}
+
+.wear-glasses {
+  left: 50%;
+  top: 12px;
+  width: 32px;
+  height: 12px;
+  margin-left: -16px;
+  z-index: 5;
+  border: 2px solid #3d2b1f;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: inset 13px 0 0 -2px #3d2b1f;
+}
+
+.wear-top,
+.wear-dress {
+  left: 50%;
+  top: 42px;
+  z-index: 3;
+}
+
+.character.baby[data-top="tshirt"] .wear-top {
+  width: 34px;
+  height: 22px;
+  margin-left: -17px;
+  background: repeating-linear-gradient(180deg, #fff 0 4px, #4dabf7 4px 8px);
+  border-radius: 8px 8px 6px 6px;
+}
+
+.character.baby[data-top="sweater"] .wear-top {
+  width: 36px;
+  height: 24px;
+  margin-left: -18px;
+  background: #f08c00;
+  border-radius: 12px 12px 8px 8px;
+  box-shadow: inset 0 5px 0 #ffe8cc;
+}
+
+.character.baby[data-top="yelek"] .wear-top {
+  width: 34px;
+  height: 24px;
+  margin-left: -17px;
+  background: #862e9c;
+  border-radius: 6px;
+  box-shadow:
+    inset 0 0 0 2px #ffd43b,
+    inset 12px 0 0 #7048e8,
+    inset -12px 0 0 #7048e8;
+}
+
+.character.baby[data-top="sailor"] .wear-top {
+  width: 34px;
+  height: 22px;
+  margin-left: -17px;
+  background: #1c7ed6;
+  border-radius: 6px;
+}
+
+.character.baby[data-top="sailor"] .wear-top::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 0;
+  height: 8px;
+  background: #fff;
+  clip-path: polygon(0 0, 100% 0, 70% 100%, 30% 100%);
+}
+
+.character.baby[data-top="hoodie"] .wear-top {
+  width: 34px;
+  height: 24px;
+  margin-left: -17px;
+  background: #ff8fab;
+  border-radius: 10px 10px 8px 8px;
+}
+
+.character.baby[data-top="flower"] .wear-top {
+  width: 34px;
+  height: 22px;
+  margin-left: -17px;
+  background:
+    radial-gradient(circle at 8px 8px, #ff8fab 0 3px, transparent 4px),
+    radial-gradient(circle at 22px 12px, #ffe066 0 3px, transparent 4px),
+    #fff0f6;
+  border-radius: 10px;
+}
+
+.character.baby[data-top="bindalli"] .wear-dress,
+.character.baby.wearing-dress .wear-dress {
+  width: 36px;
+  height: 40px;
+  margin-left: -18px;
+  top: 42px;
+  background:
+    radial-gradient(circle at 8px 10px, #ffd43b 0 2px, transparent 3px),
+    radial-gradient(circle at 26px 18px, #ffd43b 0 2px, transparent 3px),
+    linear-gradient(180deg, #862e9c, #c2255c);
+  border-radius: 10px 10px 16px 16px;
+  box-shadow: inset 0 0 0 2px #ffd43b;
+  z-index: 3;
+}
+
+.wear-bottom {
+  left: 0;
+  top: 0;
+  z-index: 2;
+}
+
+.character.baby[data-bottom="pants"] .wear-bottom {
+  width: 26px;
+  height: 16px;
+  background: #1c7ed6;
+  border-radius: 4px;
+}
+
+.character.baby[data-bottom="skirt"] .wear-bottom {
+  width: 30px;
+  height: 14px;
+  margin-left: -2px;
+  background: #ff8fab;
+  border-radius: 2px 2px 12px 12px;
+}
+
+.character.baby[data-bottom="salvar"] .wear-bottom {
+  width: 32px;
+  height: 16px;
+  margin-left: -3px;
+  background: #9775fa;
+  border-radius: 8px 8px 14px 14px;
+  box-shadow: inset 0 -4px 0 #7048e8;
+}
+
+.character.baby[data-bottom="shorts"] .wear-bottom {
+  width: 26px;
+  height: 10px;
+  background: #12b886;
+  border-radius: 4px;
+}
+
+.character.baby[data-bottom="overall"] .wear-bottom {
+  width: 26px;
+  height: 16px;
+  background: #fab005;
+  border-radius: 4px;
+}
+
+.character.baby[data-bottom="overall"] .wear-bottom::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: -10px;
+  height: 12px;
+  border: 3px solid #fab005;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+}
+
+.wear-bag {
+  right: -16px;
+  top: 8px;
+  z-index: 6;
+  width: 16px;
+  height: 16px;
+}
+
+.character.baby[data-bag="backpack"] .wear-bag {
+  right: auto;
+  left: -14px;
+  background: #4dabf7;
+  border-radius: 6px;
+  box-shadow: 2px 2px 0 #1c7ed6;
+}
+
+.character.baby[data-bag="purse"] .wear-bag {
+  background: #ff8fab;
+  border-radius: 0 0 10px 10px;
+}
+
+.character.baby[data-bag="purse"] .wear-bag::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: -6px;
+  height: 8px;
+  border: 2px solid #c73462;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+}
+
+.character.baby[data-bag="kilim"] .wear-bag {
+  background:
+    repeating-linear-gradient(90deg, #c92a2a 0 3px, #ffd43b 3px 6px, #2f9e44 6px 9px);
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px #862e2e;
+}
+
+.character.baby[data-bag="star"] .wear-bag {
+  width: 18px;
+  height: 18px;
+  background: #ffe066;
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.wear-shoes {
+  left: 50%;
+  top: 78px;
+  width: 28px;
+  height: 8px;
+  margin-left: -14px;
+  z-index: 4;
+}
+
+.wear-shoes i {
+  position: absolute;
+  bottom: 0;
+  width: 12px;
+  height: 7px;
+  border-radius: 6px 6px 4px 4px;
+}
+
+.wear-shoes i.left {
+  left: 0;
+}
+
+.wear-shoes i.right {
+  right: 0;
+}
+
+.character.baby[data-shoes="sneakers"] .wear-shoes i {
+  background: #fff;
+  box-shadow: inset 0 -3px 0 #4dabf7;
+}
+
+.character.baby[data-shoes="boots"] .wear-shoes i {
+  height: 10px;
+  background: #7c4a03;
+}
+
+.character.baby[data-shoes="yemeni"] .wear-shoes i {
+  background: #d9480f;
+  border-radius: 8px 4px 4px 8px;
+}
+
+.character.baby[data-shoes="slipper"] .wear-shoes i {
+  background: #ffdeeb;
+  box-shadow: 0 -4px 0 -2px #ff8fab;
+}
+
+.wear-nazar {
+  left: 50%;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  z-index: 5;
+  background: radial-gradient(circle, #fff 0 2px, #1c7ed6 2px 4px, #fff 4px 5px, #1c7ed6 5px);
+  border-radius: 50%;
+}
+
+.wear-beads {
+  left: 50%;
+  top: 0;
+  width: 20px;
+  height: 8px;
+  margin-left: -10px;
+  z-index: 4;
+  background:
+    radial-gradient(circle at 3px 4px, #c92a2a 0 3px, transparent 3.5px),
+    radial-gradient(circle at 10px 4px, #ffd43b 0 3px, transparent 3.5px),
+    radial-gradient(circle at 17px 4px, #2f9e44 0 3px, transparent 3.5px);
+}
+
+.dress-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  background: rgba(255, 253, 248, 0.78);
+  border-radius: 28px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.dress-babies {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+}
+
+.dress-baby-pick {
+  flex: 0 0 68px;
+  height: 92px;
+  border: none;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  font-family: inherit;
+  padding: 6px 0 0;
+  overflow: hidden;
+}
+
+.dress-baby-pick .character.portrait .char-fit {
+  transform: scale(0.72);
+  transform-origin: top center;
+}
+
+.dress-baby-pick .character.portrait .char-label {
+  display: none;
+}
+
+.dress-baby-pick.on {
+  background: linear-gradient(180deg, #e5dbff, #fff);
+  box-shadow: 0 0 0 3px #9775fa, var(--shadow);
+}
+
+.dress-cats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.dress-cat {
+  min-height: 52px;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.78rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-shadow: var(--shadow);
+}
+
+.dress-cat span {
+  font-size: 1.15rem;
+}
+
+.dress-cat.on {
+  background: linear-gradient(180deg, #d0bfff, #9775fa);
+  color: #fff;
+}
+
+.dress-items {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  padding-bottom: 4px;
+}
+
+.dress-item {
+  border: none;
+  border-radius: 18px;
+  background: #fff;
+  min-height: 84px;
+  font-family: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-shadow: var(--shadow);
+}
+
+.dress-item strong {
+  font-size: 0.85rem;
+}
+
+.dress-item .item-preview {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.dress-item.on {
+  background: linear-gradient(180deg, #fff0f6, #ffd6e0);
+  box-shadow: 0 0 0 3px #ff8fab, var(--shadow);
+}
+
+.dress-item.cultural::after {
+  content: "✦";
+  color: #f08c00;
+  font-size: 0.75rem;
+}
+
+.dress-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .hub-games {
+    grid-template-columns: 1fr;
+  }
+
+  .hub-game {
+    min-height: 200px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .dress-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(170px, 34%) minmax(0, 1fr);
+  }
+
+  .dress-baby {
+    height: 160px;
+  }
+
+  .character.portrait.baby.stage {
+    width: 110px;
+    height: 150px;
+  }
+
+  .character.portrait.baby.stage .char-fit {
+    transform: scale(1.45);
+    height: 150px;
+  }
+
+  .dress-cats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dress-items {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  #screen-dress h2,
+  #screen-dress .hint {
+    display: none;
+  }
+
+  .dress-baby {
+    height: 180px;
+  }
+
+  .character.portrait.baby.stage .char-fit {
+    transform: scale(1.55);
+  }
+}
+
+@media (max-width: 420px) {
+  .hub-hero {
+    padding: 18px 12px;
+    border-radius: 28px;
+  }
+
+  .dress-item strong {
+    font-size: 0.75rem;
   }
 }
