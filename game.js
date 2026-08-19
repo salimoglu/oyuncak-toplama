@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.50";
+  const GAME_VERSION = window.__OT_VERSION || "0.51";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -215,67 +215,58 @@
   const CHEERS = ["Aferin!", "Süper!", "Harika!", "Bravo!", "Yaşasın!", "Çok güzel!"];
   const DRESS_CHEERS = ["Çok şık!", "Harika kombin!", "Aferin!", "Ne güzel!", "Masal gibi!", "İşte bu!"];
 
+  const DOLLS = [
+    { id: "elif", name: "Elif", skin: "#f6d7b0", hair: "#5c3317", onesie: "#ffb3c6" },
+    { id: "can", name: "Can", skin: "#efc9a0", hair: "#3d2b1f", onesie: "#74c0fc" },
+    { id: "lila", name: "Lila", skin: "#f3c9a3", hair: "#6d4c9a", onesie: "#d0bfff" },
+    { id: "ece", name: "Ece", skin: "#f8d4b8", hair: "#d9480f", onesie: "#ffe066" },
+    { id: "deniz", name: "Deniz", skin: "#efc9a0", hair: "#0b7285", onesie: "#99e9f2" },
+    { id: "nane", name: "Nane", skin: "#f6d7b0", hair: "#2b8a3e", onesie: "#8ce99a" },
+  ];
+
   const DRESS_CATS = [
+    { id: "dress", label: "Elbise", emoji: "👗" },
     { id: "hat", label: "Şapka", emoji: "👒" },
-    { id: "top", label: "Üst", emoji: "👕" },
-    { id: "bottom", label: "Alt", emoji: "👖" },
-    { id: "bag", label: "Çanta", emoji: "👜" },
     { id: "shoes", label: "Ayakkabı", emoji: "👟" },
-    { id: "acc", label: "Aksesuar", emoji: "🧿" },
+    { id: "bag", label: "Çanta", emoji: "👜" },
   ];
 
   const DRESS_ITEMS = {
+    dress: [
+      { id: "", name: "Tulum" },
+      { id: "princess", name: "Prenses" },
+      { id: "bindalli", name: "Bindallı" },
+      { id: "sailor", name: "Denizci" },
+      { id: "sun", name: "Güneş" },
+      { id: "mint", name: "Nane" },
+      { id: "starry", name: "Yıldız" },
+    ],
     hat: [
-      { id: "", name: "Yok", emoji: "👶" },
-      { id: "bow", name: "Fiyonk", emoji: "🎀" },
-      { id: "beanie", name: "Bere", emoji: "🧶" },
-      { id: "fes", name: "Fes", emoji: "🎩", cultural: true },
-      { id: "yemeni", name: "Yemeni", emoji: "🧣", cultural: true },
-      { id: "flowers", name: "Çiçek", emoji: "🌸" },
-      { id: "beret", name: "Kep", emoji: "🧢" },
-      { id: "pompom", name: "Ponpon", emoji: "❄️" },
-    ],
-    top: [
-      { id: "", name: "Tulum", emoji: "🍼" },
-      { id: "tshirt", name: "Çizgili", emoji: "👕" },
-      { id: "sweater", name: "Kazak", emoji: "🧥" },
-      { id: "yelek", name: "Yelek", emoji: "🧵", cultural: true },
-      { id: "bindalli", name: "Bindallı", emoji: "✨", cultural: true, dress: true },
-      { id: "sailor", name: "Denizci", emoji: "⚓" },
-      { id: "hoodie", name: "Kapüşon", emoji: "💗" },
-      { id: "flower", name: "Çiçekli", emoji: "🌺" },
-    ],
-    bottom: [
-      { id: "", name: "Tulum", emoji: "🍼" },
-      { id: "pants", name: "Pantolon", emoji: "👖" },
-      { id: "skirt", name: "Etek", emoji: "👗" },
-      { id: "salvar", name: "Şalvar", emoji: "🪔", cultural: true },
-      { id: "shorts", name: "Şort", emoji: "🩳" },
-      { id: "overall", name: "Askılı", emoji: "🧸" },
-    ],
-    bag: [
-      { id: "", name: "Yok", emoji: "✋" },
-      { id: "backpack", name: "Sırt çanta", emoji: "🎒" },
-      { id: "purse", name: "Çanta", emoji: "👛" },
-      { id: "kilim", name: "Kilim", emoji: "🧶", cultural: true },
-      { id: "star", name: "Yıldız", emoji: "⭐" },
+      { id: "", name: "Yok" },
+      { id: "bow", name: "Fiyonk" },
+      { id: "fes", name: "Fes" },
+      { id: "yemeni", name: "Yemeni" },
+      { id: "flowers", name: "Çiçek" },
+      { id: "beanie", name: "Bere" },
+      { id: "glasses", name: "Gözlük" },
     ],
     shoes: [
-      { id: "", name: "Çorap", emoji: "🧦" },
-      { id: "sneakers", name: "Spor", emoji: "👟" },
-      { id: "boots", name: "Bot", emoji: "🥾" },
-      { id: "yemeni", name: "Yemeni", emoji: "👞", cultural: true },
-      { id: "slipper", name: "Terlik", emoji: "🩷" },
+      { id: "", name: "Çorap" },
+      { id: "sneakers", name: "Spor" },
+      { id: "boots", name: "Bot" },
+      { id: "yemeni", name: "Yemeni" },
+      { id: "slipper", name: "Terlik" },
     ],
-    acc: [
-      { id: "", name: "Yok", emoji: "✨" },
-      { id: "nazar", name: "Nazar", emoji: "🧿", cultural: true },
-      { id: "glasses", name: "Gözlük", emoji: "👓" },
-      { id: "beads", name: "Boncuk", emoji: "📿", cultural: true },
+    bag: [
+      { id: "", name: "Yok" },
+      { id: "backpack", name: "Sırt" },
+      { id: "purse", name: "Çanta" },
+      { id: "kilim", name: "Kilim" },
+      { id: "nazar", name: "Nazar" },
     ],
   };
 
-  const EMPTY_WEAR = { hat: "", top: "", bottom: "", bag: "", shoes: "", acc: "" };
+  const EMPTY_WEAR = { dress: "", hat: "", shoes: "", bag: "" };
 
   const ACTOR_HTML = `
     <div class="char-fit">
@@ -311,45 +302,41 @@
     </div>
   `;
 
-  const BABY_HTML = `
-    <div class="char-fit">
-    <div class="char-shadow"></div>
-    <div class="char-figure">
-      <div class="char-hair-back"></div>
-      <div class="wear-hoodie"></div>
-      <div class="char-ear left"></div>
-      <div class="char-ear right"></div>
-      <div class="char-head">
-        <div class="char-blush left"></div>
-        <div class="char-blush right"></div>
-        <div class="char-eye left"><i></i></div>
-        <div class="char-eye right"><i></i></div>
-        <div class="char-nose"></div>
-        <div class="char-smile"></div>
-        <div class="char-bow"></div>
-        <div class="wear-glasses"></div>
+  const DOLL_HTML = `
+    <div class="doll-shadow"></div>
+    <div class="doll-fig">
+      <div class="doll-hair-back"></div>
+      <div class="doll-ear left"></div>
+      <div class="doll-ear right"></div>
+      <div class="doll-head">
+        <div class="doll-blush left"></div>
+        <div class="doll-blush right"></div>
+        <div class="doll-eye left"><i></i></div>
+        <div class="doll-eye right"><i></i></div>
+        <div class="doll-nose"></div>
+        <div class="doll-smile"></div>
+        <div class="doll-glasses"></div>
       </div>
-      <div class="char-hair-front"></div>
-      <div class="wear-hat"></div>
-      <div class="char-body">
-        <div class="char-arm left"></div>
-        <div class="char-arm right"></div>
-        <div class="wear-onesie"></div>
-        <div class="wear-top"></div>
-        <div class="wear-dress"></div>
-        <div class="wear-nazar"></div>
-        <div class="wear-beads"></div>
-        <div class="wear-bag"></div>
+      <div class="doll-hair-front"></div>
+      <div class="doll-hat"></div>
+      <div class="doll-body">
+        <div class="doll-onesie"></div>
+        <div class="doll-arm left"></div>
+        <div class="doll-arm right"></div>
+        <div class="doll-dress"></div>
+        <div class="doll-nazar"></div>
       </div>
-      <div class="char-legs">
-        <div class="char-leg left"></div>
-        <div class="char-leg right"></div>
-        <div class="wear-bottom"></div>
+      <div class="doll-hips">
+        <div class="doll-leg left"></div>
+        <div class="doll-leg right"></div>
       </div>
-      <div class="wear-shoes"><i class="left"></i><i class="right"></i></div>
+      <div class="doll-feet">
+        <div class="doll-shoe left"></div>
+        <div class="doll-shoe right"></div>
+      </div>
+      <div class="doll-bag"></div>
     </div>
-    <div class="char-label"></div>
-    </div>
+    <div class="doll-name"></div>
   `;
 
   const state = {
@@ -375,7 +362,7 @@
     padSwiped: false,
     dress: {
       babyId: "elif",
-      cat: "hat",
+      cat: "dress",
       wear: { ...EMPTY_WEAR },
     },
     user: null,
@@ -2445,12 +2432,19 @@
   function loadDressSave() {
     try {
       const saved = JSON.parse(localStorage.getItem("ot-dress") || "null");
-      if (saved?.babyId && CHARACTERS.some((ch) => ch.id === saved.babyId)) {
+      if (saved?.babyId && DOLLS.some((d) => d.id === saved.babyId)) {
         state.dress.babyId = saved.babyId;
       }
       if (saved?.wear && typeof saved.wear === "object") {
-        state.dress.wear = { ...EMPTY_WEAR, ...saved.wear };
+        state.dress.wear = { ...EMPTY_WEAR };
+        Object.keys(EMPTY_WEAR).forEach((key) => {
+          if (typeof saved.wear[key] === "string") state.dress.wear[key] = saved.wear[key];
+        });
+        if (!state.dress.wear.dress && saved.wear.top === "bindalli") {
+          state.dress.wear.dress = "bindalli";
+        }
       }
+      if (saved?.cat && DRESS_ITEMS[saved.cat]) state.dress.cat = saved.cat;
     } catch (err) {
       /* ignore */
     }
@@ -2459,7 +2453,7 @@
   function saveDress() {
     localStorage.setItem(
       "ot-dress",
-      JSON.stringify({ babyId: state.dress.babyId, wear: state.dress.wear })
+      JSON.stringify({ babyId: state.dress.babyId, cat: state.dress.cat, wear: state.dress.wear })
     );
   }
 
@@ -2467,48 +2461,52 @@
     return (DRESS_ITEMS[cat] || []).find((item) => item.id === id) || (DRESS_ITEMS[cat] || [])[0];
   }
 
-  function babyCharHtml(c) {
-    return `<div class="character portrait baby" data-id="${c.id}" style="--skin:${c.skin};--hair:${c.hair};--clothes:${c.clothes};--legs:${c.legs};">
-      ${BABY_HTML}
+  function currentDoll() {
+    return DOLLS.find((d) => d.id === state.dress.babyId) || DOLLS[0];
+  }
+
+  function dollName(doll) {
+    return displayName({ id: doll.id, name: doll.name });
+  }
+
+  function dollHtml(doll, extraClass = "") {
+    return `<div class="doll ${extraClass}" data-id="${doll.id}" style="--skin:${doll.skin};--hair:${doll.hair};--onesie:${doll.onesie};">
+      ${DOLL_HTML}
     </div>`;
   }
 
   function applyWearAttrs(el) {
-    const wear = state.dress.wear;
     Object.keys(EMPTY_WEAR).forEach((key) => {
-      el.dataset[key] = wear[key] || "";
+      el.dataset[key] = state.dress.wear[key] || "";
     });
-    const top = dressItem("top", wear.top);
-    el.classList.toggle("wearing-dress", Boolean(top?.dress));
   }
 
   function renderDressBaby() {
-    const c = CHARACTERS.find((ch) => ch.id === state.dress.babyId) || CHARACTERS[0];
+    const doll = currentDoll();
     const box = $("dress-baby");
     if (!box) return;
-    box.innerHTML = babyCharHtml(c);
-    const el = box.querySelector(".character");
-    el.classList.add("stage");
+    box.innerHTML = dollHtml(doll, "stage");
+    const el = box.querySelector(".doll");
     applyWearAttrs(el);
-    const label = el.querySelector(".char-label");
-    if (label) label.textContent = displayName(c);
+    const label = el.querySelector(".doll-name");
+    if (label) label.textContent = dollName(doll);
   }
 
   function renderDressBabies() {
-    $("dress-babies").innerHTML = CHARACTERS.map((c) => {
-      const on = c.id === state.dress.babyId ? "on" : "";
-      return `<button type="button" class="dress-baby-pick ${on}" data-baby="${c.id}" aria-label="${escapeHtml(
-        displayName(c)
-      )}">${babyCharHtml(c)}</button>`;
+    $("dress-babies").innerHTML = DOLLS.map((d) => {
+      const on = d.id === state.dress.babyId ? "on" : "";
+      return `<button type="button" class="dress-face ${on}" data-baby="${d.id}" aria-label="${escapeHtml(
+        dollName(d)
+      )}">
+        <span class="doll-mini" data-id="${d.id}" style="--skin:${d.skin};--hair:${d.hair}"></span>
+      </button>`;
     }).join("");
-    const selected = $("dress-babies").querySelector(".dress-baby-pick.on .character");
-    if (selected) applyWearAttrs(selected);
   }
 
   function renderDressCats() {
     $("dress-cats").innerHTML = DRESS_CATS.map((cat) => {
       const on = cat.id === state.dress.cat ? "on" : "";
-      return `<button type="button" class="dress-cat ${on}" data-cat="${cat.id}" role="tab" aria-selected="${
+      return `<button type="button" class="dress-tab ${on}" data-cat="${cat.id}" role="tab" aria-selected="${
         cat.id === state.dress.cat
       }"><span aria-hidden="true">${cat.emoji}</span>${cat.label}</button>`;
     }).join("");
@@ -2520,9 +2518,8 @@
     $("dress-items").innerHTML = DRESS_ITEMS[cat]
       .map((item) => {
         const on = item.id === current ? "on" : "";
-        const cultural = item.cultural ? "cultural" : "";
-        return `<button type="button" class="dress-item ${on} ${cultural}" data-item="${item.id}">
-          <span class="item-preview ${cat}-${item.id || "none"}" aria-hidden="true">${item.emoji}</span>
+        return `<button type="button" class="dress-item ${on}" data-item="${item.id}">
+          <span class="cloth ${cat}-${item.id || "none"}" aria-hidden="true"></span>
           <strong>${item.name}</strong>
         </button>`;
       })
@@ -2534,16 +2531,6 @@
     renderDressBabies();
     renderDressCats();
     renderDressItems();
-    updateDressSparkle();
-  }
-
-  function outfitScore() {
-    return Object.keys(EMPTY_WEAR).filter((key) => state.dress.wear[key]).length;
-  }
-
-  function updateDressSparkle() {
-    const sparkle = $("dress-sparkle");
-    if (sparkle) sparkle.hidden = outfitScore() < 4;
   }
 
   function showDressCheer() {
@@ -2554,7 +2541,7 @@
     window.clearTimeout(showDressCheer.timer);
     showDressCheer.timer = window.setTimeout(() => {
       cheer.hidden = true;
-    }, 1500);
+    }, 1400);
   }
 
   function wearItem(id) {
@@ -2563,43 +2550,27 @@
     if (!item) return;
     if (state.dress.wear[cat] === item.id) state.dress.wear[cat] = "";
     else state.dress.wear[cat] = item.id;
-    if (cat === "top" && dressItem("top", state.dress.wear.top)?.dress) {
-      state.dress.wear.bottom = "";
-    }
-    if (cat === "bottom" && state.dress.wear.bottom && dressItem("top", state.dress.wear.top)?.dress) {
-      state.dress.wear.top = "";
-    }
     saveDress();
-    renderDress();
+    renderDressBaby();
+    renderDressItems();
     if (state.dress.wear[cat]) showDressCheer();
   }
 
   function randomOutfit() {
     const pick = (cat) => {
       const items = DRESS_ITEMS[cat].filter((entry) => entry.id);
-      return items[Math.floor(Math.random() * items.length)];
+      return items[Math.floor(Math.random() * items.length)].id;
     };
-    const top = pick("top");
     state.dress.wear = {
-      hat: pick("hat").id,
-      top: top.id,
-      bottom: top.dress ? "" : pick("bottom").id,
-      bag: pick("bag").id,
-      shoes: pick("shoes").id,
-      acc: pick("acc").id,
+      dress: pick("dress"),
+      hat: pick("hat"),
+      shoes: pick("shoes"),
+      bag: pick("bag"),
     };
     saveDress();
     renderDress();
     showDressCheer();
     playWinSound();
-  }
-
-  function clearOutfit() {
-    state.dress.wear = { ...EMPTY_WEAR };
-    saveDress();
-    renderDress();
-    const cheer = $("dress-cheer");
-    if (cheer) cheer.hidden = true;
   }
 
   function startDressUp() {
@@ -2677,6 +2648,7 @@
       if (!btn) return;
       playTapSound();
       state.dress.cat = btn.dataset.cat;
+      saveDress();
       renderDressCats();
       renderDressItems();
     });
@@ -2689,10 +2661,6 @@
     $("dress-random").addEventListener("click", () => {
       playTapSound();
       randomOutfit();
-    });
-    $("dress-clear").addEventListener("click", () => {
-      playTapSound();
-      clearOutfit();
     });
     $("btn-play").addEventListener("click", () => beginPlay(false));
     $("btn-play-bot").addEventListener("click", () => beginPlay(true));
