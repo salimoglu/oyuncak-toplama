@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.55";
+  const GAME_VERSION = window.__OT_VERSION || "0.56";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -2518,25 +2518,142 @@
     return map[dress] || map[""];
   }
 
+  let artSeq = 0;
+  let P = null;
+
+  function tintHex(hex, amt) {
+    const n = String(hex || "#888888").replace("#", "");
+    if (n.length !== 6) return hex;
+    const ch = (i) => {
+      const v = parseInt(n.slice(i, i + 2), 16);
+      return Math.max(0, Math.min(255, Math.round(v + (255 - v) * amt))).toString(16).padStart(2, "0");
+    };
+    return `#${ch(0)}${ch(2)}${ch(4)}`;
+  }
+
+  function beginPaint(skin, hair, shirt, eye) {
+    artSeq += 1;
+    const id = `ot${artSeq}`;
+    const pal = outfitPalette();
+    P = {
+      id,
+      pal,
+      skin,
+      hair,
+      shirt,
+      eye,
+      g(name) {
+        return `url(#${id}-${name})`;
+      },
+      defs: `<defs>
+        <radialGradient id="${id}-skin" cx=".36" cy=".3" r=".75">
+          <stop offset="0" stop-color="${tintHex(skin, 0.22)}"/>
+          <stop offset=".62" stop-color="${skin}"/>
+          <stop offset="1" stop-color="${shadeHex(skin, 0.86)}"/>
+        </radialGradient>
+        <linearGradient id="${id}-limb" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="${shadeHex(skin, 0.82)}"/>
+          <stop offset=".42" stop-color="${tintHex(skin, 0.14)}"/>
+          <stop offset="1" stop-color="${shadeHex(skin, 0.78)}"/>
+        </linearGradient>
+        <linearGradient id="${id}-hair" x1=".15" y1="0" x2=".9" y2="1">
+          <stop offset="0" stop-color="${tintHex(hair, 0.34)}"/>
+          <stop offset=".42" stop-color="${hair}"/>
+          <stop offset="1" stop-color="${shadeHex(hair, 0.56)}"/>
+        </linearGradient>
+        <linearGradient id="${id}-hair2" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${tintHex(hair, 0.22)}"/>
+          <stop offset="1" stop-color="${shadeHex(hair, 0.68)}"/>
+        </linearGradient>
+        <linearGradient id="${id}-shirt" x1=".15" y1="0" x2=".2" y2="1">
+          <stop offset="0" stop-color="${tintHex(shirt, 0.3)}"/>
+          <stop offset=".5" stop-color="${shirt}"/>
+          <stop offset="1" stop-color="${shadeHex(shirt, 0.7)}"/>
+        </linearGradient>
+        <linearGradient id="${id}-shorts" x1="0" y1="0" x2=".15" y2="1">
+          <stop offset="0" stop-color="${tintHex(shirt, 0.08)}"/>
+          <stop offset="1" stop-color="${shadeHex(shirt, 0.6)}"/>
+        </linearGradient>
+        <linearGradient id="${id}-cloth" x1=".2" y1="0" x2=".85" y2="1">
+          <stop offset="0" stop-color="${tintHex(pal.main, 0.32)}"/>
+          <stop offset=".46" stop-color="${pal.main}"/>
+          <stop offset="1" stop-color="${shadeHex(pal.main, 0.66)}"/>
+        </linearGradient>
+        <linearGradient id="${id}-light" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="${tintHex(pal.light, 0.25)}"/>
+          <stop offset="1" stop-color="${pal.light}"/>
+        </linearGradient>
+        <linearGradient id="${id}-dark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="${tintHex(pal.dark, 0.2)}"/>
+          <stop offset="1" stop-color="${shadeHex(pal.dark, 0.72)}"/>
+        </linearGradient>
+        <radialGradient id="${id}-iris" cx=".35" cy=".3" r=".72">
+          <stop offset="0" stop-color="${tintHex(eye, 0.5)}"/>
+          <stop offset=".52" stop-color="${eye}"/>
+          <stop offset="1" stop-color="${shadeHex(eye, 0.42)}"/>
+        </radialGradient>
+        <linearGradient id="${id}-shoe" x1="0" y1="0" x2=".2" y2="1">
+          <stop offset="0" stop-color="${tintHex(pal.main, 0.36)}"/>
+          <stop offset="1" stop-color="${shadeHex(pal.main, 0.68)}"/>
+        </linearGradient>
+        <linearGradient id="${id}-bag" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="${tintHex(pal.main, 0.34)}"/>
+          <stop offset=".5" stop-color="${pal.main}"/>
+          <stop offset="1" stop-color="${shadeHex(pal.main, 0.62)}"/>
+        </linearGradient>
+        <radialGradient id="${id}-nazar" cx=".38" cy=".32" r=".7">
+          <stop offset="0" stop-color="#74c0fc"/>
+          <stop offset=".5" stop-color="#1c7ed6"/>
+          <stop offset="1" stop-color="#1864ab"/>
+        </radialGradient>
+        <linearGradient id="${id}-gold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffe066"/>
+          <stop offset="1" stop-color="#f08c00"/>
+        </linearGradient>
+        <linearGradient id="${id}-leather" x1=".1" y1="0" x2=".4" y2="1">
+          <stop offset="0" stop-color="#b07a3a"/>
+          <stop offset="1" stop-color="#4a2e12"/>
+        </linearGradient>
+        <linearGradient id="${id}-rain" x1=".15" y1="0" x2=".4" y2="1">
+          <stop offset="0" stop-color="#ffe066"/>
+          <stop offset="1" stop-color="#e67700"/>
+        </linearGradient>
+      </defs>`,
+    };
+    return P;
+  }
+
   function hairShine(cx, cy) {
-    return `<ellipse cx="${cx - 8}" cy="${cy - 26}" rx="8" ry="4" fill="#fff" opacity=".18" transform="rotate(-28 ${cx - 8} ${cy - 26})"/>`;
+    return `<ellipse cx="${cx - 9}" cy="${cy - 26}" rx="8" ry="3.6" fill="#fff" opacity=".22" transform="rotate(-30 ${cx - 9} ${cy - 26})"/>`;
+  }
+
+  function hairStrands(cx, cy) {
+    const s = shadeHex(P.hair, 0.48);
+    return `<g fill="none" stroke="${s}" stroke-width="1.05" opacity=".3" stroke-linecap="round">
+      <path d="M${cx - 14} ${cy - 28} Q${cx - 18} ${cy - 16} ${cx - 8} ${cy - 11}"/>
+      <path d="M${cx} ${cy - 32} Q${cx - 2} ${cy - 18} ${cx + 2} ${cy - 12}"/>
+      <path d="M${cx + 12} ${cy - 27} Q${cx + 16} ${cy - 16} ${cx + 8} ${cy - 11}"/>
+    </g>${hairShine(cx, cy)}`;
   }
 
   function hairBow(x, y) {
-    return `<ellipse cx="${x - 5}" cy="${y}" rx="5.2" ry="4.2" fill="#ff8fab"/>
-      <ellipse cx="${x + 5}" cy="${y}" rx="5.2" ry="4.2" fill="#ff8fab"/>
-      <circle cx="${x}" cy="${y}" r="2.4" fill="#c73462"/>`;
+    return `<ellipse cx="${x - 5.4}" cy="${y}" rx="5.6" ry="4.4" fill="${P.g("cloth")}"/>
+      <ellipse cx="${x + 5.4}" cy="${y}" rx="5.6" ry="4.4" fill="${P.g("cloth")}"/>
+      <ellipse cx="${x - 6}" cy="${y - 1.2}" rx="2.4" ry="1.4" fill="#fff" opacity=".28"/>
+      <circle cx="${x}" cy="${y}" r="2.5" fill="${P.g("dark")}"/>
+      <circle cx="${x - 0.6}" cy="${y - 0.7}" r="0.8" fill="#fff" opacity=".45"/>`;
   }
 
-  function braidRope(x, y0, color, dark, dir) {
+  function braidRope(x, y0, dir) {
     let out = "";
     for (let i = 0; i < 8; i += 1) {
       const y = y0 + i * 8.5;
       const ox = dir * (i % 2 === 0 ? 2.4 : -2.4);
-      out += `<ellipse cx="${x + ox}" cy="${y}" rx="6.2" ry="5.6" fill="${i % 2 ? dark : color}"/>`;
+      out += `<ellipse cx="${x + ox}" cy="${y}" rx="6.4" ry="5.8" fill="${i % 2 ? P.g("hair2") : P.g("hair")}"/>
+        <ellipse cx="${x + ox - 1.6}" cy="${y - 1.4}" rx="2.2" ry="1.5" fill="#fff" opacity=".18"/>`;
     }
-    out += `<circle cx="${x}" cy="${y0 + 70}" r="4.4" fill="#ff8fab"/>
-      <circle cx="${x}" cy="${y0 + 70}" r="1.8" fill="#fff"/>`;
+    out += `<circle cx="${x}" cy="${y0 + 70}" r="4.6" fill="${P.g("cloth")}"/>
+      <circle cx="${x - 0.8}" cy="${y0 + 68.6}" r="1.6" fill="#fff" opacity=".4"/>`;
     return out;
   }
 
@@ -2547,7 +2664,7 @@
     return `M${L} ${earY} C${L - 3} ${cy - 8} ${cx - 16} ${cy - 36} ${cx} ${cy - 35} C${cx + 16} ${cy - 36} ${R + 3} ${cy - 8} ${R} ${earY}`;
   }
 
-  function hairHelmet(c, cx, cy, kind) {
+  function hairHelmet(cx, cy, kind) {
     const L = cx - 30;
     const R = cx + 30;
     const earY = cy + 8;
@@ -2568,239 +2685,286 @@
     } else {
       line = `C${cx + 24} ${cy - 6} ${cx + 12} ${cy - 16} ${cx} ${cy - 17} C${cx - 12} ${cy - 16} ${cx - 24} ${cy - 6} ${L} ${earY}`;
     }
-    return `<path d="${crown} ${line}Z" fill="${c}"/>${hairShine(cx, cy)}`;
+    return `<path d="${crown} ${line}Z" fill="${P.g("hair")}"/>${hairStrands(cx, cy)}`;
   }
 
-  function babyHairs(c, cx, cy) {
-    return `<path d="M${cx - 7} ${cy - 19} L${cx - 9} ${cy - 15}" stroke="${c}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-      <path d="M${cx + 2} ${cy - 19} L${cx + 5} ${cy - 15}" stroke="${c}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
-      <path d="M${cx + 10} ${cy - 18} L${cx + 12} ${cy - 14}" stroke="${c}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
+  function babyHairs(cx, cy) {
+    return `<g stroke="${P.hair}" stroke-width="1.15" fill="none" stroke-linecap="round" opacity=".75">
+      <path d="M${cx - 7} ${cy - 19} L${cx - 9} ${cy - 15}"/>
+      <path d="M${cx + 2} ${cy - 19} L${cx + 5} ${cy - 15}"/>
+      <path d="M${cx + 10} ${cy - 18} L${cx + 12} ${cy - 14}"/>
+    </g>`;
+  }
+
+  function lockShape(d) {
+    return `<path d="${d}" fill="${P.g("hair")}"/>`;
   }
 
   function hairBack(style, color, cx, cy) {
-    const c = color;
-    const d = shadeHex(c, 0.78);
     if (style === "pig") {
-      return `<path d="M${cx - 22} ${cy - 2} C${cx - 44} ${cy + 6} ${cx - 48} ${cy + 36} ${cx - 36} ${cy + 64} Q${cx - 28} ${cy + 48} ${cx - 30} ${cy + 22} C${cx - 30} ${cy + 8} ${cx - 18} ${cy + 2} ${cx - 22} ${cy - 2}Z" fill="${c}"/>
-        <path d="M${cx + 22} ${cy - 2} C${cx + 44} ${cy + 6} ${cx + 48} ${cy + 36} ${cx + 36} ${cy + 64} Q${cx + 28} ${cy + 48} ${cx + 30} ${cy + 22} C${cx + 30} ${cy + 8} ${cx + 18} ${cy + 2} ${cx + 22} ${cy - 2}Z" fill="${c}"/>
+      return `${lockShape(`M${cx - 22} ${cy - 2} C${cx - 44} ${cy + 6} ${cx - 48} ${cy + 36} ${cx - 36} ${cy + 64} Q${cx - 28} ${cy + 48} ${cx - 30} ${cy + 22} C${cx - 30} ${cy + 8} ${cx - 18} ${cy + 2} ${cx - 22} ${cy - 2}Z`)}
+        ${lockShape(`M${cx + 22} ${cy - 2} C${cx + 44} ${cy + 6} ${cx + 48} ${cy + 36} ${cx + 36} ${cy + 64} Q${cx + 28} ${cy + 48} ${cx + 30} ${cy + 22} C${cx + 30} ${cy + 8} ${cx + 18} ${cy + 2} ${cx + 22} ${cy - 2}Z`)}
+        <path d="M${cx - 34} ${cy + 16} Q${cx - 40} ${cy + 36} ${cx - 34} ${cy + 54}" stroke="${shadeHex(color, 0.55)}" stroke-width="1.4" fill="none" opacity=".35"/>
+        <path d="M${cx + 34} ${cy + 16} Q${cx + 40} ${cy + 36} ${cx + 34} ${cy + 54}" stroke="${shadeHex(color, 0.55)}" stroke-width="1.4" fill="none" opacity=".35"/>
         ${hairBow(cx - 24, cy - 4)}${hairBow(cx + 24, cy - 4)}`;
     }
     if (style === "short") {
-      return `<path d="M${cx - 8} ${cy - 34} L${cx - 5} ${cy - 42} L${cx + 1} ${cy - 34}Z" fill="${c}"/>
-        <path d="M${cx + 8} ${cy - 33} L${cx + 14} ${cy - 41} L${cx + 16} ${cy - 32}Z" fill="${c}"/>`;
+      return `<path d="M${cx - 8} ${cy - 34} Q${cx - 4} ${cy - 44} ${cx + 1} ${cy - 34}Z" fill="${P.g("hair")}"/>
+        <path d="M${cx + 8} ${cy - 33} Q${cx + 16} ${cy - 42} ${cx + 16} ${cy - 32}Z" fill="${P.g("hair")}"/>`;
     }
     if (style === "long") {
-      return `<path d="M${cx - 34} ${cy + 86} C${cx - 46} ${cy + 42} ${cx - 40} ${cy + 4} ${cx - 28} ${cy - 8} L${cx - 30} ${cy + 8} C${cx - 36} ${cy + 36} ${cx - 24} ${cy + 70} ${cx - 20} ${cy + 88}Z" fill="${c}"/>
-        <path d="M${cx + 34} ${cy + 86} C${cx + 46} ${cy + 42} ${cx + 40} ${cy + 4} ${cx + 28} ${cy - 8} L${cx + 30} ${cy + 8} C${cx + 36} ${cy + 36} ${cx + 24} ${cy + 70} ${cx + 20} ${cy + 88}Z" fill="${c}"/>`;
+      return `<path d="M${cx - 34} ${cy + 86} C${cx - 46} ${cy + 42} ${cx - 40} ${cy + 4} ${cx - 28} ${cy - 8} L${cx - 30} ${cy + 8} C${cx - 36} ${cy + 36} ${cx - 24} ${cy + 70} ${cx - 20} ${cy + 88}Z" fill="${P.g("hair2")}"/>
+        <path d="M${cx + 34} ${cy + 86} C${cx + 46} ${cy + 42} ${cx + 40} ${cy + 4} ${cx + 28} ${cy - 8} L${cx + 30} ${cy + 8} C${cx + 36} ${cy + 36} ${cx + 24} ${cy + 70} ${cx + 20} ${cy + 88}Z" fill="${P.g("hair")}"/>
+        <path d="M${cx - 30} ${cy + 20} Q${cx - 38} ${cy + 50} ${cx - 24} ${cy + 80}" stroke="#fff" stroke-width="2" opacity=".12" fill="none"/>
+        <path d="M${cx + 30} ${cy + 20} Q${cx + 38} ${cy + 50} ${cx + 24} ${cy + 80}" stroke="#fff" stroke-width="2" opacity=".12" fill="none"/>`;
     }
     if (style === "braid") {
-      return `${braidRope(cx - 28, cy + 10, c, d, -1)}${braidRope(cx + 28, cy + 10, c, d, 1)}`;
+      return `${braidRope(cx - 28, cy + 10, -1)}${braidRope(cx + 28, cy + 10, 1)}`;
     }
     if (style === "bun") {
-      return `<ellipse cx="${cx}" cy="${cy - 38}" rx="14" ry="12" fill="${c}"/>
-        <ellipse cx="${cx}" cy="${cy - 38}" rx="9" ry="7" fill="${d}"/>
-        <circle cx="${cx - 4}" cy="${cy - 42}" r="3" fill="#fff" opacity=".26"/>
-        <circle cx="${cx + 11}" cy="${cy - 30}" r="3.2" fill="#ff8fab"/>`;
+      return `<ellipse cx="${cx}" cy="${cy - 38}" rx="14.5" ry="12.5" fill="${P.g("hair")}"/>
+        <ellipse cx="${cx - 2}" cy="${cy - 40}" rx="8" ry="6" fill="${P.g("hair2")}"/>
+        <ellipse cx="${cx - 4}" cy="${cy - 42}" rx="4" ry="2.4" fill="#fff" opacity=".24"/>
+        <circle cx="${cx + 11}" cy="${cy - 30}" r="3.3" fill="${P.g("cloth")}"/>
+        <circle cx="${cx + 10.4}" cy="${cy - 31}" r="1.1" fill="#fff" opacity=".4"/>`;
     }
     if (style === "pony") {
-      return `<path d="M${cx + 8} ${cy - 26} C${cx + 34} ${cy - 34} ${cx + 50} ${cy + 8} ${cx + 40} ${cy + 66} Q${cx + 32} ${cy + 36} ${cx + 26} ${cy + 6} C${cx + 22} ${cy - 14} ${cx + 10} ${cy - 22} ${cx + 8} ${cy - 26}Z" fill="${c}"/>
-        <path d="M${cx + 18} ${cy - 8} C${cx + 34} ${cy + 8} ${cx + 36} ${cy + 32} ${cx + 30} ${cy + 58}" stroke="${d}" stroke-width="4" fill="none" stroke-linecap="round"/>
-        <circle cx="${cx + 14}" cy="${cy - 26}" r="4" fill="#ff8fab"/>
-        <circle cx="${cx + 14}" cy="${cy - 26}" r="1.6" fill="#fff"/>`;
+      return `<path d="M${cx + 8} ${cy - 26} C${cx + 34} ${cy - 34} ${cx + 50} ${cy + 8} ${cx + 40} ${cy + 66} Q${cx + 32} ${cy + 36} ${cx + 26} ${cy + 6} C${cx + 22} ${cy - 14} ${cx + 10} ${cy - 22} ${cx + 8} ${cy - 26}Z" fill="${P.g("hair")}"/>
+        <path d="M${cx + 18} ${cy - 8} C${cx + 34} ${cy + 8} ${cx + 36} ${cy + 32} ${cx + 30} ${cy + 58}" stroke="#fff" stroke-width="2.4" fill="none" opacity=".16"/>
+        <circle cx="${cx + 14}" cy="${cy - 26}" r="4.2" fill="${P.g("cloth")}"/>
+        <circle cx="${cx + 13.2}" cy="${cy - 27.2}" r="1.4" fill="#fff" opacity=".45"/>`;
     }
     if (style === "curl") {
-      return `<path d="M${cx - 36} ${cy + 46} C${cx - 48} ${cy + 18} ${cx - 38} ${cy - 4} ${cx - 28} ${cy - 8} C${cx - 40} ${cy + 16} ${cx - 28} ${cy + 36} ${cx - 22} ${cy + 50}Z" fill="${c}"/>
-        <path d="M${cx + 36} ${cy + 46} C${cx + 48} ${cy + 18} ${cx + 38} ${cy - 4} ${cx + 28} ${cy - 8} C${cx + 40} ${cy + 16} ${cx + 28} ${cy + 36} ${cx + 22} ${cy + 50}Z" fill="${c}"/>`;
+      return `<path d="M${cx - 36} ${cy + 46} C${cx - 48} ${cy + 18} ${cx - 38} ${cy - 4} ${cx - 28} ${cy - 8} C${cx - 40} ${cy + 16} ${cx - 28} ${cy + 36} ${cx - 22} ${cy + 50}Z" fill="${P.g("hair2")}"/>
+        <path d="M${cx + 36} ${cy + 46} C${cx + 48} ${cy + 18} ${cx + 38} ${cy - 4} ${cx + 28} ${cy - 8} C${cx + 40} ${cy + 16} ${cx + 28} ${cy + 36} ${cx + 22} ${cy + 50}Z" fill="${P.g("hair")}"/>`;
     }
-    return `<path d="M${cx - 32} ${cy + 28} C${cx - 36} ${cy + 8} ${cx - 30} ${cy - 8} ${cx - 28} ${cy - 8} C${cx - 34} ${cy + 10} ${cx - 24} ${cy + 24} ${cx - 18} ${cy + 32}Z" fill="${c}"/>
-      <path d="M${cx + 32} ${cy + 28} C${cx + 36} ${cy + 8} ${cx + 30} ${cy - 8} ${cx + 28} ${cy - 8} C${cx + 34} ${cy + 10} ${cx + 24} ${cy + 24} ${cx + 18} ${cy + 32}Z" fill="${c}"/>`;
+    return `<path d="M${cx - 32} ${cy + 28} C${cx - 36} ${cy + 8} ${cx - 30} ${cy - 8} ${cx - 28} ${cy - 8} C${cx - 34} ${cy + 10} ${cx - 24} ${cy + 24} ${cx - 18} ${cy + 32}Z" fill="${P.g("hair2")}"/>
+      <path d="M${cx + 32} ${cy + 28} C${cx + 36} ${cy + 8} ${cx + 30} ${cy - 8} ${cx + 28} ${cy - 8} C${cx + 34} ${cy + 10} ${cx + 24} ${cy + 24} ${cx + 18} ${cy + 32}Z" fill="${P.g("hair")}"/>`;
   }
 
   function hairFront(style, color, cx, cy) {
-    const c = color;
     if (style === "short") {
-      return `${hairHelmet(c, cx, cy, "short")}
-        <path d="M${cx - 27} ${cy + 2} Q${cx - 28} ${cy + 12} ${cx - 24} ${cy + 16}" stroke="${c}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-        <path d="M${cx + 27} ${cy + 2} Q${cx + 28} ${cy + 12} ${cx + 24} ${cy + 16}" stroke="${c}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`;
+      return `${hairHelmet(cx, cy, "short")}
+        <path d="M${cx - 27} ${cy + 2} Q${cx - 28} ${cy + 12} ${cx - 24} ${cy + 16}" stroke="${P.g("hair")}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <path d="M${cx + 27} ${cy + 2} Q${cx + 28} ${cy + 12} ${cx + 24} ${cy + 16}" stroke="${P.g("hair")}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`;
     }
-    if (style === "bangs") {
-      return hairHelmet(c, cx, cy, "bangs");
-    }
-    if (style === "bun") {
-      return `${hairHelmet(c, cx, cy, "high")}${babyHairs(c, cx, cy)}`;
-    }
-    if (style === "pony") {
-      return `${hairHelmet(c, cx, cy, "high")}${babyHairs(c, cx, cy)}`;
-    }
+    if (style === "bangs") return hairHelmet(cx, cy, "bangs");
+    if (style === "bun" || style === "pony") return `${hairHelmet(cx, cy, "high")}${babyHairs(cx, cy)}`;
     if (style === "long") {
-      return `${hairHelmet(c, cx, cy, "sweep")}
-        <path d="M${cx - 26} ${cy - 4} C${cx - 30} ${cy + 14} ${cx - 28} ${cy + 30} ${cx - 20} ${cy + 38}" stroke="${c}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+      return `${hairHelmet(cx, cy, "sweep")}
+        <path d="M${cx - 26} ${cy - 4} C${cx - 30} ${cy + 14} ${cx - 28} ${cy + 30} ${cx - 20} ${cy + 38}" stroke="${P.g("hair")}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
     }
-    if (style === "curl") {
-      return hairHelmet(c, cx, cy, "wave");
-    }
-    return hairHelmet(c, cx, cy, "part");
+    if (style === "curl") return hairHelmet(cx, cy, "wave");
+    return hairHelmet(cx, cy, "part");
+  }
+
+  function eyeOne(x, y) {
+    return `<ellipse cx="${x}" cy="${y}" rx="6.5" ry="7.5" fill="#fff" stroke="#3d2b1f" stroke-width="1.25"/>
+      <ellipse cx="${x}" cy="${y + 0.7}" rx="4.3" ry="4.8" fill="${P.g("iris")}"/>
+      <circle cx="${x}" cy="${y + 1}" r="2.15" fill="#1a120c"/>
+      <circle cx="${x - 1.7}" cy="${y - 1.7}" r="1.45" fill="#fff"/>
+      <circle cx="${x + 1.5}" cy="${y - 0.2}" r="0.7" fill="#fff" opacity=".7"/>
+      <path d="M${x - 6.4} ${y - 4.8} Q${x} ${y - 8.2} ${x + 6.4} ${y - 4.8}" stroke="#3d2b1f" stroke-width="1.45" fill="none" stroke-linecap="round"/>`;
   }
 
   function headSvg(skin, eye, cx, cy) {
-    return `<ellipse cx="${cx - 26}" cy="${cy + 2}" rx="6" ry="8" fill="${skin}"/>
-      <ellipse cx="${cx + 26}" cy="${cy + 2}" rx="6" ry="8" fill="${skin}"/>
-      <ellipse cx="${cx}" cy="${cy + 2}" rx="28" ry="31" fill="${skin}"/>
-      <ellipse cx="${cx - 12}" cy="${cy + 10}" rx="5.5" ry="3" fill="#ff8fab" opacity=".4"/>
-      <ellipse cx="${cx + 12}" cy="${cy + 10}" rx="5.5" ry="3" fill="#ff8fab" opacity=".4"/>
-      <ellipse cx="${cx - 9}" cy="${cy - 1}" rx="6.2" ry="7.2" fill="#fff" stroke="#3d2b1f" stroke-width="1.6"/>
-      <ellipse cx="${cx + 9}" cy="${cy - 1}" rx="6.2" ry="7.2" fill="#fff" stroke="#3d2b1f" stroke-width="1.6"/>
-      <circle cx="${cx - 9}" cy="${cy}" r="3.4" fill="${eye}"/>
-      <circle cx="${cx + 9}" cy="${cy}" r="3.4" fill="${eye}"/>
-      <circle cx="${cx - 7.6}" cy="${cy - 2}" r="1.2" fill="#fff"/>
-      <circle cx="${cx + 10.4}" cy="${cy - 2}" r="1.2" fill="#fff"/>
-      <ellipse cx="${cx}" cy="${cy + 9}" rx="3" ry="2.2" fill="#e8a090"/>
-      <path d="M${cx - 7} ${cy + 16} Q${cx} ${cy + 21} ${cx + 7} ${cy + 16}" stroke="#c73462" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    return `<ellipse cx="${cx - 26}" cy="${cy + 2}" rx="6.2" ry="8.2" fill="${P.g("limb")}"/>
+      <ellipse cx="${cx + 26}" cy="${cy + 2}" rx="6.2" ry="8.2" fill="${P.g("limb")}"/>
+      <ellipse cx="${cx - 26}" cy="${cy + 1}" rx="2.4" ry="3.2" fill="${shadeHex(skin, 0.86)}" opacity=".45"/>
+      <ellipse cx="${cx + 26}" cy="${cy + 1}" rx="2.4" ry="3.2" fill="${shadeHex(skin, 0.86)}" opacity=".45"/>
+      <ellipse cx="${cx}" cy="${cy + 2}" rx="28" ry="31" fill="${P.g("skin")}"/>
+      <ellipse cx="${cx - 8}" cy="${cy - 6}" rx="12" ry="9" fill="#fff" opacity=".14"/>
+      <ellipse cx="${cx - 12}" cy="${cy + 11}" rx="6.2" ry="3.4" fill="#ff8fab" opacity=".38"/>
+      <ellipse cx="${cx + 12}" cy="${cy + 11}" rx="6.2" ry="3.4" fill="#ff8fab" opacity=".38"/>
+      <path d="M${cx - 16} ${cy - 12} Q${cx - 10} ${cy - 15.2} ${cx - 4} ${cy - 12.2}" stroke="${shadeHex(P.hair, 0.72)}" stroke-width="1.55" fill="none" stroke-linecap="round"/>
+      <path d="M${cx + 4} ${cy - 12.2} Q${cx + 10} ${cy - 15.2} ${cx + 16} ${cy - 12}" stroke="${shadeHex(P.hair, 0.72)}" stroke-width="1.55" fill="none" stroke-linecap="round"/>
+      ${eyeOne(cx - 9, cy - 1)}${eyeOne(cx + 9, cy - 1)}
+      <ellipse cx="${cx}" cy="${cy + 8.6}" rx="3.3" ry="2.5" fill="${shadeHex(skin, 0.82)}" opacity=".55"/>
+      <ellipse cx="${cx}" cy="${cy + 7.6}" rx="1.6" ry="1" fill="#fff" opacity=".25"/>
+      <path d="M${cx - 6.5} ${cy + 16.2} Q${cx} ${cy + 21.4} ${cx + 6.5} ${cy + 16.2}" fill="#e85a7a" opacity=".18"/>
+      <path d="M${cx - 6} ${cy + 16} Q${cx} ${cy + 20.6} ${cx + 6} ${cy + 16}" stroke="#c73462" stroke-width="1.7" fill="none" stroke-linecap="round"/>
+      <path d="M${cx - 2.4} ${cy + 17.4} Q${cx} ${cy + 19} ${cx + 2.4} ${cy + 17.4}" stroke="#fff" stroke-width="1" fill="none" opacity=".45"/>`;
   }
 
   function kidBody(shirt, skin, dressed) {
-    const shorts = shadeHex(shirt, 0.76);
-    const neck = `<rect x="93" y="80" width="14" height="16" rx="5" fill="${skin}"/>`;
-    const arms = `<rect x="58" y="98" width="13" height="74" rx="6.5" fill="${skin}" transform="rotate(12 64.5 98)"/>
-      <rect x="129" y="98" width="13" height="74" rx="6.5" fill="${skin}" transform="rotate(-12 135.5 98)"/>`;
-    const legs = `<rect x="78" y="198" width="16" height="112" rx="8" fill="${skin}"/>
-      <rect x="106" y="198" width="16" height="112" rx="8" fill="${skin}"/>`;
+    const neck = `<rect x="93" y="80" width="14" height="16" rx="5" fill="${P.g("limb")}"/>`;
+    const arms = `<rect x="58" y="98" width="13" height="74" rx="6.5" fill="${P.g("limb")}" transform="rotate(12 64.5 98)"/>
+      <rect x="129" y="98" width="13" height="74" rx="6.5" fill="${P.g("limb")}" transform="rotate(-12 135.5 98)"/>
+      <ellipse cx="54" cy="170" rx="7" ry="6.4" fill="${P.g("skin")}" transform="rotate(12 54 170)"/>
+      <ellipse cx="146" cy="170" rx="7" ry="6.4" fill="${P.g("skin")}" transform="rotate(-12 146 170)"/>`;
+    const legs = `<rect x="78" y="198" width="16" height="112" rx="8" fill="${P.g("limb")}"/>
+      <rect x="106" y="198" width="16" height="112" rx="8" fill="${P.g("limb")}"/>
+      <rect x="81" y="210" width="4" height="70" rx="2" fill="#fff" opacity=".12"/>
+      <rect x="109" y="210" width="4" height="70" rx="2" fill="#fff" opacity=".12"/>`;
     if (dressed) return `${neck}${arms}${legs}`;
     return `${neck}${arms}
-      <path d="M72 94 L88 94 L80 120 L58 108 Q62 94 72 94Z" fill="${shirt}"/>
-      <path d="M128 94 L112 94 L120 120 L142 108 Q138 94 128 94Z" fill="${shirt}"/>
-      <path d="M74 94 L126 94 L130 168 L70 168Z" fill="${shirt}"/>
-      <path d="M88 94 L112 94 L110 106 L90 106Z" fill="#fff" opacity=".28"/>
-      <path d="M72 164 L128 164 L126 202 L104 202 L100 174 L96 202 L74 202Z" fill="${shorts}"/>
+      <path d="M72 94 L88 94 L80 120 L58 108 Q62 94 72 94Z" fill="${P.g("shirt")}"/>
+      <path d="M128 94 L112 94 L120 120 L142 108 Q138 94 128 94Z" fill="${P.g("shirt")}"/>
+      <path d="M74 94 L126 94 L130 168 L70 168Z" fill="${P.g("shirt")}"/>
+      <path d="M88 94 L112 94 L110 108 L90 108Z" fill="#fff" opacity=".22"/>
+      <path d="M118 110 L128 166 L122 166Z" fill="#000" opacity=".08"/>
+      <path d="M72 164 L128 164 L126 202 L104 202 L100 174 L96 202 L74 202Z" fill="${P.g("shorts")}"/>
+      <path d="M100 174 L104 202 L96 202Z" fill="#000" opacity=".1"/>
       ${legs}`;
+  }
+
+  function skirtShade() {
+    return `<path d="M118 152 L152 256 Q100 274 100 266 Q112 206 118 152Z" fill="#000" opacity=".12"/>
+      <path d="M82 152 L48 256 Q100 274 100 266 Q88 206 82 152Z" fill="#fff" opacity=".13"/>`;
   }
 
   function dressSvg(id) {
     if (!id) return "";
     if (id === "princess") {
-      return `<path d="M72 94 L88 94 L82 122 L60 110Z" fill="#ffc2d4"/>
-        <path d="M128 94 L112 94 L118 122 L140 110Z" fill="#ffc2d4"/>
-        <path d="M78 94 L122 94 L124 150 L76 150Z" fill="#ffc2d4"/>
-        <path d="M76 148 L124 148 L160 262 Q100 284 40 262Z" fill="#ff5d8f"/>
-        <path d="M78 148 L122 148 L126 160 L74 160Z" fill="#ffe066"/>
-        <circle cx="100" cy="122" r="5" fill="#fff"/>`;
+      return `<path d="M72 94 L88 94 L82 122 L60 110Z" fill="${P.g("light")}"/>
+        <path d="M128 94 L112 94 L118 122 L140 110Z" fill="${P.g("light")}"/>
+        <path d="M78 94 L122 94 L124 150 L76 150Z" fill="${P.g("light")}"/>
+        <path d="M76 148 L124 148 L160 262 Q100 284 40 262Z" fill="${P.g("cloth")}"/>
+        ${skirtShade()}
+        <path d="M78 148 L122 148 L126 160 L74 160Z" fill="${P.g("gold")}"/>
+        <circle cx="100" cy="122" r="5.4" fill="#fff"/>
+        <circle cx="99" cy="120.6" r="1.8" fill="#ffe066"/>`;
     }
     if (id === "bindalli") {
-      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="#862e9c"/>
-        <path d="M76 146 L124 146 L154 258 Q100 276 46 258Z" fill="#c2255c"/>
-        <rect x="78" y="144" width="44" height="7" rx="2" fill="#ffd43b"/>
-        <circle cx="88" cy="178" r="3.2" fill="#ffd43b"/>
-        <circle cx="112" cy="198" r="3.2" fill="#ffd43b"/>
-        <circle cx="96" cy="220" r="2.6" fill="#ffd43b"/>
-        <circle cx="118" cy="238" r="2.6" fill="#ffd43b"/>`;
+      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="${P.g("dark")}"/>
+        <path d="M76 146 L124 146 L154 258 Q100 276 46 258Z" fill="${P.g("cloth")}"/>
+        ${skirtShade()}
+        <rect x="78" y="144" width="44" height="7" rx="2" fill="${P.g("gold")}"/>
+        <circle cx="88" cy="178" r="3.4" fill="${P.g("gold")}"/>
+        <circle cx="112" cy="198" r="3.4" fill="${P.g("gold")}"/>
+        <circle cx="96" cy="220" r="2.8" fill="${P.g("gold")}"/>
+        <circle cx="118" cy="238" r="2.8" fill="${P.g("gold")}"/>`;
     }
     if (id === "sailor") {
-      return `<path d="M78 94 L122 94 L148 250 Q100 266 52 250Z" fill="#1c7ed6"/>
+      return `<path d="M78 94 L122 94 L148 250 Q100 266 52 250Z" fill="${P.g("cloth")}"/>
+        ${skirtShade()}
         <path d="M80 94 L120 94 L116 132 L84 132Z" fill="#fff"/>
-        <path d="M90 94 L110 94 L108 118 L92 118Z" fill="#1c7ed6"/>
+        <path d="M90 94 L110 94 L108 118 L92 118Z" fill="${P.g("dark")}"/>
         <rect x="94" y="132" width="12" height="10" rx="5" fill="#c92a2a"/>
-        <rect x="72" y="188" width="56" height="7" fill="#fff"/>`;
+        <rect x="72" y="188" width="56" height="7" rx="2" fill="#fff"/>`;
     }
     if (id === "sun") {
-      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="#ffe066"/>
-        <path d="M76 146 L124 146 L158 258 Q100 278 42 258Z" fill="#fab005"/>
-        <circle cx="90" cy="186" r="6" fill="#ff8fab"/>
-        <circle cx="114" cy="210" r="5" fill="#fff"/>
-        <circle cx="98" cy="232" r="4" fill="#ff8fab"/>`;
+      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="${P.g("light")}"/>
+        <path d="M76 146 L124 146 L158 258 Q100 278 42 258Z" fill="${P.g("cloth")}"/>
+        ${skirtShade()}
+        <circle cx="90" cy="186" r="6.2" fill="#ff8fab"/>
+        <circle cx="88.8" cy="184.4" r="2" fill="#fff" opacity=".45"/>
+        <circle cx="114" cy="210" r="5.2" fill="#fff"/>
+        <circle cx="98" cy="232" r="4.2" fill="#ff8fab"/>`;
     }
     if (id === "mint") {
-      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="#d3f9d8"/>
-        <path d="M76 146 L124 146 L154 256 Q100 274 46 256Z" fill="#51cf66"/>
+      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="${P.g("light")}"/>
+        <path d="M76 146 L124 146 L154 256 Q100 274 46 256Z" fill="${P.g("cloth")}"/>
+        ${skirtShade()}
         <path d="M64 228 Q100 246 136 228" stroke="#fff" stroke-width="6" fill="none" opacity=".45"/>`;
     }
     if (id === "starry") {
-      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="#b197fc"/>
-        <path d="M76 146 L124 146 L158 258 Q100 278 42 258Z" fill="#7048e8"/>
-        <polygon points="88,184 91,193 101,193 93,199 96,208 88,202 80,208 83,199 75,193 85,193" fill="#ffe066"/>
-        <circle cx="116" cy="214" r="3.4" fill="#fff"/>
-        <circle cx="102" cy="236" r="2.6" fill="#ffe066"/>`;
+      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="${P.g("light")}"/>
+        <path d="M76 146 L124 146 L158 258 Q100 278 42 258Z" fill="${P.g("cloth")}"/>
+        ${skirtShade()}
+        <polygon points="88,184 91,193 101,193 93,199 96,208 88,202 80,208 83,199 75,193 85,193" fill="${P.g("gold")}"/>
+        <circle cx="116" cy="214" r="3.6" fill="#fff"/>
+        <circle cx="102" cy="236" r="2.8" fill="${P.g("gold")}"/>`;
     }
     return "";
   }
 
+  function flowerAt(x, y, petal, center) {
+    return `<circle cx="${x - 4.6}" cy="${y}" r="4.1" fill="${petal}"/>
+      <circle cx="${x + 4.6}" cy="${y}" r="4.1" fill="${petal}"/>
+      <circle cx="${x}" cy="${y - 4.6}" r="4.1" fill="${petal}"/>
+      <circle cx="${x}" cy="${y + 4.6}" r="4.1" fill="${petal}"/>
+      <circle cx="${x}" cy="${y}" r="3.1" fill="${center}"/>
+      <circle cx="${x - 0.8}" cy="${y - 1}" r="1.1" fill="#fff" opacity=".4"/>`;
+  }
+
   function hatSvg(id, cx, cy) {
-    const pal = outfitPalette();
+    const pal = P.pal;
     if (!id) return "";
     if (id === "bow") {
-      return `<circle cx="${cx - 9}" cy="${cy - 32}" r="8" fill="${pal.main}"/>
-        <circle cx="${cx + 9}" cy="${cy - 32}" r="8" fill="${pal.main}"/>
-        <circle cx="${cx}" cy="${cy - 32}" r="4.2" fill="${pal.dark}"/>`;
+      return `<ellipse cx="${cx - 9}" cy="${cy - 32}" rx="8.4" ry="7.2" fill="${P.g("cloth")}"/>
+        <ellipse cx="${cx + 9}" cy="${cy - 32}" rx="8.4" ry="7.2" fill="${P.g("cloth")}"/>
+        <ellipse cx="${cx - 10}" cy="${cy - 34}" rx="3.2" ry="2" fill="#fff" opacity=".28"/>
+        <circle cx="${cx}" cy="${cy - 32}" r="4.3" fill="${P.g("dark")}"/>`;
     }
     if (id === "fes") {
       return `<rect x="${cx - 16}" y="${cy - 46}" width="32" height="16" rx="3" fill="#c92a2a"/>
+        <rect x="${cx - 14}" y="${cy - 44}" width="10" height="12" rx="2" fill="#fff" opacity=".16"/>
         <rect x="${cx - 18}" y="${cy - 50}" width="36" height="5" rx="2" fill="#e03131"/>
         <circle cx="${cx + 18}" cy="${cy - 48}" r="3.4" fill="#222"/>
-        <line x1="${cx + 20}" y1="${cy - 46}" x2="${cx + 26}" y2="${cy - 32}" stroke="#222" stroke-width="2"/>`;
+        <path d="M${cx + 20} ${cy - 46} Q${cx + 28} ${cy - 40} ${cx + 26} ${cy - 32}" stroke="#222" stroke-width="2" fill="none"/>`;
     }
     if (id === "yemeni") {
       return `<path d="M${cx - 34} ${cy - 6} Q${cx} ${cy - 48} ${cx + 34} ${cy - 6} Q${cx} ${cy - 18} ${cx - 34} ${cy - 6}Z" fill="#fff"/>
+        <path d="M${cx - 20} ${cy - 22} Q${cx} ${cy - 40} ${cx + 20} ${cy - 22}" stroke="#000" opacity=".08" stroke-width="6" fill="none"/>
         <path d="M${cx - 34} ${cy - 6} Q${cx - 16} ${cy - 36} ${cx} ${cy - 32}" stroke="#e03131" stroke-width="8" fill="none"/>
         <path d="M${cx + 34} ${cy - 6} Q${cx + 16} ${cy - 36} ${cx} ${cy - 32}" stroke="#e03131" stroke-width="8" fill="none"/>`;
     }
     if (id === "flowers") {
-      return `<circle cx="${cx - 16}" cy="${cy - 30}" r="7" fill="${pal.main}"/>
-        <circle cx="${cx}" cy="${cy - 36}" r="7" fill="${pal.extra}"/>
-        <circle cx="${cx + 16}" cy="${cy - 30}" r="7" fill="${pal.light}"/>
-        <circle cx="${cx - 16}" cy="${cy - 30}" r="2.6" fill="#fff"/>
-        <circle cx="${cx}" cy="${cy - 36}" r="2.6" fill="#f08c00"/>
-        <circle cx="${cx + 16}" cy="${cy - 30}" r="2.6" fill="${pal.dark}"/>`;
+      return `${flowerAt(cx - 16, cy - 30, pal.main, "#fff")}${flowerAt(cx, cy - 36, pal.extra, "#f08c00")}${flowerAt(cx + 16, cy - 30, pal.light, pal.dark)}`;
     }
     if (id === "beanie") {
-      return `<path d="M${cx - 30} ${cy - 12} Q${cx} ${cy - 48} ${cx + 30} ${cy - 12}Z" fill="${pal.main}"/>
-        <rect x="${cx - 30}" y="${cy - 16}" width="60" height="7" rx="3" fill="${pal.light}"/>
-        <circle cx="${cx}" cy="${cy - 46}" r="6" fill="${pal.extra}"/>`;
+      return `<path d="M${cx - 30} ${cy - 12} Q${cx} ${cy - 48} ${cx + 30} ${cy - 12}Z" fill="${P.g("cloth")}"/>
+        <path d="M${cx - 18} ${cy - 28} Q${cx - 8} ${cy - 40} ${cx} ${cy - 36}" stroke="#fff" stroke-width="3" fill="none" opacity=".22"/>
+        <rect x="${cx - 30}" y="${cy - 16}" width="60" height="7" rx="3" fill="${P.g("light")}"/>
+        <circle cx="${cx}" cy="${cy - 46}" r="6.2" fill="${P.g("gold")}"/>
+        <circle cx="${cx - 1.4}" cy="${cy - 47.4}" r="2" fill="#fff" opacity=".4"/>`;
     }
     if (id === "glasses") {
-      return `<rect x="${cx - 24}" y="${cy - 8}" width="18" height="12" rx="3" fill="none" stroke="#3d2b1f" stroke-width="2.6"/>
-        <rect x="${cx + 6}" y="${cy - 8}" width="18" height="12" rx="3" fill="none" stroke="#3d2b1f" stroke-width="2.6"/>
-        <line x1="${cx - 6}" y1="${cy - 2}" x2="${cx + 6}" y2="${cy - 2}" stroke="#3d2b1f" stroke-width="2.6"/>`;
+      return `<rect x="${cx - 24}" y="${cy - 8}" width="18" height="12" rx="3" fill="#74c0fc" fill-opacity=".18" stroke="#3d2b1f" stroke-width="2.5"/>
+        <rect x="${cx + 6}" y="${cy - 8}" width="18" height="12" rx="3" fill="#74c0fc" fill-opacity=".18" stroke="#3d2b1f" stroke-width="2.5"/>
+        <line x1="${cx - 6}" y1="${cy - 2}" x2="${cx + 6}" y2="${cy - 2}" stroke="#3d2b1f" stroke-width="2.5"/>
+        <path d="M${cx - 21} ${cy - 6} L${cx - 12} ${cy - 5}" stroke="#fff" stroke-width="1.2" opacity=".45"/>`;
     }
     return "";
   }
 
   function shoeOne(kind, cx, cy) {
-    const pal = outfitPalette();
+    const pal = P.pal;
     const k = kind === "slipper" ? "sandal" : kind;
+    const sole = `<ellipse cx="${cx + 2}" cy="${cy + 7}" rx="14.2" ry="5.4" fill="#3d3d3d"/>
+      <ellipse cx="${cx + 2}" cy="${cy + 5.6}" rx="13.2" ry="4.4" fill="#dee2e6"/>`;
     if (k === "sneakers") {
-      return `<ellipse cx="${cx + 2}" cy="${cy + 6}" rx="14" ry="5.5" fill="#fff" stroke="#ced4da" stroke-width="1"/>
-        <path d="M${cx - 12} ${cy + 4} Q${cx - 12} ${cy - 10} ${cx + 2} ${cy - 10} Q${cx + 14} ${cy - 10} ${cx + 14} ${cy + 4}Z" fill="${pal.main}"/>
+      return `${sole}
+        <path d="M${cx - 12} ${cy + 4} Q${cx - 12} ${cy - 10} ${cx + 2} ${cy - 10} Q${cx + 14} ${cy - 10} ${cx + 14} ${cy + 4}Z" fill="${P.g("shoe")}"/>
+        <path d="M${cx - 8} ${cy - 2} Q${cx + 2} ${cy - 8} ${cx + 12} ${cy - 1}" fill="#fff" opacity=".22"/>
         <path d="M${cx - 4} ${cy - 2} Q${cx + 8} ${cy - 6} ${cx + 12} ${cy + 2}" stroke="${pal.light}" stroke-width="2" fill="none"/>
-        <circle cx="${cx - 2}" cy="${cy - 2}" r="1.3" fill="#fff"/>
-        <circle cx="${cx + 4}" cy="${cy - 2}" r="1.3" fill="#fff"/>`;
+        <circle cx="${cx - 2}" cy="${cy - 2}" r="1.35" fill="#fff"/>
+        <circle cx="${cx + 4}" cy="${cy - 2}" r="1.35" fill="#fff"/>
+        <rect x="${cx - 3}" y="${cy + 3}" width="12" height="2.2" rx="1" fill="#fff" opacity=".7"/>`;
     }
     if (k === "boots") {
-      return `<path d="M${cx - 10} ${cy - 22} L${cx - 11} ${cy + 4} Q${cx - 8} ${cy + 10} ${cx + 4} ${cy + 8} Q${cx + 14} ${cy + 6} ${cx + 12} ${cy - 22} Q${cx} ${cy - 16} ${cx - 10} ${cy - 22}Z" fill="#7c4a03"/>
-        <rect x="${cx - 11}" y="${cy - 8}" width="23" height="4" fill="#5c3d1a"/>
-        <ellipse cx="${cx + 1}" cy="${cy + 8}" rx="14" ry="5" fill="#4a2e12"/>`;
+      return `<path d="M${cx - 10} ${cy - 22} L${cx - 11} ${cy + 4} Q${cx - 8} ${cy + 10} ${cx + 4} ${cy + 8} Q${cx + 14} ${cy + 6} ${cx + 12} ${cy - 22} Q${cx} ${cy - 16} ${cx - 10} ${cy - 22}Z" fill="${P.g("leather")}"/>
+        <path d="M${cx - 7} ${cy - 18} L${cx - 6} ${cy - 2}" stroke="#fff" stroke-width="2.2" opacity=".16"/>
+        <rect x="${cx - 11}" y="${cy - 8}" width="23" height="4" rx="1" fill="#5c3d1a"/>
+        <ellipse cx="${cx + 1}" cy="${cy + 8}" rx="14" ry="5" fill="#3d2410"/>`;
     }
     if (k === "maryjane") {
-      return `<ellipse cx="${cx + 1}" cy="${cy + 6}" rx="13" ry="5.5" fill="${pal.dark}"/>
-        <path d="M${cx - 11} ${cy + 4} Q${cx - 10} ${cy - 8} ${cx + 2} ${cy - 8} Q${cx + 13} ${cy - 6} ${cx + 13} ${cy + 4}Z" fill="${pal.main}"/>
-        <rect x="${cx - 8}" y="${cy - 2}" width="16" height="3.4" rx="1.6" fill="${pal.light}"/>
-        <circle cx="${cx + 6}" cy="${cy}" r="1.6" fill="${pal.extra}"/>`;
+      return `${sole}
+        <path d="M${cx - 11} ${cy + 4} Q${cx - 10} ${cy - 8} ${cx + 2} ${cy - 8} Q${cx + 13} ${cy - 6} ${cx + 13} ${cy + 4}Z" fill="${P.g("shoe")}"/>
+        <path d="M${cx - 6} ${cy - 4} Q${cx + 2} ${cy - 7} ${cx + 10} ${cy - 2}" fill="#fff" opacity=".2"/>
+        <rect x="${cx - 8}" y="${cy - 2}" width="16" height="3.4" rx="1.6" fill="${P.g("light")}"/>
+        <circle cx="${cx + 6}" cy="${cy}" r="1.7" fill="${P.g("gold")}"/>`;
     }
     if (k === "sandal") {
-      return `<ellipse cx="${cx + 1}" cy="${cy + 6}" rx="13" ry="5" fill="${pal.dark}"/>
-        <path d="M${cx - 8} ${cy + 2} Q${cx} ${cy - 8} ${cx + 10} ${cy + 2}" fill="none" stroke="${pal.main}" stroke-width="3.2" stroke-linecap="round"/>
-        <path d="M${cx - 6} ${cy + 5} L${cx + 8} ${cy + 4}" stroke="${pal.main}" stroke-width="2.4" stroke-linecap="round"/>`;
+      return `${sole}
+        <path d="M${cx - 8} ${cy + 2} Q${cx} ${cy - 8} ${cx + 10} ${cy + 2}" fill="none" stroke="${P.g("shoe")}" stroke-width="3.3" stroke-linecap="round"/>
+        <path d="M${cx - 6} ${cy + 5} L${cx + 8} ${cy + 4}" stroke="${P.g("shoe")}" stroke-width="2.5" stroke-linecap="round"/>`;
     }
     if (k === "rain") {
-      return `<path d="M${cx - 10} ${cy - 20} L${cx - 11} ${cy + 4} Q${cx - 6} ${cy + 10} ${cx + 4} ${cy + 8} Q${cx + 14} ${cy + 6} ${cx + 12} ${cy - 20}Z" fill="#fab005"/>
-        <rect x="${cx - 11}" y="${cy - 6}" width="23" height="4" fill="#fff" opacity=".55"/>
-        <ellipse cx="${cx + 1}" cy="${cy + 8}" rx="14" ry="5" fill="#e67700"/>`;
+      return `<path d="M${cx - 10} ${cy - 20} L${cx - 11} ${cy + 4} Q${cx - 6} ${cy + 10} ${cx + 4} ${cy + 8} Q${cx + 14} ${cy + 6} ${cx + 12} ${cy - 20}Z" fill="${P.g("rain")}"/>
+        <path d="M${cx - 6} ${cy - 16} L${cx - 5} ${cy - 2}" stroke="#fff" stroke-width="2.6" opacity=".28"/>
+        <rect x="${cx - 11}" y="${cy - 6}" width="23" height="4" rx="1" fill="#fff" opacity=".55"/>
+        <ellipse cx="${cx + 1}" cy="${cy + 8}" rx="14" ry="5" fill="#c92a2a"/>`;
     }
     if (k === "yemeni") {
       return `<path d="M${cx - 12} ${cy + 4} Q${cx - 16} ${cy - 8} ${cx - 2} ${cy - 10} Q${cx + 16} ${cy - 2} ${cx + 12} ${cy + 6} Q${cx} ${cy + 12} ${cx - 12} ${cy + 4}Z" fill="#d9480f"/>
-        <path d="M${cx - 2} ${cy - 8} Q${cx + 10} ${cy - 2} ${cx + 8} ${cy + 4}" stroke="#ffd43b" stroke-width="1.6" fill="none"/>`;
+        <path d="M${cx - 2} ${cy - 8} Q${cx + 10} ${cy - 2} ${cx + 8} ${cy + 4}" stroke="${P.g("gold")}" stroke-width="1.7" fill="none"/>
+        <ellipse cx="${cx + 2}" cy="${cy + 7}" rx="12" ry="3.4" fill="#7c2d12" opacity=".4"/>`;
     }
-    return `<ellipse cx="${cx}" cy="${cy + 5}" rx="11" ry="5.2" fill="#fff"/>
-      <rect x="${cx - 8}" y="${cy - 2}" width="16" height="6" rx="3" fill="${pal.main}"/>
-      <rect x="${cx - 8}" y="${cy + 1}" width="16" height="2" fill="${pal.light}"/>`;
+    return `<ellipse cx="${cx}" cy="${cy + 5}" rx="11.4" ry="5.3" fill="#fff"/>
+      <rect x="${cx - 8}" y="${cy - 2}" width="16" height="6" rx="3" fill="${P.g("shoe")}"/>
+      <rect x="${cx - 8}" y="${cy + 1}" width="16" height="2" fill="#fff" opacity=".45"/>`;
   }
 
   function shoesSvg(kind) {
@@ -2808,48 +2972,57 @@
   }
 
   function bagSvg(id) {
-    const pal = outfitPalette();
+    const pal = P.pal;
     if (!id || id === "nazar") return "";
     if (id === "backpack") {
-      return `<path d="M62 108 Q58 118 58 148" fill="none" stroke="${pal.dark}" stroke-width="3"/>
-        <path d="M86 108 Q90 118 90 148" fill="none" stroke="${pal.dark}" stroke-width="3"/>
-        <rect x="56" y="118" width="32" height="40" rx="7" fill="${pal.main}" stroke="${pal.dark}" stroke-width="2"/>
-        <rect x="62" y="126" width="20" height="12" rx="3" fill="${pal.light}"/>
-        <circle cx="72" cy="148" r="3" fill="${pal.extra}"/>`;
+      return `<path d="M62 108 Q58 118 58 148" fill="none" stroke="${pal.dark}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M86 108 Q90 118 90 148" fill="none" stroke="${pal.dark}" stroke-width="4" stroke-linecap="round"/>
+        <rect x="60" y="120" width="6" height="36" rx="2" fill="${P.g("dark")}"/>
+        <rect x="56" y="118" width="32" height="40" rx="7" fill="${P.g("bag")}"/>
+        <rect x="62" y="126" width="20" height="12" rx="3" fill="${P.g("light")}"/>
+        <path d="M64 122 L80 122" stroke="#fff" stroke-width="1.6" opacity=".35"/>
+        <circle cx="72" cy="148" r="3.2" fill="${P.g("gold")}"/>
+        <circle cx="71.2" cy="147" r="1" fill="#fff" opacity=".45"/>`;
     }
     if (id === "purse") {
-      return `<path d="M128 108 Q162 108 158 188" fill="none" stroke="${pal.dark}" stroke-width="2.4"/>
-        <rect x="138" y="176" width="28" height="22" rx="6" fill="${pal.main}"/>
-        <path d="M140 176 Q152 166 164 176" fill="${pal.dark}"/>
-        <circle cx="152" cy="186" r="2.2" fill="${pal.extra}"/>`;
+      return `<path d="M128 108 Q162 108 158 188" fill="none" stroke="${pal.dark}" stroke-width="3" stroke-linecap="round"/>
+        <rect x="138" y="176" width="28" height="22" rx="6" fill="${P.g("bag")}"/>
+        <path d="M140 176 Q152 164 164 176" fill="${P.g("dark")}"/>
+        <path d="M142 180 L160 180" stroke="#fff" stroke-width="1.2" opacity=".25"/>
+        <circle cx="152" cy="186" r="2.4" fill="${P.g("gold")}"/>`;
     }
     if (id === "tote") {
-      return `<path d="M140 176 Q146 164 152 176" fill="none" stroke="${pal.dark}" stroke-width="3"/>
-        <path d="M156 176 Q162 164 168 176" fill="none" stroke="${pal.dark}" stroke-width="3"/>
-        <path d="M136 176 L172 176 L168 210 L140 210Z" fill="${pal.light}" stroke="${pal.main}" stroke-width="2"/>
-        <rect x="146" y="186" width="16" height="10" rx="2" fill="${pal.main}"/>`;
+      return `<path d="M140 176 Q146 162 152 176" fill="none" stroke="${pal.dark}" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M156 176 Q162 162 168 176" fill="none" stroke="${pal.dark}" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M136 176 L172 176 L168 210 L140 210Z" fill="${P.g("light")}"/>
+        <path d="M160 178 L166 208 L154 208Z" fill="#000" opacity=".08"/>
+        <rect x="146" y="186" width="16" height="10" rx="2" fill="${P.g("bag")}"/>`;
     }
     if (id === "kilim") {
-      return `<path d="M128 112 Q160 120 156 188" fill="none" stroke="#7c4a03" stroke-width="2.4"/>
+      return `<path d="M128 112 Q160 120 156 188" fill="none" stroke="#7c4a03" stroke-width="3" stroke-linecap="round"/>
         <rect x="140" y="174" width="28" height="26" rx="3" fill="#c92a2a"/>
-        <rect x="140" y="174" width="7" height="26" fill="#ffd43b"/>
+        <rect x="140" y="174" width="7" height="26" fill="${P.g("gold")}"/>
         <rect x="154" y="174" width="7" height="26" fill="#2f9e44"/>
-        <rect x="161" y="174" width="7" height="26" fill="#1c7ed6"/>`;
+        <rect x="161" y="174" width="7" height="26" fill="#1c7ed6"/>
+        <path d="M141 199 L167 199" stroke="#fff" stroke-width="2" opacity=".25"/>`;
     }
     if (id === "sport") {
-      return `<path d="M126 168 Q150 158 174 176" fill="none" stroke="${pal.dark}" stroke-width="3"/>
-        <rect x="128" y="174" width="44" height="20" rx="10" fill="${pal.main}"/>
-        <rect x="142" y="178" width="16" height="6" rx="3" fill="${pal.light}"/>
-        <circle cx="136" cy="184" r="2.4" fill="${pal.extra}"/>`;
+      return `<path d="M126 168 Q150 158 174 176" fill="none" stroke="${pal.dark}" stroke-width="3.2" stroke-linecap="round"/>
+        <rect x="128" y="174" width="44" height="20" rx="10" fill="${P.g("bag")}"/>
+        <ellipse cx="130" cy="184" rx="5" ry="9" fill="${P.g("dark")}"/>
+        <ellipse cx="170" cy="184" rx="5" ry="9" fill="${P.g("dark")}"/>
+        <rect x="142" y="178" width="16" height="6" rx="3" fill="${P.g("light")}"/>
+        <circle cx="136" cy="184" r="2.4" fill="${P.g("gold")}"/>`;
     }
     return "";
   }
 
   function nazarSvg() {
-    return `<circle cx="100" cy="128" r="8" fill="#1c7ed6"/>
-      <circle cx="100" cy="128" r="5" fill="#fff"/>
-      <circle cx="100" cy="128" r="3" fill="#1c7ed6"/>
-      <circle cx="100" cy="128" r="1.4" fill="#222"/>`;
+    return `<circle cx="100" cy="128" r="8.6" fill="${P.g("nazar")}"/>
+      <circle cx="100" cy="128" r="5.4" fill="#fff"/>
+      <circle cx="100" cy="128" r="3.2" fill="${P.g("nazar")}"/>
+      <circle cx="100" cy="128" r="1.5" fill="#222"/>
+      <circle cx="97.6" cy="125.6" r="1.5" fill="#fff" opacity=".55"/>`;
   }
 
   function dollArtSvg() {
@@ -2864,9 +3037,10 @@
     const cy = KID_HEAD.y;
     const dressed = Boolean(wear.dress);
     const bag = wear.bag;
+    beginPaint(skin, hair, shirt, eyes);
     return svgWrap(
       "0 0 200 360",
-      `<ellipse cx="100" cy="348" rx="48" ry="8" fill="#5a3228" opacity=".16"/>
+      `${P.defs}<ellipse cx="100" cy="348" rx="50" ry="9" fill="#5a3228" opacity=".18"/>
       ${hairBack(style, hair, cx, cy)}
       ${bag === "backpack" ? bagSvg("backpack") : ""}
       ${kidBody(shirt, skin, dressed)}
@@ -2884,9 +3058,10 @@
   function miniFaceSvg(doll) {
     const hx = KID_HEAD.x;
     const hy = KID_HEAD.y;
+    beginPaint(doll.skin, doll.hair, doll.onesie, "#5c3317");
     return svgWrap(
       "52 8 96 92",
-      `${hairBack(doll.hairStyle, doll.hair, hx, hy)}${headSvg(doll.skin, "#5c3317", hx, hy)}${hairFront(doll.hairStyle, doll.hair, hx, hy)}`,
+      `${P.defs}${hairBack(doll.hairStyle, doll.hair, hx, hy)}${headSvg(doll.skin, "#5c3317", hx, hy)}${hairFront(doll.hairStyle, doll.hair, hx, hy)}`,
       "mini-svg"
     );
   }
@@ -2903,27 +3078,29 @@
     const eyes = wornEyes();
     const hx = KID_HEAD.x;
     const hy = KID_HEAD.y;
+    beginPaint(doll.skin, hair, doll.onesie, eyes);
+    const defs = P.defs;
     if (cat === "hair") {
-      return `<span class="pv-svg-wrap">${svgWrap("32 0 136 150", `${hairBack(id, hair, hx, hy)}${headSvg(doll.skin, eyes, hx, hy)}${hairFront(id, hair, hx, hy)}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("32 0 136 150", `${defs}${hairBack(id, hair, hx, hy)}${headSvg(doll.skin, eyes, hx, hy)}${hairFront(id, hair, hx, hy)}`)}</span>`;
     }
     if (cat === "dress") {
       const inner = id === "none" ? kidBody(doll.onesie, doll.skin, false) : `${kidBody(doll.onesie, doll.skin, true)}${dressSvg(id)}`;
-      return `<span class="pv-svg-wrap">${svgWrap("40 86 120 202", inner)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("40 86 120 202", `${defs}${inner}`)}</span>`;
     }
     if (cat === "hat") {
       if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
-      return `<span class="pv-svg-wrap">${svgWrap("48 0 104 86", `${hairBack(wornHair(), hair, hx, hy)}${headSvg(doll.skin, eyes, hx, hy)}${hairFront(wornHair(), hair, hx, hy)}${hatSvg(id, hx, hy)}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("48 0 104 86", `${defs}${hairBack(wornHair(), hair, hx, hy)}${headSvg(doll.skin, eyes, hx, hy)}${hairFront(wornHair(), hair, hx, hy)}${hatSvg(id, hx, hy)}`)}</span>`;
     }
     if (cat === "shoes") {
       const kind = id === "none" ? "" : id;
-      return `<span class="pv-svg-wrap">${svgWrap("64 278 72 50", shoesSvg(kind))}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("64 278 72 50", `${defs}${shoesSvg(kind)}`)}</span>`;
     }
     if (cat === "bag") {
       if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
-      if (id === "nazar") return `<span class="pv-svg-wrap">${svgWrap("86 114 28 28", nazarSvg())}</span>`;
-      if (id === "backpack") return `<span class="pv-svg-wrap">${svgWrap("50 104 42 60", bagSvg(id))}</span>`;
-      if (id === "sport") return `<span class="pv-svg-wrap">${svgWrap("120 154 56 46", bagSvg(id))}</span>`;
-      return `<span class="pv-svg-wrap">${svgWrap("126 158 50 58", bagSvg(id))}</span>`;
+      if (id === "nazar") return `<span class="pv-svg-wrap">${svgWrap("86 114 28 28", `${defs}${nazarSvg()}`)}</span>`;
+      if (id === "backpack") return `<span class="pv-svg-wrap">${svgWrap("50 104 42 60", `${defs}${bagSvg(id)}`)}</span>`;
+      if (id === "sport") return `<span class="pv-svg-wrap">${svgWrap("120 154 56 46", `${defs}${bagSvg(id)}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("126 158 50 58", `${defs}${bagSvg(id)}`)}</span>`;
     }
     return "";
   }
