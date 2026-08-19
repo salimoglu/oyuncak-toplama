@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.62";
+  const GAME_VERSION = window.__OT_VERSION || "0.63";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -2627,6 +2627,29 @@
     return `stroke="#4a3428" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
   }
 
+  function paintBlob(inner, fill) {
+    return `<g>
+      <g fill="#4a3428" stroke="#4a3428" stroke-width="3.1" stroke-linejoin="round" stroke-linecap="round">${inner}</g>
+      <g fill="${fill}" stroke="none">${inner}</g>
+    </g>`;
+  }
+
+  function limbLine(d, width) {
+    return `<path d="${d}" fill="none" stroke="#4a3428" stroke-width="${width + 3.1}" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="${d}" fill="none" stroke="${P.g("limb")}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+
+  function footParts(side, grow = 0) {
+    const x = (n) => sideX(side, n);
+    const rot = side === "L" ? -16 : 16;
+    const hx = x(87);
+    const hy = 256;
+    const fx = x(72);
+    const fy = 264;
+    return `<circle cx="${hx}" cy="${hy}" r="${11.2 + grow}"/>
+      <ellipse cx="${fx}" cy="${fy}" rx="${16.4 + grow}" ry="${11 + grow}" transform="rotate(${rot} ${fx} ${fy})"/>`;
+  }
+
   function hairShine(cx, cy) {
     return `<ellipse cx="${cx - 9}" cy="${cy - 26}" rx="7.5" ry="3.2" fill="#fff" opacity=".28" transform="rotate(-30 ${cx - 9} ${cy - 26})"/>`;
   }
@@ -2801,43 +2824,34 @@
 
   function armSvg(side) {
     const x = (n) => sideX(side, n);
-    return `<path d="M${x(88)} 99 C${x(72)} 95 ${x(58)} 102 ${x(53)} 116 C${x(49)} 130 ${x(48.5)} 148 ${x(49)} 166 C${x(49.4)} 172.5 ${x(52)} 177.6 ${x(56.4)} 178.6 C${x(59.4)} 179.4 ${x(62.8)} 178.4 ${x(64.6)} 175.8 C${x(63.2)} 152 ${x(64.8)} 134 ${x(73)} 120 C${x(79)} 110 ${x(87)} 103 ${x(94)} 101Z" fill="${P.g("limb")}" ${ink()}/>
-      <path d="M${x(72)} 108 Q${x(61)} 118 ${x(57)} 136" fill="none" stroke="#fff" stroke-width="2.2" opacity=".18" stroke-linecap="round"/>`;
+    const d = `M${x(91)} 102 C${x(68)} 118 ${x(52)} 140 ${x(48)} 166`;
+    return `${limbLine(d, 20)}
+      <path d="M${x(78)} 112 Q${x(56)} 126 ${x(50)} 146" fill="none" stroke="#fff" stroke-width="3" opacity=".22" stroke-linecap="round"/>`;
   }
 
   function handsSvg() {
     return `${handSvg("L")}${handSvg("R")}`;
   }
 
-  // Elin konturu bilekte kolun kenarlarından başlayıp orada bitiyor; kapanış
-  // çizgisi kolun altında kaldığı için ek yeri görünmüyor.
   function handSvg(side) {
     const x = (n) => sideX(side, n);
-    const edge = `M${x(49)} 169 C${x(45.4)} 177.5 ${x(44.2)} 188 ${x(46.8)} 195.4 C${x(49.6)} 202.6 ${x(58.4)} 204 ${x(62.6)} 197.6 C${x(64.6)} 194.6 ${x(66.8)} 192.4 ${x(69)} 190 C${x(71.6)} 187 ${x(72)} 182.6 ${x(69.6)} 180.2 C${x(67.6)} 178.2 ${x(65.4)} 179 ${x(64.6)} 181 C${x(64.4)} 178.4 ${x(64.2)} 176 ${x(64)} 174`;
-    const groove = `fill="none" stroke="#4a3428" stroke-width="1.15" opacity=".42" stroke-linecap="round"`;
-    return `<path d="${edge} L${x(49)} 169Z" fill="${P.g("limb")}"/>
-      <path d="${edge}" fill="none" ${ink(1.3)}/>
-      <path d="M${x(50.8)} 198.8 Q${x(50.6)} 194.5 ${x(51.4)} 190.4" ${groove}/>
-      <path d="M${x(54.6)} 200 Q${x(54.6)} 195.5 ${x(55.2)} 191.4" ${groove}/>
-      <path d="M${x(58.6)} 199.4 Q${x(58.8)} 195 ${x(59.4)} 190.8" ${groove}/>
-      <ellipse cx="${x(51)}" cy="183" rx="3" ry="2.1" fill="#fff" opacity=".26"/>`;
+    const inner = `<circle cx="${x(46)}" cy="176" r="12.2"/>
+      <ellipse cx="${x(58)}" cy="168" rx="6" ry="7.2"/>`;
+    return `${paintBlob(inner, P.g("limb"))}
+      <ellipse cx="${x(42.5)}" cy="171" rx="4" ry="2.8" fill="#fff" opacity=".32"/>`;
   }
 
   function legsSvg(bare) {
     return `${legSvg("L", bare)}${legSvg("R", bare)}`;
   }
 
-  // Ayak bacakla tek parça: bilekte ek yeri ya da renk farkı oluşmuyor.
   function legSvg(side, bare) {
     const x = (n) => sideX(side, n);
-    const thigh = `M${x(80)} 170 C${x(76)} 214 ${x(75.5)} 254 ${x(78)} 290`;
-    const backUp = `C${x(98.5)} 254 ${x(98)} 214 ${x(94)} 170 Q${x(87)} 178 ${x(80)} 170Z`;
-    if (!bare) {
-      return `<path d="${thigh} C${x(79)} 300.5 ${x(82.6)} 305 ${x(86.8)} 305 C${x(91)} 305 ${x(94.6)} 300.5 ${x(95.6)} 290 ${backUp}" fill="${P.g("limb")}" ${ink()}/>`;
-    }
-    return `<path d="${thigh} C${x(75)} 298 ${x(69.5)} 307 ${x(63.5)} 314 C${x(58)} 320 ${x(58)} 325.6 ${x(65)} 326.4 C${x(75.5)} 327.8 ${x(86.5)} 326.4 ${x(92.8)} 323 C${x(96.6)} 320.4 ${x(97.2)} 305.6 ${x(95.6)} 290 ${backUp}" fill="${P.g("limb")}" ${ink()}/>
-      <path d="M${x(62.5)} 319 Q${x(60.6)} 323 ${x(62.4)} 326.2" fill="none" stroke="#4a3428" stroke-width="1.1" opacity=".32" stroke-linecap="round"/>
-      <path d="M${x(68)} 310 Q${x(76)} 304 ${x(82)} 299" fill="none" stroke="#fff" stroke-width="2" opacity=".18" stroke-linecap="round"/>`;
+    const d = `M${x(88)} 168 L${x(87)} 248`;
+    const foot = bare
+      ? `${paintBlob(footParts(side), P.g("limb"))}<ellipse cx="${x(80)}" cy="258" rx="4.4" ry="2.6" fill="#fff" opacity=".28"/>`
+      : "";
+    return `${limbLine(d, 22)}${foot}`;
   }
 
   function topSilhouette(hemY, fill) {
@@ -2967,56 +2981,53 @@
     return "";
   }
 
-  function shoeOne(kind, cx, cy) {
+  function shoeOne(kind, side) {
     const pal = P.pal;
     const k = kind === "slipper" ? "sandal" : kind;
-    const sole = `<ellipse cx="${cx + 2}" cy="${cy + 7.2}" rx="14.4" ry="5.5" fill="#2f2f2f" ${ink(1.2)}/>
-      <ellipse cx="${cx + 2}" cy="${cy + 5.5}" rx="13" ry="4.2" fill="#e9ecef"/>`;
+    const x = (n) => sideX(side, n);
+    const rot = side === "L" ? -16 : 16;
+    const hx = x(87);
+    const hy = 256;
+    const fx = x(72);
+    const fy = 264;
+    const sole = `<ellipse cx="${fx}" cy="${fy + 4}" rx="15.4" ry="4.6" transform="rotate(${rot} ${fx} ${fy + 4})" fill="#2b2118"/>`;
+    const shaft = `<ellipse cx="${x(87)}" cy="238" rx="12" ry="20"/>`;
     if (k === "sneakers") {
-      return `${sole}
-        <path d="M${cx - 12} ${cy + 4} Q${cx - 12} ${cy - 10} ${cx + 2} ${cy - 10} Q${cx + 14} ${cy - 10} ${cx + 14} ${cy + 4}Z" fill="${P.g("shoe")}" ${ink()}/>
-        <path d="M${cx - 8} ${cy - 2} Q${cx + 2} ${cy - 8} ${cx + 12} ${cy - 1}" fill="#fff" opacity=".25"/>
-        <path d="M${cx - 4} ${cy - 2} Q${cx + 8} ${cy - 6} ${cx + 12} ${cy + 2}" stroke="${pal.light}" stroke-width="2" fill="none"/>
-        <circle cx="${cx - 2}" cy="${cy - 2}" r="1.4" fill="#fff" ${ink(0.9)}/>
-        <circle cx="${cx + 4}" cy="${cy - 2}" r="1.4" fill="#fff" ${ink(0.9)}/>
-        <rect x="${cx - 3}" y="${cy + 3}" width="12" height="2.3" rx="1" fill="#fff" opacity=".75"/>`;
+      return `${sole}${paintBlob(footParts(side, 1.3), P.g("shoe"))}
+        ${paintBlob(`<ellipse cx="${fx}" cy="${fy}" rx="8.2" ry="6.4" transform="rotate(${rot} ${fx} ${fy})"/>`, "#fff")}
+        <circle cx="${x(82)}" cy="254" r="1.6" fill="#fff" ${ink(0.9)}/>
+        <circle cx="${x(76)}" cy="258" r="1.6" fill="#fff" ${ink(0.9)}/>`;
     }
     if (k === "boots") {
-      return `<path d="M${cx - 10} ${cy - 22} L${cx - 11} ${cy + 4} Q${cx - 8} ${cy + 10} ${cx + 4} ${cy + 8} Q${cx + 14} ${cy + 6} ${cx + 12} ${cy - 22} Q${cx} ${cy - 16} ${cx - 10} ${cy - 22}Z" fill="${P.g("leather")}" ${ink()}/>
-        <path d="M${cx - 7} ${cy - 18} L${cx - 6} ${cy - 2}" stroke="#fff" stroke-width="2.2" opacity=".18"/>
-        <rect x="${cx - 11}" y="${cy - 8}" width="23" height="4" rx="1" fill="#5c3d1a" ${ink(1.1)}/>
-        <ellipse cx="${cx + 1}" cy="${cy + 8}" rx="14" ry="5" fill="#3d2410" ${ink(1.15)}/>`;
+      return `${sole}${paintBlob(`${shaft}${footParts(side, 1.4)}`, P.g("leather"))}
+        <rect x="${x(87) - 11}" y="248" width="22" height="4.2" rx="1" fill="#5c3d1a" ${ink(1.1)}/>
+        <path d="M${x(82)} 226 L${x(81)} 246" stroke="#fff" stroke-width="2.1" opacity=".2"/>`;
     }
     if (k === "maryjane") {
-      return `${sole}
-        <path d="M${cx - 11} ${cy + 4} Q${cx - 10} ${cy - 8} ${cx + 2} ${cy - 8} Q${cx + 13} ${cy - 6} ${cx + 13} ${cy + 4}Z" fill="${P.g("shoe")}" ${ink()}/>
-        <rect x="${cx - 8}" y="${cy - 2}" width="16" height="3.5" rx="1.7" fill="${P.g("light")}" ${ink(1.1)}/>
-        <circle cx="${cx + 6}" cy="${cy}" r="1.8" fill="${P.g("gold")}" ${ink(1)}/>`;
+      return `${sole}${paintBlob(footParts(side, 1.1), P.g("shoe"))}
+        <rect x="${x(87) - 9}" y="250" width="18" height="3.6" rx="1.6" fill="${P.g("light")}" ${ink(1.1)}/>
+        <circle cx="${x(78)}" cy="252" r="1.8" fill="${P.g("gold")}" ${ink(1)}/>`;
     }
     if (k === "sandal") {
       return `${sole}
-        <path d="M${cx - 8} ${cy + 2} Q${cx} ${cy - 8} ${cx + 10} ${cy + 2}" fill="none" stroke="${P.pal.main}" stroke-width="3.4" stroke-linecap="round"/>
-        <path d="M${cx - 6} ${cy + 5} L${cx + 8} ${cy + 4}" stroke="${P.pal.main}" stroke-width="2.6" stroke-linecap="round"/>`;
+        <path d="M${x(90)} 252 Q${fx} ${fy - 8} ${fx - (side === "L" ? 8 : -8)} ${fy}" fill="none" stroke="${pal.main}" stroke-width="3.3" stroke-linecap="round"/>
+        <path d="M${x(80)} 258 L${fx} ${fy + 1}" stroke="${pal.main}" stroke-width="2.6" stroke-linecap="round"/>`;
     }
     if (k === "rain") {
-      return `<path d="M${cx - 10} ${cy - 20} L${cx - 11} ${cy + 4} Q${cx - 6} ${cy + 10} ${cx + 4} ${cy + 8} Q${cx + 14} ${cy + 6} ${cx + 12} ${cy - 20}Z" fill="${P.g("rain")}" ${ink()}/>
-        <path d="M${cx - 6} ${cy - 16} L${cx - 5} ${cy - 2}" stroke="#fff" stroke-width="2.6" opacity=".32"/>
-        <rect x="${cx - 11}" y="${cy - 6}" width="23" height="4" rx="1" fill="#fff" opacity=".55" ${ink(1.05)}/>
-        <ellipse cx="${cx + 1}" cy="${cy + 8}" rx="14" ry="5" fill="#c92a2a" ${ink(1.15)}/>`;
+      return `${sole}${paintBlob(`${shaft}${footParts(side, 1.4)}`, P.g("rain"))}
+        <rect x="${x(87) - 11}" y="248" width="22" height="4.2" rx="1" fill="#fff" opacity=".55" ${ink(1.05)}/>
+        <path d="M${x(82)} 226 L${x(81)} 246" stroke="#fff" stroke-width="2.4" opacity=".32"/>`;
     }
     if (k === "yemeni") {
-      return `<path d="M${cx - 12} ${cy + 4} Q${cx - 16} ${cy - 8} ${cx - 2} ${cy - 10} Q${cx + 16} ${cy - 2} ${cx + 12} ${cy + 6} Q${cx} ${cy + 12} ${cx - 12} ${cy + 4}Z" fill="#d9480f" ${ink()}/>
-        <path d="M${cx - 2} ${cy - 8} Q${cx + 10} ${cy - 2} ${cx + 8} ${cy + 4}" stroke="${P.g("gold")}" stroke-width="1.7" fill="none"/>`;
+      return `${sole}${paintBlob(footParts(side, 1.2), "#d9480f")}
+        <path d="M${x(84)} 252 Q${fx} ${fy - 6} ${fx} ${fy + 2}" stroke="${P.g("gold")}" stroke-width="1.7" fill="none"/>`;
     }
-    return `<ellipse cx="${cx}" cy="${cy + 5}" rx="11.5" ry="5.4" fill="#fff" ${ink(1.25)}/>
-      <rect x="${cx - 8}" y="${cy - 2}" width="16" height="6" rx="3" fill="${P.g("shoe")}" ${ink(1.2)}/>`;
+    return paintBlob(footParts(side, 0.6), "#fff");
   }
 
   function shoesSvg(kind) {
     if (!kind) return "";
-    const left = shoeOne(kind, 86, 312);
-    const right = shoeOne(kind, 114, 312);
-    return `<g transform="translate(86 312) scale(-1 1) translate(-86 -312)">${left}</g>${right}`;
+    return `${shoeOne(kind, "L")}${shoeOne(kind, "R")}`;
   }
 
   function bagSvg(id) {
@@ -3082,11 +3093,11 @@
     const bag = wear.bag;
     beginPaint(skin, hair, shirt, eyes);
     return svgWrap(
-      "0 0 200 360",
-      `${P.defs}<ellipse cx="100" cy="331" rx="48" ry="8" fill="#5a3228" opacity=".18"/>
+      "0 0 200 300",
+      `${P.defs}<ellipse cx="100" cy="278" rx="48" ry="8" fill="#5a3228" opacity=".18"/>
       ${hairBack(style, hair, cx, cy)}
       ${bag === "backpack" ? bagSvg("backpack") : ""}
-      ${kidBody(shirt, skin, dressed, !wear.shoes)}
+      ${kidBody(shirt, skin, dressed, true)}
       ${dressSvg(wear.dress)}
       ${handsSvg()}
       ${shoesSvg(wear.shoes)}
@@ -3132,7 +3143,7 @@
         id === "none"
           ? `${kidBody(doll.onesie, doll.skin, false)}${handsSvg()}`
           : `${kidBody(doll.onesie, doll.skin, true)}${dressSvg(id)}${handsSvg()}`;
-      return `<span class="pv-svg-wrap">${svgWrap("40 86 120 202", `${defs}${inner}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("28 86 144 210", `${defs}${inner}`)}</span>`;
     }
     if (cat === "hat") {
       if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
@@ -3140,7 +3151,7 @@
     }
     if (cat === "shoes") {
       const kind = id === "none" ? "" : id;
-      return `<span class="pv-svg-wrap">${svgWrap("46 276 108 62", `${defs}${legsSvg(!kind)}${shoesSvg(kind)}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("28 150 144 130", `${defs}${legsSvg(true)}${shoesSvg(kind)}`)}</span>`;
     }
     if (cat === "bag") {
       if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;

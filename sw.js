@@ -1,4 +1,4 @@
-const VERSION = "0.62";
+const VERSION = "0.63";
 const CACHE_NAME = "oyuncak-toplama-" + VERSION;
 
 self.addEventListener("install", (event) => {
