@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.52";
+  const GAME_VERSION = window.__OT_VERSION || "0.53";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -277,7 +277,33 @@
     ],
   };
 
-  const EMPTY_WEAR = { hair: "", dress: "", hat: "", shoes: "", bag: "" };
+  const EMPTY_WEAR = {
+    hair: "",
+    hairColor: "",
+    eyes: "",
+    dress: "",
+    hat: "",
+    shoes: "",
+    bag: "",
+  };
+
+  const HAIR_COLORS = [
+    { id: "#5c3317", name: "Kahve" },
+    { id: "#2b2118", name: "Siyah" },
+    { id: "#e8c547", name: "Sarı" },
+    { id: "#c2410c", name: "Kızıl" },
+    { id: "#6d4c9a", name: "Mor" },
+    { id: "#0b7285", name: "Deniz" },
+    { id: "#f783ac", name: "Pembe" },
+  ];
+
+  const EYE_COLORS = [
+    { id: "#5c3317", name: "Kahve" },
+    { id: "#1c7ed6", name: "Mavi" },
+    { id: "#2f9e44", name: "Yeşil" },
+    { id: "#b8860b", name: "Ela" },
+    { id: "#495057", name: "Gri" },
+  ];
 
   const ACTOR_HTML = `
     <div class="char-fit">
@@ -314,41 +340,7 @@
   `;
 
   const DOLL_HTML = `
-    <div class="doll-shadow"></div>
-    <div class="doll-fig">
-      <div class="doll-hair-back"></div>
-      <div class="doll-hair-side left"></div>
-      <div class="doll-hair-side right"></div>
-      <div class="doll-ear left"></div>
-      <div class="doll-ear right"></div>
-      <div class="doll-head">
-        <div class="doll-blush left"></div>
-        <div class="doll-blush right"></div>
-        <div class="doll-eye left"><i></i></div>
-        <div class="doll-eye right"><i></i></div>
-        <div class="doll-nose"></div>
-        <div class="doll-smile"></div>
-        <div class="doll-glasses"></div>
-      </div>
-      <div class="doll-hair-front"></div>
-      <div class="doll-hat"></div>
-      <div class="doll-body">
-        <div class="doll-onesie"></div>
-        <div class="doll-arm left"></div>
-        <div class="doll-arm right"></div>
-        <div class="doll-dress"></div>
-        <div class="doll-nazar"></div>
-      </div>
-      <div class="doll-hips">
-        <div class="doll-leg left"></div>
-        <div class="doll-leg right"></div>
-      </div>
-      <div class="doll-feet">
-        <div class="doll-shoe left"></div>
-        <div class="doll-shoe right"></div>
-      </div>
-      <div class="doll-bag"></div>
-    </div>
+    <div class="doll-frame"></div>
     <div class="doll-name"></div>
   `;
 
@@ -2482,31 +2474,312 @@
     return displayName({ id: doll.id, name: doll.name });
   }
 
-  function dollHtml(doll, extraClass = "") {
-    return `<div class="doll ${extraClass}" data-id="${doll.id}" style="--skin:${doll.skin};--hair:${doll.hair};--onesie:${doll.onesie};">
-      ${DOLL_HTML}
-    </div>`;
+  function svgWrap(viewBox, inner, cls = "") {
+    return `<svg class="${cls}" viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg" focusable="false">${inner}</svg>`;
   }
 
   function wornHair() {
     return state.dress.wear.hair || currentDoll().hairStyle;
   }
 
-  function applyWearAttrs(el) {
+  function wornHairColor() {
+    return state.dress.wear.hairColor || currentDoll().hair;
+  }
+
+  function wornEyes() {
+    return state.dress.wear.eyes || "#5c3317";
+  }
+
+  function hairBack(style, color, cx, cy) {
+    const c = color;
+    if (style === "pig") {
+      return `<ellipse cx="${cx}" cy="${cy - 8}" rx="40" ry="26" fill="${c}"/>
+        <circle cx="${cx - 38}" cy="${cy + 10}" r="13" fill="${c}"/>
+        <circle cx="${cx + 38}" cy="${cy + 10}" r="13" fill="${c}"/>
+        <circle cx="${cx - 42}" cy="${cy + 6}" r="3.5" fill="#fff" opacity=".3"/>
+        <circle cx="${cx + 34}" cy="${cy + 6}" r="3.5" fill="#fff" opacity=".3"/>`;
+    }
+    if (style === "short") {
+      return `<path d="M${cx - 34} ${cy + 4} Q${cx - 36} ${cy - 28} ${cx} ${cy - 30} Q${cx + 36} ${cy - 28} ${cx + 34} ${cy + 4} Q${cx + 20} ${cy - 6} ${cx} ${cy - 4} Q${cx - 20} ${cy - 6} ${cx - 34} ${cy + 4}Z" fill="${c}"/>`;
+    }
+    if (style === "long") {
+      return `<path d="M${cx - 42} ${cy + 70} Q${cx - 48} ${cy - 8} ${cx} ${cy - 32} Q${cx + 48} ${cy - 8} ${cx + 42} ${cy + 70} Q${cx + 28} ${cy + 40} ${cx} ${cy + 36} Q${cx - 28} ${cy + 40} ${cx - 42} ${cy + 70}Z" fill="${c}"/>`;
+    }
+    if (style === "braid") {
+      return `<ellipse cx="${cx}" cy="${cy - 6}" rx="36" ry="24" fill="${c}"/>
+        <path d="M${cx - 28} ${cy + 8} Q${cx - 34} ${cy + 40} ${cx - 26} ${cy + 72}" stroke="${c}" stroke-width="11" fill="none" stroke-linecap="round"/>
+        <path d="M${cx + 28} ${cy + 8} Q${cx + 34} ${cy + 40} ${cx + 26} ${cy + 72}" stroke="${c}" stroke-width="11" fill="none" stroke-linecap="round"/>
+        <circle cx="${cx - 26}" cy="${cy + 76}" r="5" fill="${c}"/>
+        <circle cx="${cx + 26}" cy="${cy + 76}" r="5" fill="${c}"/>`;
+    }
+    if (style === "bun") {
+      return `<ellipse cx="${cx}" cy="${cy - 6}" rx="36" ry="22" fill="${c}"/>
+        <circle cx="${cx}" cy="${cy - 34}" r="16" fill="${c}"/>
+        <circle cx="${cx - 5}" cy="${cy - 38}" r="4" fill="#fff" opacity=".28"/>`;
+    }
+    if (style === "pony") {
+      return `<ellipse cx="${cx}" cy="${cy - 6}" rx="36" ry="22" fill="${c}"/>
+        <path d="M${cx + 28} ${cy - 18} Q${cx + 58} ${cy - 8} ${cx + 52} ${cy + 48}" stroke="${c}" stroke-width="16" fill="none" stroke-linecap="round"/>
+        <circle cx="${cx + 50}" cy="${cy + 52}" r="7" fill="${c}"/>`;
+    }
+    if (style === "curl") {
+      return `<circle cx="${cx - 22}" cy="${cy - 8}" r="18" fill="${c}"/>
+        <circle cx="${cx + 22}" cy="${cy - 8}" r="18" fill="${c}"/>
+        <circle cx="${cx}" cy="${cy - 22}" r="18" fill="${c}"/>
+        <circle cx="${cx - 28}" cy="${cy + 14}" r="14" fill="${c}"/>
+        <circle cx="${cx + 28}" cy="${cy + 14}" r="14" fill="${c}"/>`;
+    }
+    return `<ellipse cx="${cx}" cy="${cy - 4}" rx="38" ry="24" fill="${c}"/>`;
+  }
+
+  function hairFront(style, color, cx, cy) {
+    const c = color;
+    if (style === "short") {
+      return `<path d="M${cx - 28} ${cy - 18} Q${cx} ${cy - 10} ${cx + 28} ${cy - 18}" stroke="${c}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+    }
+    if (style === "bangs") {
+      return `<path d="M${cx - 32} ${cy - 22} Q${cx} ${cy - 2} ${cx + 32} ${cy - 22} L${cx + 30} ${cy - 8} Q${cx} ${cy + 10} ${cx - 30} ${cy - 8}Z" fill="${c}"/>`;
+    }
+    if (style === "long" || style === "pig" || style === "bun" || style === "pony" || style === "curl" || style === "braid") {
+      return `<path d="M${cx - 30} ${cy - 22} Q${cx} ${cy - 6} ${cx + 30} ${cy - 22}" stroke="${c}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+    }
+    return "";
+  }
+
+  function headSvg(skin, eye, cx, cy) {
+    return `<circle cx="${cx - 32}" cy="${cy + 4}" r="8" fill="${skin}"/>
+      <circle cx="${cx + 32}" cy="${cy + 4}" r="8" fill="${skin}"/>
+      <circle cx="${cx}" cy="${cy}" r="38" fill="${skin}"/>
+      <ellipse cx="${cx - 16}" cy="${cy + 8}" rx="7" ry="4" fill="#ff8fab" opacity=".55"/>
+      <ellipse cx="${cx + 16}" cy="${cy + 8}" rx="7" ry="4" fill="#ff8fab" opacity=".55"/>
+      <ellipse cx="${cx - 12}" cy="${cy - 4}" rx="8" ry="9" fill="#fff" stroke="#3d2b1f" stroke-width="2"/>
+      <ellipse cx="${cx + 12}" cy="${cy - 4}" rx="8" ry="9" fill="#fff" stroke="#3d2b1f" stroke-width="2"/>
+      <circle cx="${cx - 12}" cy="${cy - 3}" r="4.5" fill="${eye}"/>
+      <circle cx="${cx + 12}" cy="${cy - 3}" r="4.5" fill="${eye}"/>
+      <circle cx="${cx - 10}" cy="${cy - 5}" r="1.6" fill="#fff"/>
+      <circle cx="${cx + 14}" cy="${cy - 5}" r="1.6" fill="#fff"/>
+      <ellipse cx="${cx}" cy="${cy + 8}" rx="4" ry="3" fill="#f3b0a2"/>
+      <path d="M${cx - 8} ${cy + 16} Q${cx} ${cy + 24} ${cx + 8} ${cy + 16}" stroke="#c73462" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+  }
+
+  function onesieSvg(color, skin) {
+    return `<ellipse cx="74" cy="168" rx="11" ry="28" fill="${skin}" transform="rotate(18 74 168)"/>
+      <ellipse cx="126" cy="168" rx="11" ry="28" fill="${skin}" transform="rotate(-18 126 168)"/>
+      <rect x="88" y="210" width="10" height="48" rx="5" fill="${color}"/>
+      <rect x="102" y="210" width="10" height="48" rx="5" fill="${color}"/>
+      <path d="M78 138 Q100 128 122 138 L126 212 Q100 224 74 212Z" fill="${color}"/>
+      <circle cx="94" cy="152" r="3" fill="#fff" opacity=".85"/>
+      <circle cx="106" cy="152" r="3" fill="#fff" opacity=".85"/>
+      <rect x="86" y="136" width="28" height="10" rx="5" fill="#fff" opacity=".35"/>`;
+  }
+
+  function dressSvg(id) {
+    if (!id) return "";
+    if (id === "princess") {
+      return `<path d="M80 140 L120 140 L154 258 Q100 278 46 258Z" fill="#ff5d8f"/>
+        <path d="M84 140 L116 140 L120 176 L80 176Z" fill="#ffc2d4"/>
+        <rect x="80" y="172" width="40" height="8" rx="4" fill="#ffe066"/>
+        <circle cx="100" cy="156" r="5" fill="#fff"/>`;
+    }
+    if (id === "bindalli") {
+      return `<path d="M82 140 L118 140 L148 256 Q100 272 52 256Z" fill="#c2255c"/>
+        <path d="M84 140 L116 140 L118 168 L82 168Z" fill="#862e9c"/>
+        <rect x="82" y="166" width="36" height="6" rx="2" fill="#ffd43b"/>
+        <circle cx="90" cy="190" r="3" fill="#ffd43b"/>
+        <circle cx="110" cy="206" r="3" fill="#ffd43b"/>
+        <circle cx="100" cy="224" r="2.5" fill="#ffd43b"/>`;
+    }
+    if (id === "sailor") {
+      return `<path d="M82 140 L118 140 L146 252 Q100 266 54 252Z" fill="#1c7ed6"/>
+        <path d="M84 140 L116 140 L112 168 L88 168Z" fill="#fff"/>
+        <path d="M88 140 L112 140 L108 158 L92 158Z" fill="#fff"/>
+        <rect x="96" y="168" width="8" height="8" rx="4" fill="#c92a2a"/>
+        <rect x="78" y="200" width="44" height="6" fill="#fff" opacity=".85"/>`;
+    }
+    if (id === "sun") {
+      return `<path d="M80 140 L120 140 L152 256 Q100 274 48 256Z" fill="#fab005"/>
+        <path d="M84 140 L116 140 L118 170 L82 170Z" fill="#ffe066"/>
+        <circle cx="92" cy="196" r="5" fill="#ff8fab"/>
+        <circle cx="112" cy="214" r="4" fill="#fff"/>`;
+    }
+    if (id === "mint") {
+      return `<path d="M82 140 L118 140 L148 254 Q100 270 52 254Z" fill="#51cf66"/>
+        <path d="M84 140 L116 140 L118 168 L82 168Z" fill="#d3f9d8"/>
+        <path d="M70 236 Q100 250 130 236" stroke="#fff" stroke-width="6" fill="none" opacity=".35"/>`;
+    }
+    if (id === "starry") {
+      return `<path d="M80 140 L120 140 L152 256 Q100 274 48 256Z" fill="#7048e8"/>
+        <path d="M84 140 L116 140 L118 170 L82 170Z" fill="#b197fc"/>
+        <polygon points="90,190 93,198 102,198 95,203 98,212 90,206 82,212 85,203 78,198 87,198" fill="#ffe066"/>
+        <circle cx="114" cy="220" r="3" fill="#fff"/>`;
+    }
+    return "";
+  }
+
+  function hatSvg(id, cx, cy) {
+    if (!id) return "";
+    if (id === "bow") {
+      return `<circle cx="${cx - 10}" cy="${cy - 36}" r="9" fill="#ff8fab"/>
+        <circle cx="${cx + 10}" cy="${cy - 36}" r="9" fill="#ff8fab"/>
+        <circle cx="${cx}" cy="${cy - 36}" r="5" fill="#c73462"/>`;
+    }
+    if (id === "fes") {
+      return `<rect x="${cx - 18}" y="${cy - 48}" width="36" height="18" rx="3" fill="#c92a2a"/>
+        <rect x="${cx - 20}" y="${cy - 52}" width="40" height="6" rx="3" fill="#e03131"/>
+        <circle cx="${cx + 20}" cy="${cy - 50}" r="4" fill="#222"/>
+        <line x1="${cx + 22}" y1="${cy - 48}" x2="${cx + 28}" y2="${cy - 34}" stroke="#222" stroke-width="2"/>`;
+    }
+    if (id === "yemeni") {
+      return `<path d="M${cx - 40} ${cy - 8} Q${cx} ${cy - 52} ${cx + 40} ${cy - 8} Q${cx} ${cy - 22} ${cx - 40} ${cy - 8}Z" fill="#fff"/>
+        <path d="M${cx - 40} ${cy - 8} Q${cx - 20} ${cy - 40} ${cx} ${cy - 36}" stroke="#e03131" stroke-width="10" fill="none"/>
+        <path d="M${cx + 40} ${cy - 8} Q${cx + 20} ${cy - 40} ${cx} ${cy - 36}" stroke="#e03131" stroke-width="10" fill="none"/>`;
+    }
+    if (id === "flowers") {
+      return `<circle cx="${cx - 18}" cy="${cy - 34}" r="8" fill="#ff8fab"/>
+        <circle cx="${cx}" cy="${cy - 40}" r="8" fill="#ffe066"/>
+        <circle cx="${cx + 18}" cy="${cy - 34}" r="8" fill="#9775fa"/>
+        <circle cx="${cx - 18}" cy="${cy - 34}" r="3" fill="#fff"/>
+        <circle cx="${cx}" cy="${cy - 40}" r="3" fill="#f08c00"/>
+        <circle cx="${cx + 18}" cy="${cy - 34}" r="3" fill="#fff"/>`;
+    }
+    if (id === "beanie") {
+      return `<path d="M${cx - 34} ${cy - 16} Q${cx} ${cy - 52} ${cx + 34} ${cy - 16}Z" fill="#4dabf7"/>
+        <circle cx="${cx}" cy="${cy - 50}" r="7" fill="#fff"/>`;
+    }
+    if (id === "glasses") {
+      return `<rect x="${cx - 28}" y="${cy - 10}" width="22" height="14" rx="4" fill="none" stroke="#3d2b1f" stroke-width="3"/>
+        <rect x="${cx + 6}" y="${cy - 10}" width="22" height="14" rx="4" fill="none" stroke="#3d2b1f" stroke-width="3"/>
+        <line x1="${cx - 6}" y1="${cy - 4}" x2="${cx + 6}" y2="${cy - 4}" stroke="#3d2b1f" stroke-width="3"/>`;
+    }
+    return "";
+  }
+
+  function shoeOne(kind, cx, cy, onesie) {
+    if (kind === "sneakers") {
+      return `<ellipse cx="${cx}" cy="${cy + 4}" rx="13" ry="6.5" fill="#fff" stroke="#dee2e6" stroke-width="1"/>
+        <path d="M${cx - 12} ${cy + 2} Q${cx - 12} ${cy - 8} ${cx} ${cy - 8} Q${cx + 12} ${cy - 8} ${cx + 12} ${cy + 2}Z" fill="#4dabf7"/>
+        <circle cx="${cx - 3}" cy="${cy - 2}" r="1.4" fill="#fff"/>
+        <circle cx="${cx + 3}" cy="${cy - 2}" r="1.4" fill="#fff"/>`;
+    }
+    if (kind === "boots") {
+      return `<path d="M${cx - 11} ${cy - 16} Q${cx - 12} ${cy + 8} ${cx} ${cy + 8} Q${cx + 12} ${cy + 8} ${cx + 11} ${cy - 16} Q${cx} ${cy - 10} ${cx - 11} ${cy - 16}Z" fill="#7c4a03"/>
+        <ellipse cx="${cx}" cy="${cy + 6}" rx="13" ry="5" fill="#5c3d1a"/>`;
+    }
+    if (kind === "yemeni") {
+      return `<path d="M${cx - 12} ${cy + 2} Q${cx - 14} ${cy - 6} ${cx - 2} ${cy - 8} Q${cx + 12} ${cy - 4} ${cx + 12} ${cy + 4} Q${cx} ${cy + 10} ${cx - 12} ${cy + 2}Z" fill="#d9480f"/>`;
+    }
+    if (kind === "slipper") {
+      return `<ellipse cx="${cx}" cy="${cy + 4}" rx="13" ry="6" fill="#ffdeeb"/>
+        <path d="M${cx - 10} ${cy + 2} Q${cx} ${cy - 8} ${cx + 10} ${cy + 2}" fill="#ff8fab"/>`;
+    }
+    return `<ellipse cx="${cx}" cy="${cy + 4}" rx="11" ry="5.5" fill="${onesie}"/>
+      <ellipse cx="${cx}" cy="${cy + 2}" rx="7" ry="3" fill="#fff" opacity=".35"/>`;
+  }
+
+  function shoesSvg(kind, onesie) {
+    return `${shoeOne(kind, 84, 262, onesie)}${shoeOne(kind, 116, 262, onesie)}`;
+  }
+
+  function bagSvg(id) {
+    if (!id || id === "nazar") return "";
+    if (id === "backpack") {
+      return `<rect x="58" y="168" width="22" height="28" rx="6" fill="#4dabf7" stroke="#1c7ed6" stroke-width="2"/>
+        <rect x="62" y="174" width="14" height="10" rx="2" fill="#74c0fc"/>`;
+    }
+    if (id === "purse") {
+      return `<path d="M136 176 Q136 166 148 166 Q160 166 160 176" fill="none" stroke="#c73462" stroke-width="3"/>
+        <rect x="134" y="176" width="28" height="20" rx="6" fill="#ff8fab"/>`;
+    }
+    if (id === "kilim") {
+      return `<rect x="136" y="174" width="26" height="24" rx="4" fill="#c92a2a"/>
+        <rect x="136" y="174" width="6" height="24" fill="#ffd43b"/>
+        <rect x="148" y="174" width="6" height="24" fill="#2f9e44"/>
+        <rect x="156" y="174" width="6" height="24" fill="#1c7ed6"/>`;
+    }
+    return "";
+  }
+
+  function nazarSvg() {
+    return `<circle cx="100" cy="160" r="8" fill="#1c7ed6"/>
+      <circle cx="100" cy="160" r="5" fill="#fff"/>
+      <circle cx="100" cy="160" r="3" fill="#1c7ed6"/>
+      <circle cx="100" cy="160" r="1.4" fill="#fff"/>`;
+  }
+
+  function dollArtSvg() {
     const doll = currentDoll();
-    Object.keys(EMPTY_WEAR).forEach((key) => {
-      el.dataset[key] = state.dress.wear[key] || "";
-    });
-    el.dataset.hair = wornHair();
-    el.style.setProperty("--onesie", doll.onesie);
+    const skin = doll.skin;
+    const onesie = doll.onesie;
+    const hair = wornHairColor();
+    const eyes = wornEyes();
+    const style = wornHair();
+    const wear = state.dress.wear;
+    const cx = 100;
+    const cy = 80;
+    const dressed = Boolean(wear.dress);
+    return svgWrap(
+      "0 0 200 340",
+      `<ellipse cx="100" cy="328" rx="46" ry="8" fill="#5a3228" opacity=".16"/>
+      ${hairBack(style, hair, cx, cy)}
+      ${dressed ? "" : onesieSvg(onesie, skin)}
+      ${dressed ? `<ellipse cx="74" cy="168" rx="11" ry="28" fill="${skin}" transform="rotate(18 74 168)"/><ellipse cx="126" cy="168" rx="11" ry="28" fill="${skin}" transform="rotate(-18 126 168)"/>` : ""}
+      ${dressSvg(wear.dress)}
+      ${shoesSvg(wear.shoes, onesie)}
+      ${headSvg(skin, eyes, cx, cy)}
+      ${hairFront(style, hair, cx, cy)}
+      ${hatSvg(wear.hat, cx, cy)}
+      ${bagSvg(wear.bag)}
+      ${wear.bag === "nazar" ? nazarSvg() : ""}`,
+      "doll-svg"
+    );
+  }
+
+  function miniFaceSvg(doll) {
+    return svgWrap(
+      "48 28 104 100",
+      `${hairBack(doll.hairStyle, doll.hair, 100, 80)}${headSvg(doll.skin, "#5c3317", 100, 80)}${hairFront(doll.hairStyle, doll.hair, 100, 80)}`,
+      "mini-svg"
+    );
+  }
+
+  function noneMark() {
+    return `<circle cx="32" cy="32" r="18" fill="#fff6ea" stroke="#e9ecef" stroke-width="3"/>
+      <path d="M22 22 L42 42" stroke="#faa2c1" stroke-width="4" stroke-linecap="round"/>`;
   }
 
   function itemPreviewHtml(cat, item) {
     const id = item.id || "none";
+    const doll = currentDoll();
+    const hair = wornHairColor();
+    const eyes = wornEyes();
     if (cat === "hair") {
-      return `<span class="pv pv-hair ${id}" style="--hair:${currentDoll().hair};--skin:${currentDoll().skin}"><i></i></span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("48 20 104 110", `${hairBack(id, hair, 100, 80)}${headSvg(doll.skin, eyes, 100, 80)}${hairFront(id, hair, 100, 80)}`)}</span>`;
     }
-    return `<span class="pv pv-${cat} ${id}"><i></i></span>`;
+    if (cat === "dress") {
+      const inner = id === "none" ? onesieSvg(doll.onesie, doll.skin) : dressSvg(id);
+      return `<span class="pv-svg-wrap">${svgWrap("40 120 120 160", inner)}</span>`;
+    }
+    if (cat === "hat") {
+      if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("52 18 96 78", `${headSvg(doll.skin, eyes, 100, 80)}${hatSvg(id, 100, 80)}`)}</span>`;
+    }
+    if (cat === "shoes") {
+      const kind = id === "none" ? "" : id;
+      return `<span class="pv-svg-wrap">${svgWrap("68 244 64 32", shoesSvg(kind, doll.onesie))}</span>`;
+    }
+    if (cat === "bag") {
+      if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
+      if (id === "nazar") return `<span class="pv-svg-wrap">${svgWrap("86 146 28 28", nazarSvg())}</span>`;
+      if (id === "backpack") return `<span class="pv-svg-wrap">${svgWrap("52 162 34 40", bagSvg(id))}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("128 160 40 44", bagSvg(id))}</span>`;
+    }
+    return "";
+  }
+
+  function dollHtml(doll, extraClass = "") {
+    return `<div class="doll ${extraClass}" data-id="${doll.id}">
+      ${DOLL_HTML}
+    </div>`;
   }
 
   function renderDressBaby() {
@@ -2514,9 +2787,9 @@
     const box = $("dress-baby");
     if (!box) return;
     box.innerHTML = dollHtml(doll, "stage");
-    const el = box.querySelector(".doll");
-    applyWearAttrs(el);
-    const label = el.querySelector(".doll-name");
+    const frame = box.querySelector(".doll-frame");
+    if (frame) frame.innerHTML = dollArtSvg();
+    const label = box.querySelector(".doll-name");
     if (label) label.textContent = dollName(doll);
   }
 
@@ -2525,9 +2798,7 @@
       const on = d.id === state.dress.babyId ? "on" : "";
       return `<button type="button" class="dress-face ${on}" data-baby="${d.id}" aria-label="${escapeHtml(
         dollName(d)
-      )}">
-        <span class="doll-mini" data-id="${d.id}" data-hair="${d.hairStyle}" style="--skin:${d.skin};--hair:${d.hair}"></span>
-      </button>`;
+      )}">${miniFaceSvg(d)}</button>`;
     }).join("");
   }
 
@@ -2554,10 +2825,31 @@
       .join("");
   }
 
+  function renderDressSwatches() {
+    const row = $("dress-swatches");
+    if (!row) return;
+    if (state.dress.cat !== "hair") {
+      row.hidden = true;
+      row.innerHTML = "";
+      return;
+    }
+    row.hidden = false;
+    const hairOn = wornHairColor();
+    const eyeOn = wornEyes();
+    row.innerHTML = `<span class="swatch-label">Saç</span>${HAIR_COLORS.map(
+      (c) =>
+        `<button type="button" class="swatch ${c.id === hairOn ? "on" : ""}" data-kind="hairColor" data-swatch="${c.id}" aria-label="${c.name}" style="background:${c.id}"></button>`
+    ).join("")}<span class="swatch-label">Göz</span>${EYE_COLORS.map(
+      (c) =>
+        `<button type="button" class="swatch ${c.id === eyeOn ? "on" : ""}" data-kind="eyes" data-swatch="${c.id}" aria-label="${c.name}" style="background:${c.id}"></button>`
+    ).join("")}`;
+  }
+
   function renderDress() {
     renderDressBaby();
     renderDressBabies();
     renderDressCats();
+    renderDressSwatches();
     renderDressItems();
   }
 
@@ -2596,6 +2888,8 @@
     };
     state.dress.wear = {
       hair: pick("hair"),
+      hairColor: HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)].id,
+      eyes: EYE_COLORS[Math.floor(Math.random() * EYE_COLORS.length)].id,
       dress: pick("dress"),
       hat: pick("hat"),
       shoes: pick("shoes"),
@@ -2684,6 +2978,17 @@
       state.dress.cat = btn.dataset.cat;
       saveDress();
       renderDressCats();
+      renderDressSwatches();
+      renderDressItems();
+    });
+    $("dress-swatches").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-swatch]");
+      if (!btn) return;
+      playTapSound();
+      state.dress.wear[btn.dataset.kind] = btn.dataset.swatch;
+      saveDress();
+      renderDressBaby();
+      renderDressSwatches();
       renderDressItems();
     });
     $("dress-items").addEventListener("click", (e) => {

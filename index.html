@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.52" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.53" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.52</div>
+        <div id="version-badge" class="version-badge">v0.53</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -289,6 +289,7 @@
               <button id="dress-random" class="dress-surprise" type="button">Sürpriz</button>
             </div>
             <div id="dress-cats" class="dress-tabs" role="tablist" aria-label="Kıyafet"></div>
+            <div id="dress-swatches" class="dress-swatches" hidden></div>
             <div id="dress-items" class="dress-tray" role="listbox" aria-label="Kıyafetler"></div>
           </div>
         </div>
@@ -365,7 +366,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.52";
+        var CURRENT = "0.53";
         var started = false;
 
         function addScript(src) {
