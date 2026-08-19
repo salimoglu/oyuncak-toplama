@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.54";
+  const GAME_VERSION = window.__OT_VERSION || "0.55";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -2519,13 +2519,13 @@
   }
 
   function hairShine(cx, cy) {
-    return `<path d="M${cx - 14} ${cy - 28} Q${cx - 20} ${cy - 14} ${cx - 8} ${cy - 8}" stroke="#fff" stroke-width="3" fill="none" opacity=".22" stroke-linecap="round"/>`;
+    return `<ellipse cx="${cx - 8}" cy="${cy - 26}" rx="8" ry="4" fill="#fff" opacity=".18" transform="rotate(-28 ${cx - 8} ${cy - 26})"/>`;
   }
 
   function hairBow(x, y) {
-    return `<circle cx="${x - 5}" cy="${y}" r="5" fill="#ff8fab"/>
-      <circle cx="${x + 5}" cy="${y}" r="5" fill="#ff8fab"/>
-      <circle cx="${x}" cy="${y}" r="2.6" fill="#c73462"/>`;
+    return `<ellipse cx="${x - 5}" cy="${y}" rx="5.2" ry="4.2" fill="#ff8fab"/>
+      <ellipse cx="${x + 5}" cy="${y}" rx="5.2" ry="4.2" fill="#ff8fab"/>
+      <circle cx="${x}" cy="${y}" r="2.4" fill="#c73462"/>`;
   }
 
   function braidRope(x, y0, color, dark, dir) {
@@ -2540,80 +2540,106 @@
     return out;
   }
 
+  function hairCrown(cx, cy) {
+    const L = cx - 30;
+    const R = cx + 30;
+    const earY = cy + 8;
+    return `M${L} ${earY} C${L - 3} ${cy - 8} ${cx - 16} ${cy - 36} ${cx} ${cy - 35} C${cx + 16} ${cy - 36} ${R + 3} ${cy - 8} ${R} ${earY}`;
+  }
+
+  function hairHelmet(c, cx, cy, kind) {
+    const L = cx - 30;
+    const R = cx + 30;
+    const earY = cy + 8;
+    const crown = hairCrown(cx, cy);
+    let line = "";
+    if (kind === "high") {
+      line = `C${cx + 24} ${cy - 6} ${cx + 12} ${cy - 18} ${cx} ${cy - 19} C${cx - 12} ${cy - 18} ${cx - 24} ${cy - 6} ${L} ${earY}`;
+    } else if (kind === "part") {
+      line = `L${cx + 24} ${cy - 11} Q${cx + 11} ${cy - 17} ${cx} ${cy - 21} Q${cx - 11} ${cy - 17} ${cx - 24} ${cy - 11} L${L} ${earY}`;
+    } else if (kind === "bangs") {
+      line = `L${cx + 25} ${cy - 12} L${cx + 18} ${cy - 11} L${cx + 12} ${cy - 13} L${cx + 5} ${cy - 11} L${cx} ${cy - 13} L${cx - 5} ${cy - 11} L${cx - 12} ${cy - 13} L${cx - 18} ${cy - 11} L${cx - 25} ${cy - 12} L${L} ${earY}`;
+    } else if (kind === "short") {
+      line = `L${cx + 24} ${cy - 12} L${cx + 17} ${cy - 16} L${cx + 10} ${cy - 12} L${cx + 3} ${cy - 16} L${cx - 4} ${cy - 12} L${cx - 11} ${cy - 16} L${cx - 18} ${cy - 12} L${cx - 24} ${cy - 15} L${L} ${earY}`;
+    } else if (kind === "sweep") {
+      line = `L${cx + 24} ${cy - 16} Q${cx + 6} ${cy - 10} ${cx - 8} ${cy - 13} Q${cx - 18} ${cy - 14} ${cx - 24} ${cy - 12} L${L} ${earY}`;
+    } else if (kind === "wave") {
+      line = `Q${cx + 18} ${cy - 8} ${cx + 10} ${cy - 13} Q${cx} ${cy - 9} ${cx - 10} ${cy - 13} Q${cx - 18} ${cy - 8} ${L} ${earY}`;
+    } else {
+      line = `C${cx + 24} ${cy - 6} ${cx + 12} ${cy - 16} ${cx} ${cy - 17} C${cx - 12} ${cy - 16} ${cx - 24} ${cy - 6} ${L} ${earY}`;
+    }
+    return `<path d="${crown} ${line}Z" fill="${c}"/>${hairShine(cx, cy)}`;
+  }
+
+  function babyHairs(c, cx, cy) {
+    return `<path d="M${cx - 7} ${cy - 19} L${cx - 9} ${cy - 15}" stroke="${c}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <path d="M${cx + 2} ${cy - 19} L${cx + 5} ${cy - 15}" stroke="${c}" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <path d="M${cx + 10} ${cy - 18} L${cx + 12} ${cy - 14}" stroke="${c}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
+  }
+
   function hairBack(style, color, cx, cy) {
     const c = color;
     const d = shadeHex(c, 0.78);
-    const scalp = `<path d="M${cx - 30} ${cy + 8} C${cx - 34} ${cy - 10} ${cx - 22} ${cy - 36} ${cx} ${cy - 36} C${cx + 22} ${cy - 36} ${cx + 34} ${cy - 10} ${cx + 30} ${cy + 8}Z" fill="${c}"/>${hairShine(cx, cy)}`;
     if (style === "pig") {
-      return `${scalp}
-        <path d="M${cx - 24} ${cy} C${cx - 46} ${cy + 10} ${cx - 50} ${cy + 34} ${cx - 40} ${cy + 62}" stroke="${c}" stroke-width="11" fill="none" stroke-linecap="round"/>
-        <path d="M${cx - 26} ${cy + 4} C${cx - 38} ${cy + 18} ${cx - 36} ${cy + 40} ${cx - 32} ${cy + 58}" stroke="${d}" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M${cx + 24} ${cy} C${cx + 46} ${cy + 10} ${cx + 50} ${cy + 34} ${cx + 40} ${cy + 62}" stroke="${c}" stroke-width="11" fill="none" stroke-linecap="round"/>
-        <path d="M${cx + 26} ${cy + 4} C${cx + 38} ${cy + 18} ${cx + 36} ${cy + 40} ${cx + 32} ${cy + 58}" stroke="${d}" stroke-width="6" fill="none" stroke-linecap="round"/>
-        ${hairBow(cx - 26, cy - 2)}${hairBow(cx + 26, cy - 2)}`;
+      return `<path d="M${cx - 22} ${cy - 2} C${cx - 44} ${cy + 6} ${cx - 48} ${cy + 36} ${cx - 36} ${cy + 64} Q${cx - 28} ${cy + 48} ${cx - 30} ${cy + 22} C${cx - 30} ${cy + 8} ${cx - 18} ${cy + 2} ${cx - 22} ${cy - 2}Z" fill="${c}"/>
+        <path d="M${cx + 22} ${cy - 2} C${cx + 44} ${cy + 6} ${cx + 48} ${cy + 36} ${cx + 36} ${cy + 64} Q${cx + 28} ${cy + 48} ${cx + 30} ${cy + 22} C${cx + 30} ${cy + 8} ${cx + 18} ${cy + 2} ${cx + 22} ${cy - 2}Z" fill="${c}"/>
+        ${hairBow(cx - 24, cy - 4)}${hairBow(cx + 24, cy - 4)}`;
     }
     if (style === "short") {
-      return `<path d="M${cx - 28} ${cy + 10} L${cx - 32} ${cy - 4} L${cx - 24} ${cy - 22} L${cx - 12} ${cy - 34} L${cx} ${cy - 38} L${cx + 10} ${cy - 32} L${cx + 22} ${cy - 24} L${cx + 32} ${cy - 6} L${cx + 28} ${cy + 10} Q${cx} ${cy - 2} ${cx - 28} ${cy + 10}Z" fill="${c}"/>
-        <path d="M${cx - 8} ${cy - 36} L${cx - 4} ${cy - 44} L${cx + 2} ${cy - 36}" fill="${c}"/>
-        <path d="M${cx + 8} ${cy - 34} L${cx + 14} ${cy - 42} L${cx + 16} ${cy - 32}" fill="${c}"/>
-        ${hairShine(cx, cy)}`;
+      return `<path d="M${cx - 8} ${cy - 34} L${cx - 5} ${cy - 42} L${cx + 1} ${cy - 34}Z" fill="${c}"/>
+        <path d="M${cx + 8} ${cy - 33} L${cx + 14} ${cy - 41} L${cx + 16} ${cy - 32}Z" fill="${c}"/>`;
     }
     if (style === "long") {
-      return `<path d="M${cx - 36} ${cy + 88} C${cx - 48} ${cy + 40} ${cx - 44} ${cy - 8} ${cx} ${cy - 36} C${cx + 44} ${cy - 8} ${cx + 48} ${cy + 40} ${cx + 36} ${cy + 88} C${cx + 22} ${cy + 68} ${cx + 10} ${cy + 52} ${cx} ${cy + 50} C${cx - 10} ${cy + 52} ${cx - 22} ${cy + 68} ${cx - 36} ${cy + 88}Z" fill="${c}"/>
-        <path d="M${cx - 28} ${cy + 20} C${cx - 40} ${cy + 48} ${cx - 30} ${cy + 72} ${cx - 22} ${cy + 86}" stroke="${d}" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <path d="M${cx + 28} ${cy + 20} C${cx + 40} ${cy + 48} ${cx + 30} ${cy + 72} ${cx + 22} ${cy + 86}" stroke="${d}" stroke-width="5" fill="none" stroke-linecap="round"/>
-        ${hairShine(cx, cy)}`;
+      return `<path d="M${cx - 34} ${cy + 86} C${cx - 46} ${cy + 42} ${cx - 40} ${cy + 4} ${cx - 28} ${cy - 8} L${cx - 30} ${cy + 8} C${cx - 36} ${cy + 36} ${cx - 24} ${cy + 70} ${cx - 20} ${cy + 88}Z" fill="${c}"/>
+        <path d="M${cx + 34} ${cy + 86} C${cx + 46} ${cy + 42} ${cx + 40} ${cy + 4} ${cx + 28} ${cy - 8} L${cx + 30} ${cy + 8} C${cx + 36} ${cy + 36} ${cx + 24} ${cy + 70} ${cx + 20} ${cy + 88}Z" fill="${c}"/>`;
     }
     if (style === "braid") {
-      return `${scalp}
-        ${braidRope(cx - 28, cy + 8, c, d, -1)}
-        ${braidRope(cx + 28, cy + 8, c, d, 1)}`;
+      return `${braidRope(cx - 28, cy + 10, c, d, -1)}${braidRope(cx + 28, cy + 10, c, d, 1)}`;
     }
     if (style === "bun") {
-      return `${scalp}
-        <ellipse cx="${cx}" cy="${cy - 38}" rx="15" ry="13" fill="${c}"/>
-        <ellipse cx="${cx}" cy="${cy - 38}" rx="10" ry="8" fill="${d}"/>
-        <circle cx="${cx - 4}" cy="${cy - 42}" r="3.2" fill="#fff" opacity=".28"/>
-        <circle cx="${cx + 12}" cy="${cy - 30}" r="3.4" fill="#ff8fab"/>`;
+      return `<ellipse cx="${cx}" cy="${cy - 38}" rx="14" ry="12" fill="${c}"/>
+        <ellipse cx="${cx}" cy="${cy - 38}" rx="9" ry="7" fill="${d}"/>
+        <circle cx="${cx - 4}" cy="${cy - 42}" r="3" fill="#fff" opacity=".26"/>
+        <circle cx="${cx + 11}" cy="${cy - 30}" r="3.2" fill="#ff8fab"/>`;
     }
     if (style === "pony") {
-      return `${scalp}
-        <path d="M${cx + 10} ${cy - 28} C${cx + 38} ${cy - 30} ${cx + 48} ${cy + 8} ${cx + 40} ${cy + 62}" stroke="${c}" stroke-width="15" fill="none" stroke-linecap="round"/>
-        <path d="M${cx + 16} ${cy - 22} C${cx + 36} ${cy - 8} ${cx + 38} ${cy + 24} ${cx + 32} ${cy + 58}" stroke="${d}" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <circle cx="${cx + 16}" cy="${cy - 26}" r="4.2" fill="#ff8fab"/>
-        <circle cx="${cx + 16}" cy="${cy - 26}" r="1.8" fill="#fff"/>`;
+      return `<path d="M${cx + 8} ${cy - 26} C${cx + 34} ${cy - 34} ${cx + 50} ${cy + 8} ${cx + 40} ${cy + 66} Q${cx + 32} ${cy + 36} ${cx + 26} ${cy + 6} C${cx + 22} ${cy - 14} ${cx + 10} ${cy - 22} ${cx + 8} ${cy - 26}Z" fill="${c}"/>
+        <path d="M${cx + 18} ${cy - 8} C${cx + 34} ${cy + 8} ${cx + 36} ${cy + 32} ${cx + 30} ${cy + 58}" stroke="${d}" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <circle cx="${cx + 14}" cy="${cy - 26}" r="4" fill="#ff8fab"/>
+        <circle cx="${cx + 14}" cy="${cy - 26}" r="1.6" fill="#fff"/>`;
     }
     if (style === "curl") {
-      return `<path d="M${cx - 38} ${cy + 48} C${cx - 50} ${cy + 18} ${cx - 40} ${cy - 18} ${cx} ${cy - 34} C${cx + 40} ${cy - 18} ${cx + 50} ${cy + 18} ${cx + 38} ${cy + 48} C${cx + 28} ${cy + 34} ${cx + 12} ${cy + 28} ${cx} ${cy + 30} C${cx - 12} ${cy + 28} ${cx - 28} ${cy + 34} ${cx - 38} ${cy + 48}Z" fill="${c}"/>
-        <path d="M${cx - 30} ${cy + 8} Q${cx - 42} ${cy + 22} ${cx - 28} ${cy + 36} Q${cx - 40} ${cy + 48} ${cx - 24} ${cy + 52}" stroke="${d}" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <path d="M${cx + 30} ${cy + 8} Q${cx + 42} ${cy + 22} ${cx + 28} ${cy + 36} Q${cx + 40} ${cy + 48} ${cx + 24} ${cy + 52}" stroke="${d}" stroke-width="7" fill="none" stroke-linecap="round"/>
-        ${hairShine(cx, cy)}`;
+      return `<path d="M${cx - 36} ${cy + 46} C${cx - 48} ${cy + 18} ${cx - 38} ${cy - 4} ${cx - 28} ${cy - 8} C${cx - 40} ${cy + 16} ${cx - 28} ${cy + 36} ${cx - 22} ${cy + 50}Z" fill="${c}"/>
+        <path d="M${cx + 36} ${cy + 46} C${cx + 48} ${cy + 18} ${cx + 38} ${cy - 4} ${cx + 28} ${cy - 8} C${cx + 40} ${cy + 16} ${cx + 28} ${cy + 36} ${cx + 22} ${cy + 50}Z" fill="${c}"/>`;
     }
-    return `<path d="M${cx - 34} ${cy + 30} C${cx - 40} ${cy + 8} ${cx - 28} ${cy - 34} ${cx} ${cy - 36} C${cx + 28} ${cy - 34} ${cx + 40} ${cy + 8} ${cx + 34} ${cy + 30} C${cx + 22} ${cy + 38} ${cx + 10} ${cy + 24} ${cx} ${cy + 22} C${cx - 10} ${cy + 24} ${cx - 22} ${cy + 38} ${cx - 34} ${cy + 30}Z" fill="${c}"/>${hairShine(cx, cy)}`;
+    return `<path d="M${cx - 32} ${cy + 28} C${cx - 36} ${cy + 8} ${cx - 30} ${cy - 8} ${cx - 28} ${cy - 8} C${cx - 34} ${cy + 10} ${cx - 24} ${cy + 24} ${cx - 18} ${cy + 32}Z" fill="${c}"/>
+      <path d="M${cx + 32} ${cy + 28} C${cx + 36} ${cy + 8} ${cx + 30} ${cy - 8} ${cx + 28} ${cy - 8} C${cx + 34} ${cy + 10} ${cx + 24} ${cy + 24} ${cx + 18} ${cy + 32}Z" fill="${c}"/>`;
   }
 
   function hairFront(style, color, cx, cy) {
     const c = color;
     if (style === "short") {
-      return `<path d="M${cx - 22} ${cy - 16} L${cx - 10} ${cy - 8} L${cx} ${cy - 14} L${cx + 8} ${cy - 7} L${cx + 22} ${cy - 16}" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+      return `${hairHelmet(c, cx, cy, "short")}
+        <path d="M${cx - 27} ${cy + 2} Q${cx - 28} ${cy + 12} ${cx - 24} ${cy + 16}" stroke="${c}" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <path d="M${cx + 27} ${cy + 2} Q${cx + 28} ${cy + 12} ${cx + 24} ${cy + 16}" stroke="${c}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`;
     }
     if (style === "bangs") {
-      return `<path d="M${cx - 26} ${cy - 20} L${cx - 24} ${cy - 2} Q${cx} ${cy + 6} ${cx + 24} ${cy - 2} L${cx + 26} ${cy - 20} Q${cx} ${cy - 12} ${cx - 26} ${cy - 20}Z" fill="${c}"/>
-        <path d="M${cx - 8} ${cy - 18} L${cx - 8} ${cy - 1}" stroke="${shadeHex(c, 0.7)}" stroke-width="1.4" opacity=".45"/>
-        <path d="M${cx + 8} ${cy - 18} L${cx + 8} ${cy - 1}" stroke="${shadeHex(c, 0.7)}" stroke-width="1.4" opacity=".45"/>`;
+      return hairHelmet(c, cx, cy, "bangs");
     }
     if (style === "bun") {
-      return `<path d="M${cx - 24} ${cy - 18} Q${cx} ${cy - 10} ${cx + 24} ${cy - 18}" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+      return `${hairHelmet(c, cx, cy, "high")}${babyHairs(c, cx, cy)}`;
     }
-    if (style === "long" || style === "pony") {
-      return `<path d="M${cx - 22} ${cy - 20} Q${cx - 6} ${cy - 2} ${cx + 18} ${cy - 18}" fill="${c}"/>
-        <path d="M${cx - 28} ${cy - 4} Q${cx - 32} ${cy + 18} ${cx - 24} ${cy + 36}" stroke="${c}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+    if (style === "pony") {
+      return `${hairHelmet(c, cx, cy, "high")}${babyHairs(c, cx, cy)}`;
+    }
+    if (style === "long") {
+      return `${hairHelmet(c, cx, cy, "sweep")}
+        <path d="M${cx - 26} ${cy - 4} C${cx - 30} ${cy + 14} ${cx - 28} ${cy + 30} ${cx - 20} ${cy + 38}" stroke="${c}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
     }
     if (style === "curl") {
-      return `<path d="M${cx - 20} ${cy - 18} Q${cx - 4} ${cy + 2} ${cx + 16} ${cy - 16}" fill="${c}"/>
-        <path d="M${cx - 26} ${cy - 2} Q${cx - 34} ${cy + 12} ${cx - 22} ${cy + 20}" stroke="${c}" stroke-width="7" fill="none" stroke-linecap="round"/>`;
+      return hairHelmet(c, cx, cy, "wave");
     }
-    return `<path d="M${cx - 24} ${cy - 20} Q${cx} ${cy - 6} ${cx + 24} ${cy - 20} L${cx + 20} ${cy - 10} Q${cx} ${cy + 2} ${cx - 20} ${cy - 10}Z" fill="${c}"/>`;
+    return hairHelmet(c, cx, cy, "part");
   }
 
   function headSvg(skin, eye, cx, cy) {
@@ -2886,7 +2912,7 @@
     }
     if (cat === "hat") {
       if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
-      return `<span class="pv-svg-wrap">${svgWrap("48 0 104 86", `${hairBack(wornHair(), hair, hx, hy)}${headSvg(doll.skin, eyes, hx, hy)}${hatSvg(id, hx, hy)}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("48 0 104 86", `${hairBack(wornHair(), hair, hx, hy)}${headSvg(doll.skin, eyes, hx, hy)}${hairFront(wornHair(), hair, hx, hy)}${hatSvg(id, hx, hy)}`)}</span>`;
     }
     if (cat === "shoes") {
       const kind = id === "none" ? "" : id;
