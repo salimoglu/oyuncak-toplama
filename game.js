@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.60";
+  const GAME_VERSION = window.__OT_VERSION || "0.61";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -2801,8 +2801,8 @@
 
   function armSvg(side) {
     const x = (n) => sideX(side, n);
-    return `<path d="M${x(88)} 100 C${x(70)} 96 ${x(56)} 102 ${x(52)} 116 C${x(48)} 130 ${x(46)} 148 ${x(45)} 166 C${x(45)} 171 ${x(48)} 174 ${x(54)} 174 L${x(62)} 172 C${x(60)} 152 ${x(62)} 134 ${x(70)} 120 C${x(76)} 110 ${x(84)} 104 ${x(92)} 102Z" fill="${P.g("limb")}" ${ink()}/>
-      <path d="M${x(72)} 108 Q${x(60)} 118 ${x(56)} 136" fill="none" stroke="#fff" stroke-width="2.2" opacity=".18" stroke-linecap="round"/>`;
+    return `<path d="M${x(88)} 99 C${x(72)} 95 ${x(58)} 102 ${x(53)} 116 C${x(49)} 130 ${x(48.5)} 148 ${x(49)} 166 C${x(49.4)} 172.5 ${x(52)} 177.6 ${x(56.4)} 178.6 C${x(59.4)} 179.4 ${x(62.8)} 178.4 ${x(64.6)} 175.8 C${x(63.2)} 152 ${x(64.8)} 134 ${x(73)} 120 C${x(79)} 110 ${x(87)} 103 ${x(94)} 101Z" fill="${P.g("limb")}" ${ink()}/>
+      <path d="M${x(72)} 108 Q${x(61)} 118 ${x(57)} 136" fill="none" stroke="#fff" stroke-width="2.2" opacity=".18" stroke-linecap="round"/>`;
   }
 
   function handsSvg() {
@@ -2811,14 +2811,15 @@
 
   function handSvg(side) {
     const x = (n) => sideX(side, n);
-    return `<ellipse cx="${x(50)}" cy="184" rx="9" ry="10.4" fill="${P.g("skin")}" ${ink(1.3)}/>
-      <ellipse cx="${x(59)}" cy="176" rx="4.4" ry="6" fill="${P.g("skin")}" ${ink(1.15)}/>
-      <ellipse cx="${x(47)}" cy="180" rx="3.2" ry="2.2" fill="#fff" opacity=".28"/>`;
+    const edge = `M${x(55.4)} 177.8 C${x(50.2)} 179.6 ${x(47)} 184 ${x(46.4)} 188.2 C${x(41.8)} 185.4 ${x(36)} 186 ${x(34.4)} 190.4 C${x(33)} 195 ${x(37.6)} 198.2 ${x(43.4)} 195.6 C${x(42.8)} 200 ${x(44.4)} 204.6 ${x(48)} 205.4 C${x(50.4)} 206 ${x(52.4)} 203.4 ${x(52.8)} 200 C${x(53.6)} 205 ${x(57.2)} 206.8 ${x(59.4)} 202.8 C${x(61.6)} 205.6 ${x(65.2)} 204.2 ${x(64.8)} 199.8 C${x(65.6)} 194.4 ${x(65)} 187.2 ${x(64.2)} 181 C${x(63.8)} 178.2 ${x(62.6)} 176.6 ${x(61)} 176.2`;
+    return `<path d="${edge} C${x(59.4)} 172.4 ${x(57.2)} 172.2 ${x(55.4)} 177.8Z" fill="${P.g("skin")}"/>
+      <path d="${edge}" fill="none" ${ink(1.22)}/>
+      <ellipse cx="${x(51.2)}" cy="184.6" rx="2.6" ry="1.8" fill="#fff" opacity=".32"/>`;
   }
 
   function legSvg(side) {
     const x = (n) => sideX(side, n);
-    return `<path d="M${x(78)} 170 C${x(75)} 220 ${x(75)} 268 ${x(78)} 300 L${x(96)} 300 C${x(99)} 268 ${x(99)} 220 ${x(96)} 170 Q${x(87)} 178 ${x(78)} 170Z" fill="${P.g("limb")}" ${ink()}/>`;
+    return `<path d="M${x(80)} 170 C${x(76)} 214 ${x(75.5)} 256 ${x(78.5)} 292 C${x(79.5)} 298.6 ${x(83)} 301.2 ${x(87)} 301.2 C${x(91)} 301.2 ${x(94.5)} 298.6 ${x(95.5)} 292 C${x(98.5)} 256 ${x(98)} 214 ${x(94)} 170 Q${x(87)} 178 ${x(80)} 170Z" fill="${P.g("limb")}" ${ink()}/>`;
   }
 
   function feetSvg() {
@@ -2827,8 +2828,10 @@
 
   function footSvg(side) {
     const x = (n) => sideX(side, n);
-    return `<path d="M${x(78)} 298 C${x(68)} 300 ${x(58)} 308 ${x(62)} 316 C${x(70)} 324 ${x(98)} 322 ${x(102)} 312 C${x(104)} 304 ${x(96)} 296 ${x(88)} 297 L${x(80)} 298Z" fill="${P.g("limb")}" ${ink()}/>
-      <ellipse cx="${x(76)}" cy="314" rx="4.2" ry="2.1" fill="#fff" opacity=".22"/>`;
+    const edge = `M${x(77.8)} 302.4 C${x(72.4)} 306.2 ${x(64.6)} 312.4 ${x(58.6)} 317.6 C${x(53.6)} 321.8 ${x(55.2)} 327 ${x(63)} 327.2 C${x(74.2)} 327.4 ${x(87.4)} 323 ${x(95.4)} 316.2 C${x(98.4)} 312.8 ${x(97.6)} 306.8 ${x(95)} 302.8`;
+    return `<path d="${edge} C${x(91)} 297.6 ${x(84)} 297.2 ${x(77.8)} 302.4Z" fill="${P.g("skin")}"/>
+      <path d="${edge}" fill="none" ${ink()}/>
+      <path d="M${x(60)} 320.5 Q${x(74)} 323.5 ${x(88)} 316.5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".28" stroke-linecap="round"/>`;
   }
 
   function topSilhouette(hemY, fill) {
@@ -2839,8 +2842,9 @@
     return topSilhouette(150, fill);
   }
 
-  function kidBody(shirt, skin, dressed) {
-    const base = `${legSvg("L")}${legSvg("R")}${feetSvg()}
+  function kidBody(shirt, skin, dressed, showFeet = true) {
+    const base = `${showFeet ? feetSvg() : ""}
+      ${legSvg("L")}${legSvg("R")}
       <path d="M80 94 C74 100 72 120 74 150 L76 174 Q100 186 124 174 L126 150 C128 120 126 100 120 94 Q100 86 80 94Z" fill="${P.g("limb")}" ${ink()}/>
       ${armSvg("L")}${armSvg("R")}
       <rect x="91.5" y="78" width="17" height="22" rx="8.5" fill="${P.g("limb")}" ${ink()}/>`;
@@ -3077,7 +3081,7 @@
       `${P.defs}<ellipse cx="100" cy="348" rx="50" ry="9" fill="#5a3228" opacity=".18"/>
       ${hairBack(style, hair, cx, cy)}
       ${bag === "backpack" ? bagSvg("backpack") : ""}
-      ${kidBody(shirt, skin, dressed)}
+      ${kidBody(shirt, skin, dressed, !wear.shoes)}
       ${dressSvg(wear.dress)}
       ${handsSvg()}
       ${shoesSvg(wear.shoes)}
@@ -3131,7 +3135,7 @@
     }
     if (cat === "shoes") {
       const kind = id === "none" ? "" : id;
-      return `<span class="pv-svg-wrap">${svgWrap("58 278 84 52", `${defs}${feetSvg()}${shoesSvg(kind)}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("48 278 104 56", `${defs}${kind ? shoesSvg(kind) : feetSvg()}`)}</span>`;
     }
     if (cat === "bag") {
       if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
