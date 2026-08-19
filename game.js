@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.61";
+  const GAME_VERSION = window.__OT_VERSION || "0.62";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -2809,29 +2809,35 @@
     return `${handSvg("L")}${handSvg("R")}`;
   }
 
+  // Elin konturu bilekte kolun kenarlarından başlayıp orada bitiyor; kapanış
+  // çizgisi kolun altında kaldığı için ek yeri görünmüyor.
   function handSvg(side) {
     const x = (n) => sideX(side, n);
-    const edge = `M${x(55.4)} 177.8 C${x(50.2)} 179.6 ${x(47)} 184 ${x(46.4)} 188.2 C${x(41.8)} 185.4 ${x(36)} 186 ${x(34.4)} 190.4 C${x(33)} 195 ${x(37.6)} 198.2 ${x(43.4)} 195.6 C${x(42.8)} 200 ${x(44.4)} 204.6 ${x(48)} 205.4 C${x(50.4)} 206 ${x(52.4)} 203.4 ${x(52.8)} 200 C${x(53.6)} 205 ${x(57.2)} 206.8 ${x(59.4)} 202.8 C${x(61.6)} 205.6 ${x(65.2)} 204.2 ${x(64.8)} 199.8 C${x(65.6)} 194.4 ${x(65)} 187.2 ${x(64.2)} 181 C${x(63.8)} 178.2 ${x(62.6)} 176.6 ${x(61)} 176.2`;
-    return `<path d="${edge} C${x(59.4)} 172.4 ${x(57.2)} 172.2 ${x(55.4)} 177.8Z" fill="${P.g("skin")}"/>
-      <path d="${edge}" fill="none" ${ink(1.22)}/>
-      <ellipse cx="${x(51.2)}" cy="184.6" rx="2.6" ry="1.8" fill="#fff" opacity=".32"/>`;
+    const edge = `M${x(49)} 169 C${x(45.4)} 177.5 ${x(44.2)} 188 ${x(46.8)} 195.4 C${x(49.6)} 202.6 ${x(58.4)} 204 ${x(62.6)} 197.6 C${x(64.6)} 194.6 ${x(66.8)} 192.4 ${x(69)} 190 C${x(71.6)} 187 ${x(72)} 182.6 ${x(69.6)} 180.2 C${x(67.6)} 178.2 ${x(65.4)} 179 ${x(64.6)} 181 C${x(64.4)} 178.4 ${x(64.2)} 176 ${x(64)} 174`;
+    const groove = `fill="none" stroke="#4a3428" stroke-width="1.15" opacity=".42" stroke-linecap="round"`;
+    return `<path d="${edge} L${x(49)} 169Z" fill="${P.g("limb")}"/>
+      <path d="${edge}" fill="none" ${ink(1.3)}/>
+      <path d="M${x(50.8)} 198.8 Q${x(50.6)} 194.5 ${x(51.4)} 190.4" ${groove}/>
+      <path d="M${x(54.6)} 200 Q${x(54.6)} 195.5 ${x(55.2)} 191.4" ${groove}/>
+      <path d="M${x(58.6)} 199.4 Q${x(58.8)} 195 ${x(59.4)} 190.8" ${groove}/>
+      <ellipse cx="${x(51)}" cy="183" rx="3" ry="2.1" fill="#fff" opacity=".26"/>`;
   }
 
-  function legSvg(side) {
+  function legsSvg(bare) {
+    return `${legSvg("L", bare)}${legSvg("R", bare)}`;
+  }
+
+  // Ayak bacakla tek parça: bilekte ek yeri ya da renk farkı oluşmuyor.
+  function legSvg(side, bare) {
     const x = (n) => sideX(side, n);
-    return `<path d="M${x(80)} 170 C${x(76)} 214 ${x(75.5)} 256 ${x(78.5)} 292 C${x(79.5)} 298.6 ${x(83)} 301.2 ${x(87)} 301.2 C${x(91)} 301.2 ${x(94.5)} 298.6 ${x(95.5)} 292 C${x(98.5)} 256 ${x(98)} 214 ${x(94)} 170 Q${x(87)} 178 ${x(80)} 170Z" fill="${P.g("limb")}" ${ink()}/>`;
-  }
-
-  function feetSvg() {
-    return `${footSvg("L")}${footSvg("R")}`;
-  }
-
-  function footSvg(side) {
-    const x = (n) => sideX(side, n);
-    const edge = `M${x(77.8)} 302.4 C${x(72.4)} 306.2 ${x(64.6)} 312.4 ${x(58.6)} 317.6 C${x(53.6)} 321.8 ${x(55.2)} 327 ${x(63)} 327.2 C${x(74.2)} 327.4 ${x(87.4)} 323 ${x(95.4)} 316.2 C${x(98.4)} 312.8 ${x(97.6)} 306.8 ${x(95)} 302.8`;
-    return `<path d="${edge} C${x(91)} 297.6 ${x(84)} 297.2 ${x(77.8)} 302.4Z" fill="${P.g("skin")}"/>
-      <path d="${edge}" fill="none" ${ink()}/>
-      <path d="M${x(60)} 320.5 Q${x(74)} 323.5 ${x(88)} 316.5" fill="none" stroke="#fff" stroke-width="1.6" opacity=".28" stroke-linecap="round"/>`;
+    const thigh = `M${x(80)} 170 C${x(76)} 214 ${x(75.5)} 254 ${x(78)} 290`;
+    const backUp = `C${x(98.5)} 254 ${x(98)} 214 ${x(94)} 170 Q${x(87)} 178 ${x(80)} 170Z`;
+    if (!bare) {
+      return `<path d="${thigh} C${x(79)} 300.5 ${x(82.6)} 305 ${x(86.8)} 305 C${x(91)} 305 ${x(94.6)} 300.5 ${x(95.6)} 290 ${backUp}" fill="${P.g("limb")}" ${ink()}/>`;
+    }
+    return `<path d="${thigh} C${x(75)} 298 ${x(69.5)} 307 ${x(63.5)} 314 C${x(58)} 320 ${x(58)} 325.6 ${x(65)} 326.4 C${x(75.5)} 327.8 ${x(86.5)} 326.4 ${x(92.8)} 323 C${x(96.6)} 320.4 ${x(97.2)} 305.6 ${x(95.6)} 290 ${backUp}" fill="${P.g("limb")}" ${ink()}/>
+      <path d="M${x(62.5)} 319 Q${x(60.6)} 323 ${x(62.4)} 326.2" fill="none" stroke="#4a3428" stroke-width="1.1" opacity=".32" stroke-linecap="round"/>
+      <path d="M${x(68)} 310 Q${x(76)} 304 ${x(82)} 299" fill="none" stroke="#fff" stroke-width="2" opacity=".18" stroke-linecap="round"/>`;
   }
 
   function topSilhouette(hemY, fill) {
@@ -2842,9 +2848,8 @@
     return topSilhouette(150, fill);
   }
 
-  function kidBody(shirt, skin, dressed, showFeet = true) {
-    const base = `${showFeet ? feetSvg() : ""}
-      ${legSvg("L")}${legSvg("R")}
+  function kidBody(shirt, skin, dressed, bareFeet = true) {
+    const base = `${legsSvg(bareFeet)}
       <path d="M80 94 C74 100 72 120 74 150 L76 174 Q100 186 124 174 L126 150 C128 120 126 100 120 94 Q100 86 80 94Z" fill="${P.g("limb")}" ${ink()}/>
       ${armSvg("L")}${armSvg("R")}
       <rect x="91.5" y="78" width="17" height="22" rx="8.5" fill="${P.g("limb")}" ${ink()}/>`;
@@ -3078,7 +3083,7 @@
     beginPaint(skin, hair, shirt, eyes);
     return svgWrap(
       "0 0 200 360",
-      `${P.defs}<ellipse cx="100" cy="348" rx="50" ry="9" fill="#5a3228" opacity=".18"/>
+      `${P.defs}<ellipse cx="100" cy="331" rx="48" ry="8" fill="#5a3228" opacity=".18"/>
       ${hairBack(style, hair, cx, cy)}
       ${bag === "backpack" ? bagSvg("backpack") : ""}
       ${kidBody(shirt, skin, dressed, !wear.shoes)}
@@ -3135,7 +3140,7 @@
     }
     if (cat === "shoes") {
       const kind = id === "none" ? "" : id;
-      return `<span class="pv-svg-wrap">${svgWrap("48 278 104 56", `${defs}${kind ? shoesSvg(kind) : feetSvg()}`)}</span>`;
+      return `<span class="pv-svg-wrap">${svgWrap("46 276 108 62", `${defs}${legsSvg(!kind)}${shoesSvg(kind)}`)}</span>`;
     }
     if (cat === "bag") {
       if (id === "none") return `<span class="pv-svg-wrap">${svgWrap("0 0 64 64", noneMark())}</span>`;
