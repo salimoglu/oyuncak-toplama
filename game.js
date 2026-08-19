@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.51";
+  const GAME_VERSION = window.__OT_VERSION || "0.52";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -216,22 +216,33 @@
   const DRESS_CHEERS = ["Çok şık!", "Harika kombin!", "Aferin!", "Ne güzel!", "Masal gibi!", "İşte bu!"];
 
   const DOLLS = [
-    { id: "elif", name: "Elif", skin: "#f6d7b0", hair: "#5c3317", onesie: "#ffb3c6" },
-    { id: "can", name: "Can", skin: "#efc9a0", hair: "#3d2b1f", onesie: "#74c0fc" },
-    { id: "lila", name: "Lila", skin: "#f3c9a3", hair: "#6d4c9a", onesie: "#d0bfff" },
-    { id: "ece", name: "Ece", skin: "#f8d4b8", hair: "#d9480f", onesie: "#ffe066" },
-    { id: "deniz", name: "Deniz", skin: "#efc9a0", hair: "#0b7285", onesie: "#99e9f2" },
-    { id: "nane", name: "Nane", skin: "#f6d7b0", hair: "#2b8a3e", onesie: "#8ce99a" },
+    { id: "elif", name: "Elif", skin: "#f6d7b0", hair: "#5c3317", onesie: "#ffb3c6", hairStyle: "pig" },
+    { id: "can", name: "Can", skin: "#efc9a0", hair: "#3d2b1f", onesie: "#74c0fc", hairStyle: "short" },
+    { id: "lila", name: "Lila", skin: "#f3c9a3", hair: "#6d4c9a", onesie: "#d0bfff", hairStyle: "long" },
+    { id: "ece", name: "Ece", skin: "#f8d4b8", hair: "#d9480f", onesie: "#ffe066", hairStyle: "braid" },
+    { id: "deniz", name: "Deniz", skin: "#efc9a0", hair: "#0b7285", onesie: "#99e9f2", hairStyle: "bangs" },
+    { id: "nane", name: "Nane", skin: "#f6d7b0", hair: "#2b8a3e", onesie: "#8ce99a", hairStyle: "bun" },
   ];
 
   const DRESS_CATS = [
+    { id: "hair", label: "Saç", emoji: "💇" },
     { id: "dress", label: "Elbise", emoji: "👗" },
     { id: "hat", label: "Şapka", emoji: "👒" },
-    { id: "shoes", label: "Ayakkabı", emoji: "👟" },
+    { id: "shoes", label: "Ayak", emoji: "👟" },
     { id: "bag", label: "Çanta", emoji: "👜" },
   ];
 
   const DRESS_ITEMS = {
+    hair: [
+      { id: "pig", name: "İkili" },
+      { id: "short", name: "Kısa" },
+      { id: "long", name: "Uzun" },
+      { id: "braid", name: "Örgü" },
+      { id: "bun", name: "Topuz" },
+      { id: "pony", name: "Atkuyruğu" },
+      { id: "curl", name: "Kıvırcık" },
+      { id: "bangs", name: "Kahkül" },
+    ],
     dress: [
       { id: "", name: "Tulum" },
       { id: "princess", name: "Prenses" },
@@ -266,7 +277,7 @@
     ],
   };
 
-  const EMPTY_WEAR = { dress: "", hat: "", shoes: "", bag: "" };
+  const EMPTY_WEAR = { hair: "", dress: "", hat: "", shoes: "", bag: "" };
 
   const ACTOR_HTML = `
     <div class="char-fit">
@@ -306,6 +317,8 @@
     <div class="doll-shadow"></div>
     <div class="doll-fig">
       <div class="doll-hair-back"></div>
+      <div class="doll-hair-side left"></div>
+      <div class="doll-hair-side right"></div>
       <div class="doll-ear left"></div>
       <div class="doll-ear right"></div>
       <div class="doll-head">
@@ -362,7 +375,7 @@
     padSwiped: false,
     dress: {
       babyId: "elif",
-      cat: "dress",
+      cat: "hair",
       wear: { ...EMPTY_WEAR },
     },
     user: null,
@@ -2475,10 +2488,25 @@
     </div>`;
   }
 
+  function wornHair() {
+    return state.dress.wear.hair || currentDoll().hairStyle;
+  }
+
   function applyWearAttrs(el) {
+    const doll = currentDoll();
     Object.keys(EMPTY_WEAR).forEach((key) => {
       el.dataset[key] = state.dress.wear[key] || "";
     });
+    el.dataset.hair = wornHair();
+    el.style.setProperty("--onesie", doll.onesie);
+  }
+
+  function itemPreviewHtml(cat, item) {
+    const id = item.id || "none";
+    if (cat === "hair") {
+      return `<span class="pv pv-hair ${id}" style="--hair:${currentDoll().hair};--skin:${currentDoll().skin}"><i></i></span>`;
+    }
+    return `<span class="pv pv-${cat} ${id}"><i></i></span>`;
   }
 
   function renderDressBaby() {
@@ -2498,7 +2526,7 @@
       return `<button type="button" class="dress-face ${on}" data-baby="${d.id}" aria-label="${escapeHtml(
         dollName(d)
       )}">
-        <span class="doll-mini" data-id="${d.id}" style="--skin:${d.skin};--hair:${d.hair}"></span>
+        <span class="doll-mini" data-id="${d.id}" data-hair="${d.hairStyle}" style="--skin:${d.skin};--hair:${d.hair}"></span>
       </button>`;
     }).join("");
   }
@@ -2514,12 +2542,12 @@
 
   function renderDressItems() {
     const cat = state.dress.cat;
-    const current = state.dress.wear[cat] || "";
+    const current = cat === "hair" ? wornHair() : state.dress.wear[cat] || "";
     $("dress-items").innerHTML = DRESS_ITEMS[cat]
       .map((item) => {
         const on = item.id === current ? "on" : "";
         return `<button type="button" class="dress-item ${on}" data-item="${item.id}">
-          <span class="cloth ${cat}-${item.id || "none"}" aria-hidden="true"></span>
+          ${itemPreviewHtml(cat, item)}
           <strong>${item.name}</strong>
         </button>`;
       })
@@ -2548,12 +2576,17 @@
     const cat = state.dress.cat;
     const item = dressItem(cat, id);
     if (!item) return;
-    if (state.dress.wear[cat] === item.id) state.dress.wear[cat] = "";
-    else state.dress.wear[cat] = item.id;
+    if (cat === "hair") {
+      state.dress.wear.hair = item.id;
+    } else if (state.dress.wear[cat] === item.id) {
+      state.dress.wear[cat] = "";
+    } else {
+      state.dress.wear[cat] = item.id;
+    }
     saveDress();
     renderDressBaby();
     renderDressItems();
-    if (state.dress.wear[cat]) showDressCheer();
+    if (cat === "hair" || state.dress.wear[cat]) showDressCheer();
   }
 
   function randomOutfit() {
@@ -2562,6 +2595,7 @@
       return items[Math.floor(Math.random() * items.length)].id;
     };
     state.dress.wear = {
+      hair: pick("hair"),
       dress: pick("dress"),
       hat: pick("hat"),
       shoes: pick("shoes"),
