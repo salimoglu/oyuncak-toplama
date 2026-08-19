@@ -7,7 +7,7 @@
   "orientation": "any",
   "background_color": "#fff3e0",
   "theme_color": "#ff8fab",
-  "description": "Çocuklar için oyun kutusu: oyuncak toplama ve bebek giydirme.",
+  "description": "Çocuklar için oyun kutusu: oyuncak toplama ve çocuk giydirme.",
   "icons": [
     {
       "src": "icon.svg",

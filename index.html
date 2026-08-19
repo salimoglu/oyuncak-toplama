@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Minik Oyunlar" />
     <meta
       name="description"
-      content="Çocuklar için oyun kutusu: oyuncak toplama ve bebek giydirme."
+      content="Çocuklar için oyun kutusu: oyuncak toplama ve çocuk giydirme."
     />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -28,7 +28,7 @@
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" id="app-css" href="styles.css?v=0.53" />
+    <link rel="stylesheet" id="app-css" href="styles.css?v=0.54" />
   </head>
   <body>
     <div id="app">
@@ -37,7 +37,7 @@
         Geri
       </button>
       <header class="chrome">
-        <div id="version-badge" class="version-badge">v0.53</div>
+        <div id="version-badge" class="version-badge">v0.54</div>
         <div class="chrome-right">
           <div id="time-left" class="time-left" hidden>
             <span class="time-left-icon" aria-hidden="true">⏳</span>
@@ -177,8 +177,8 @@
                 <span class="hub-float toy-b">👜</span>
                 <span class="hub-float toy-c">🧿</span>
               </div>
-              <strong>Bebek Giydirme</strong>
-              <span class="sub">Şapka, çanta, kıyafet seç</span>
+              <strong>Çocuk Giydirme</strong>
+              <span class="sub">Saç, elbise, ayakkabı, çanta</span>
             </button>
           </div>
         </div>
@@ -285,7 +285,7 @@
           </div>
           <div class="dress-rack">
             <div class="dress-faces-row">
-              <div id="dress-babies" class="dress-faces" role="listbox" aria-label="Bebekler"></div>
+              <div id="dress-babies" class="dress-faces" role="listbox" aria-label="Çocuklar"></div>
               <button id="dress-random" class="dress-surprise" type="button">Sürpriz</button>
             </div>
             <div id="dress-cats" class="dress-tabs" role="tablist" aria-label="Kıyafet"></div>
@@ -366,7 +366,7 @@
     </div>
     <script>
       (function () {
-        var CURRENT = "0.53";
+        var CURRENT = "0.54";
         var started = false;
 
         function addScript(src) {

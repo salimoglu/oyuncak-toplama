@@ -3853,15 +3853,15 @@ h2 {
 }
 
 .pv-svg-wrap {
-  width: 64px;
-  height: 56px;
+  width: 72px;
+  height: 64px;
   display: grid;
   place-items: center;
 }
 
 .pv-svg-wrap svg {
-  width: 58px;
-  height: 52px;
+  width: 70px;
+  height: 62px;
   overflow: visible;
 }
 
@@ -4852,9 +4852,9 @@ h2 {
 }
 
 .dress-item {
-  flex: 0 0 84px;
-  width: 84px;
-  min-height: 88px;
+  flex: 0 0 96px;
+  width: 96px;
+  min-height: 102px;
   border: none;
   border-radius: 16px;
   background: #fff;
