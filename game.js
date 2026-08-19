@@ -1,6 +1,6 @@
 (() => {
   // Sürüm 0.1 ile başlar; 0.2 … 0.99 sonrası 1.0 olur.
-  const GAME_VERSION = window.__OT_VERSION || "0.57";
+  const GAME_VERSION = window.__OT_VERSION || "0.58";
 
   const MAX_CODE = 6;
   const STEP_MS = 420;
@@ -2796,63 +2796,63 @@
   }
 
   function kidBody(shirt, skin, dressed) {
-    const neck = `<rect x="93" y="80" width="14" height="16" rx="5" fill="${P.g("limb")}" ${ink(1.3)}/>`;
-    const arms = `<rect x="58" y="98" width="13" height="74" rx="6.5" fill="${P.g("limb")}" transform="rotate(12 64.5 98)" ${ink()}/>
-      <rect x="129" y="98" width="13" height="74" rx="6.5" fill="${P.g("limb")}" transform="rotate(-12 135.5 98)" ${ink()}/>
-      <ellipse cx="54" cy="170" rx="7.2" ry="6.5" fill="${P.g("skin")}" transform="rotate(12 54 170)" ${ink(1.3)}/>
-      <ellipse cx="146" cy="170" rx="7.2" ry="6.5" fill="${P.g("skin")}" transform="rotate(-12 146 170)" ${ink(1.3)}/>`;
-    const legs = `<rect x="78" y="198" width="16" height="112" rx="8" fill="${P.g("limb")}" ${ink()}/>
-      <rect x="106" y="198" width="16" height="112" rx="8" fill="${P.g("limb")}" ${ink()}/>
-      <rect x="81" y="214" width="4" height="64" rx="2" fill="#fff" opacity=".14"/>
-      <rect x="109" y="214" width="4" height="64" rx="2" fill="#fff" opacity=".14"/>`;
-    if (dressed) return `${neck}${arms}${legs}`;
-    return `${neck}${arms}
-      <path d="M72 94 L88 94 L80 122 L56 108 Q62 94 72 94Z" fill="${P.g("shirt")}" ${ink()}/>
-      <path d="M128 94 L112 94 L120 122 L144 108 Q138 94 128 94Z" fill="${P.g("shirt")}" ${ink()}/>
-      <path d="M74 94 L126 94 L131 168 L69 168Z" fill="${P.g("shirt")}" ${ink()}/>
-      <path d="M88 94 L112 94 L110 110 L90 110Z" fill="#fff" opacity=".24"/>
-      <circle cx="100" cy="128" r="2.3" fill="#fff" ${ink(1.1)}/>
-      <circle cx="100" cy="146" r="2.3" fill="#fff" ${ink(1.1)}/>
-      <path d="M72 164 L128 164 L126 204 L104 204 L100 176 L96 204 L74 204Z" fill="${P.g("shorts")}" ${ink()}/>
-      <path d="M100 176 L104 204" fill="none" ${ink(1.2)}/>
-      ${legs}`;
+    const L = P.g("limb");
+    const S = P.g("skin");
+    const mannequin = `<path d="M74 182 L76 300 C76 314 87 320 96 308 L94 182Z" fill="${L}" ${ink()}/>
+      <path d="M106 182 L104 300 C104 314 113 320 126 308 L124 182Z" fill="${L}" ${ink()}/>
+      <path d="M78 96 C58 106 50 126 52 150 C53 166 48 174 56 180 C66 186 74 178 70 166 C70 146 72 120 86 104 C84 98 80 96 78 96Z" fill="${L}" ${ink()}/>
+      <path d="M122 96 C142 106 150 126 148 150 C147 166 152 174 144 180 C134 186 126 178 130 166 C130 146 128 120 114 104 C116 98 120 96 122 96Z" fill="${L}" ${ink()}/>
+      <path d="M76 94 C62 108 60 132 64 172 L70 200 L130 200 L136 172 C140 132 138 108 124 94Z" fill="${L}"/>
+      <path d="M88 70 L112 70 L122 102 L78 102Z" fill="${L}" ${ink(1.25)}/>
+      <ellipse cx="56" cy="178" rx="7.8" ry="7" fill="${S}" ${ink(1.3)}/>
+      <ellipse cx="144" cy="178" rx="7.8" ry="7" fill="${S}" ${ink(1.3)}/>`;
+    if (dressed) return mannequin;
+    return `${mannequin}
+      <path d="M78 90 C58 96 50 114 56 128 L74 122 C76 108 84 96 96 90Z" fill="${P.g("shirt")}" ${ink()}/>
+      <path d="M122 90 C142 96 150 114 144 128 L126 122 C124 108 116 96 104 90Z" fill="${P.g("shirt")}" ${ink()}/>
+      <path d="M86 88 L114 88 L130 102 L134 168 Q100 178 66 168 L70 102Z" fill="${P.g("shirt")}" ${ink()}/>
+      <path d="M92 90 L108 90 L106 108 L94 108Z" fill="#fff" opacity=".24"/>
+      <circle cx="100" cy="126" r="2.4" fill="#fff" ${ink(1.1)}/>
+      <circle cx="100" cy="144" r="2.4" fill="#fff" ${ink(1.1)}/>
+      <path d="M70 158 L130 158 L128 206 L106 208 L100 176 L94 208 L72 206Z" fill="${P.g("shorts")}" ${ink()}/>
+      <path d="M100 176 L105 208" fill="none" ${ink(1.2)}/>`;
   }
 
   function ruffleSkirt() {
-    return `<path d="M76 148 L124 148 L162 250 Q148 268 132 252 Q116 268 100 252 Q84 268 68 252 Q52 268 38 250Z" fill="${P.g("cloth")}" ${ink()}/>
-      <path d="M124 152 L150 246 Q100 258 100 250 Q114 200 124 152Z" fill="#000" opacity=".1"/>
-      <path d="M76 152 L50 246 Q100 258 100 250 Q86 200 76 152Z" fill="#fff" opacity=".12"/>`;
+    return `<path d="M74 146 L126 146 L164 252 Q148 270 132 254 Q116 270 100 254 Q84 270 68 254 Q52 270 36 252Z" fill="${P.g("cloth")}" ${ink()}/>
+      <path d="M126 150 L152 246 Q100 258 100 250 Q114 200 126 150Z" fill="#000" opacity=".1"/>
+      <path d="M74 150 L48 246 Q100 258 100 250 Q86 200 74 150Z" fill="#fff" opacity=".12"/>`;
   }
 
   function dressSvg(id) {
     if (!id) return "";
     if (id === "princess") {
-      return `<ellipse cx="66" cy="112" rx="12" ry="16" fill="${P.g("light")}" ${ink()}/>
-        <ellipse cx="134" cy="112" rx="12" ry="16" fill="${P.g("light")}" ${ink()}/>
-        <path d="M78 94 L122 94 L124 150 L76 150Z" fill="${P.g("light")}" ${ink()}/>
+      return `<ellipse cx="68" cy="110" rx="13" ry="17" fill="${P.g("light")}" ${ink()}/>
+        <ellipse cx="132" cy="110" rx="13" ry="17" fill="${P.g("light")}" ${ink()}/>
+        <path d="M82 88 L118 88 L126 148 L74 148Z" fill="${P.g("light")}" ${ink()}/>
         ${ruffleSkirt()}
-        <path d="M78 148 L122 148 L126 160 L74 160Z" fill="${P.g("gold")}" ${ink(1.25)}/>
-        <circle cx="100" cy="122" r="5.5" fill="#fff" ${ink(1.2)}/>
-        <circle cx="99" cy="120.4" r="1.7" fill="#ffe066"/>`;
+        <path d="M76 146 L124 146 L128 158 L72 158Z" fill="${P.g("gold")}" ${ink(1.25)}/>
+        <circle cx="100" cy="118" r="5.5" fill="#fff" ${ink(1.2)}/>
+        <circle cx="99" cy="116.4" r="1.7" fill="#ffe066"/>`;
     }
     if (id === "bindalli") {
-      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="${P.g("dark")}" ${ink()}/>
+      return `<path d="M82 88 L118 88 L126 148 L74 148Z" fill="${P.g("dark")}" ${ink()}/>
         ${ruffleSkirt()}
-        <rect x="78" y="144" width="44" height="7" rx="2" fill="${P.g("gold")}" ${ink(1.15)}/>
+        <rect x="76" y="142" width="48" height="7" rx="2" fill="${P.g("gold")}" ${ink(1.15)}/>
         <circle cx="88" cy="178" r="3.5" fill="${P.g("gold")}" ${ink(1.05)}/>
         <circle cx="112" cy="198" r="3.5" fill="${P.g("gold")}" ${ink(1.05)}/>
         <circle cx="96" cy="220" r="2.9" fill="${P.g("gold")}" ${ink(1.05)}/>
         <circle cx="118" cy="236" r="2.9" fill="${P.g("gold")}" ${ink(1.05)}/>`;
     }
     if (id === "sailor") {
-      return `<path d="M78 94 L122 94 L150 248 Q100 266 50 248Z" fill="${P.g("cloth")}" ${ink()}/>
-        <path d="M80 94 L120 94 L116 132 L84 132Z" fill="#fff" ${ink(1.3)}/>
-        <path d="M90 94 L110 94 L108 118 L92 118Z" fill="${P.g("dark")}"/>
-        <rect x="94" y="132" width="12" height="10" rx="5" fill="#c92a2a" ${ink(1.15)}/>
+      return `<path d="M82 88 L118 88 L152 248 Q100 266 48 248Z" fill="${P.g("cloth")}" ${ink()}/>
+        <path d="M78 90 L122 90 L118 130 L82 130Z" fill="#fff" ${ink(1.3)}/>
+        <path d="M90 90 L110 90 L108 116 L92 116Z" fill="${P.g("dark")}"/>
+        <rect x="94" y="130" width="12" height="10" rx="5" fill="#c92a2a" ${ink(1.15)}/>
         <rect x="72" y="188" width="56" height="7" rx="2" fill="#fff" ${ink(1.15)}/>`;
     }
     if (id === "sun") {
-      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="${P.g("light")}" ${ink()}/>
+      return `<path d="M82 88 L118 88 L126 148 L74 148Z" fill="${P.g("light")}" ${ink()}/>
         ${ruffleSkirt()}
         <circle cx="90" cy="186" r="6.4" fill="#ff8fab" ${ink(1.15)}/>
         <circle cx="88.6" cy="184.2" r="2" fill="#fff" opacity=".5"/>
@@ -2860,12 +2860,12 @@
         <circle cx="98" cy="230" r="4.3" fill="#ff8fab" ${ink(1.1)}/>`;
     }
     if (id === "mint") {
-      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="${P.g("light")}" ${ink()}/>
+      return `<path d="M82 88 L118 88 L126 148 L74 148Z" fill="${P.g("light")}" ${ink()}/>
         ${ruffleSkirt()}
         <path d="M64 226 Q100 244 136 226" stroke="#fff" stroke-width="5" fill="none" opacity=".5"/>`;
     }
     if (id === "starry") {
-      return `<path d="M78 94 L122 94 L124 148 L76 148Z" fill="${P.g("light")}" ${ink()}/>
+      return `<path d="M82 88 L118 88 L126 148 L74 148Z" fill="${P.g("light")}" ${ink()}/>
         ${ruffleSkirt()}
         <polygon points="88,184 91,193 101,193 93,199 96,208 88,202 80,208 83,199 75,193 85,193" fill="${P.g("gold")}" ${ink(1.1)}/>
         <circle cx="116" cy="214" r="3.6" fill="#fff" ${ink(1.05)}/>
